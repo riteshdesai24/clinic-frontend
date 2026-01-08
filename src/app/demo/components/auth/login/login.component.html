@@ -9,22 +9,31 @@
                     <span class="text-600 font-medium">Sign in to continue</span>
                 </div>
 
-                <div>
+                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
                     <label for="email1" class="block text-900 text-xl font-medium mb-2">Email</label>
-                    <input id="email1" type="text" placeholder="Email address" pInputText class="w-full md:w-30rem mb-5" style="padding:1rem">
+                    <input id="email1" type="text" placeholder="Email address" pInputText formControlName="email" class="w-full md:w-30rem mb-2" style="padding:1rem">
+                    <div class="text-red-500 mb-3" *ngIf="f['email'].touched && f['email'].invalid">
+                        <div *ngIf="f['email'].errors?.required">Email is required.</div>
+                        <div *ngIf="f['email'].errors?.email">Enter a valid email address.</div>
+                    </div>
 
                     <label for="password1" class="block text-900 font-medium text-xl mb-2">Password</label>
-                    <p-password id="password1" [(ngModel)]="password" placeholder="Password" [toggleMask]="true" styleClass="mb-5" inputStyleClass="w-full p-3 md:w-30rem"></p-password>
+                    <p-password id="password1" formControlName="password" placeholder="Password" [toggleMask]="true" styleClass="mb-2" inputStyleClass="w-full p-3 md:w-30rem"></p-password>
+                    <div class="text-red-500 mb-3" *ngIf="f['password'].touched && f['password'].invalid">
+                        <div *ngIf="f['password'].errors?.required">Password is required.</div>
+                        <div *ngIf="f['password'].errors?.minlength">Password must be at least {{f['password'].errors?.minlength.requiredLength}} characters.</div>
+                    </div>
 
                     <div class="flex align-items-center justify-content-between mb-5 gap-5">
                         <div class="flex align-items-center">
-                            <p-checkbox id="rememberme1" [binary]="true" styleClass="mr-2"></p-checkbox>
+                            <p-checkbox id="rememberme1" formControlName="remember" [binary]="true" styleClass="mr-2"></p-checkbox>
                             <label for="rememberme1">Remember me</label>
                         </div>
                         <a class="font-medium no-underline ml-2 text-right cursor-pointer" style="color: var(--primary-color)">Forgot password?</a>
                     </div>
-                    <button pButton pRipple label="Sign In" class="w-full p-3 text-xl" [routerLink]="['/']"></button>
-                </div>
+
+                    <button type="submit" pButton pRipple class="w-full p-3 text-xl" [disabled]="loginForm.invalid">Sign In</button>
+                </form>
             </div>
         </div>
     </div>
