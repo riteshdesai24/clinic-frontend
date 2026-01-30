@@ -4,11 +4,23 @@ import { LayoutService } from "./service/app.layout.service";
 
 @Component({
     selector: 'app-topbar',
-    templateUrl: './app.topbar.component.html'
+    templateUrl: './app.topbar.component.html',
+    styles: [`
+        :host ::ng-deep .layout-topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+    `]
 })
 export class AppTopBarComponent {
 
     items!: MenuItem[];
+    clinicName: string = '';
 
     @ViewChild('menubutton') menuButton!: ElementRef;
 
@@ -16,5 +28,7 @@ export class AppTopBarComponent {
 
     @ViewChild('topbarmenu') menu!: ElementRef;
 
-    constructor(public layoutService: LayoutService) { }
+    constructor(public layoutService: LayoutService) {
+        this.clinicName = localStorage.getItem('clinicname') || sessionStorage.getItem('clinicname') || 'My Clinic';
+    }
 }

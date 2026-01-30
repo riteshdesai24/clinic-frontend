@@ -1,0 +1,80 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card">
+            <h5>Create Staff</h5>
+            
+            <form [formGroup]="staffForm" (ngSubmit)="onSubmit()">
+                <div class="grid">
+                    <div class="col-12 md:col-6">
+                        <div class="field">
+                            <label for="clinicName" class="font-bold block mb-2">Clinic Name</label>
+                            <input id="clinicName" type="text" pInputText formControlName="clinicName" class="w-full" [disabled]="true">
+                        </div>
+                    </div>
+
+                    <div class="col-12 md:col-6">
+                        <div class="field">
+                            <label for="staffname" class="font-bold block mb-2">Staff Name</label>
+                            <input id="staffname" type="text" placeholder="Staff name" pInputText formControlName="staffname" class="w-full">
+                            <small class="p-error block" *ngIf="f['staffname'].touched && f['staffname'].invalid">
+                                <span *ngIf="f['staffname'].errors?.required">Staff name is required.</span>
+                                <span *ngIf="f['staffname'].errors?.minlength">Staff name must be at least {{f['staffname'].errors?.minlength.requiredLength}} characters.</span>
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="col-12 md:col-6">
+                        <div class="field">
+                            <label for="email" class="font-bold block mb-2">Email</label>
+                            <input id="email" type="email" placeholder="Email address" pInputText formControlName="email" class="w-full">
+                            <small class="p-error block" *ngIf="f['email'].touched && f['email'].invalid">
+                                <span *ngIf="f['email'].errors?.required">Email is required.</span>
+                                <span *ngIf="f['email'].errors?.email">Enter a valid email address.</span>
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="col-12 md:col-6">
+                        <div class="field">
+                            <label for="phone" class="font-bold block mb-2">Phone</label>
+                            <input id="phone" type="text" placeholder="Phone number" pInputText formControlName="phone" class="w-full">
+                            <small class="p-error block" *ngIf="f['phone'].touched && f['phone'].invalid">
+                                <span *ngIf="f['phone'].errors?.required">Phone number is required.</span>
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="col-12 md:col-6">
+                        <div class="field">
+                            <label for="password" class="font-bold block mb-2">Password</label>
+                            <p-password id="password" formControlName="password" placeholder="Password" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full"></p-password>
+                            <small class="p-error block" *ngIf="f['password'].touched && f['password'].invalid">
+                                <span *ngIf="f['password'].errors?.required">Password is required.</span>
+                                <span *ngIf="f['password'].errors?.minlength">Password must be at least {{f['password'].errors?.minlength.requiredLength}} characters.</span>
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="col-12 md:col-6">
+                        <div class="field">
+                            <label for="role" class="font-bold block mb-2">Role</label>
+                            <p-dropdown id="role" [options]="roles" formControlName="role" placeholder="Select role" styleClass="w-full"></p-dropdown>
+                            <small class="p-error block" *ngIf="f['role'].touched && f['role'].invalid">
+                                <span *ngIf="f['role'].errors?.required">Role is required.</span>
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div *ngIf="error" class="p-error block mb-3">{{error}}</div>
+                        <div *ngIf="success" class="p-success block mb-3">{{success}}</div>
+                    </div>
+
+                    <div class="col-12">
+                        <button pButton pRipple type="submit" label="Create Staff" class="w-full" [disabled]="staffForm.invalid || loading" [loading]="loading"></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

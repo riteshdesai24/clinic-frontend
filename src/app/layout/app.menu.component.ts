@@ -9,18 +9,30 @@ import { LayoutService } from './service/app.layout.service';
 export class AppMenuComponent implements OnInit {
 
     model: any[] = [];
+    clinicPlan: string = '';
 
     constructor(public layoutService: LayoutService) { }
 
     ngOnInit() {
+        this.clinicPlan = localStorage.getItem('clinicplan') || sessionStorage.getItem('clinicplan') || '';
+        this.buildMenu();
+    }
+
+    buildMenu() {
         this.model = [
             {
-                label: 'Home',
+                label: 'Menus',
                 items: [
-                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }
+                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
+                    ...(this.clinicPlan?.toUpperCase() === 'GOLD' ? [{
+                        label: 'Staff',
+                        icon: 'pi pi-fw pi-users',
+                        routerLink: ['/pages/staff-list']
+                    }] : []),
+                    { label: 'Doctor', icon: 'pi pi-fw pi-user-md', routerLink: ['/pages/doctor-list'], badge: 'NEW' }
                 ]
-            },
-            {
+            }
+            /* {
                 label: 'UI Components',
                 items: [
                     { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/formlayout'] },
@@ -160,6 +172,7 @@ export class AppMenuComponent implements OnInit {
                     }
                 ]
             }
+            */
         ];
     }
 }

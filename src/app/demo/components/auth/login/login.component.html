@@ -24,15 +24,16 @@
                         <div *ngIf="f['password'].errors?.minlength">Password must be at least {{f['password'].errors?.minlength.requiredLength}} characters.</div>
                     </div>
 
-                    <div class="flex align-items-center justify-content-between mb-5 gap-5">
-                        <div class="flex align-items-center">
-                            <p-checkbox id="rememberme1" formControlName="remember" [binary]="true" styleClass="mr-2"></p-checkbox>
-                            <label for="rememberme1">Remember me</label>
-                        </div>
-                        <a class="font-medium no-underline ml-2 text-right cursor-pointer" style="color: var(--primary-color)">Forgot password?</a>
+                    <div class="flex align-items-center justify-content-center mb-5 gap-2">
+                        <span class="text-600 font-medium">Don't have an account?</span>
+                        <a routerLink="/auth/register" class="font-medium no-underline cursor-pointer" style="color: var(--primary-color)">Sign up here</a>
                     </div>
 
-                    <button type="submit" pButton pRipple class="w-full p-3 text-xl" [disabled]="loginForm.invalid">Sign In</button>
+                    <div *ngIf="error" class="text-red-600 mb-3">{{error}}</div>
+                    <button type="submit" pButton pRipple class="w-full p-3 text-xl" [disabled]="loginForm.invalid || loading">
+                        <span *ngIf="!loading">Sign In</span>
+                        <span *ngIf="loading">Signing in...</span>
+                    </button>
                 </form>
             </div>
         </div>

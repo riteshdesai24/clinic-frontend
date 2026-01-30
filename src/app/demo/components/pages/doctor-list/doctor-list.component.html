@@ -1,0 +1,57 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card">
+            <div class="flex justify-content-between align-items-center mb-4">
+                <h5>Doctor List</h5>
+                <button pButton pRipple icon="pi pi-plus" class="p-button-rounded p-button-success" 
+                    (click)="createNewDoctor()" pTooltip="Add New Doctor" tooltipPosition="left"></button>
+            </div>
+
+            <p-table [value]="filteredDoctorList" [loading]="loading" responsiveLayout="scroll" 
+                [paginator]="true" [rows]="10">
+                <ng-template pTemplate="caption">
+                    <div class="flex align-items-center justify-content-between">
+                        <span class="p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onDoctorSearch($event)" 
+                                placeholder="Search doctors..." />
+                        </span>
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="doctorname">Name <p-sortIcon field="doctorname"></p-sortIcon></th>
+                        <th pSortableColumn="email">Email <p-sortIcon field="email"></p-sortIcon></th>
+                        <th pSortableColumn="phone">Phone <p-sortIcon field="phone"></p-sortIcon></th>
+                        <th pSortableColumn="specialization">Specialization <p-sortIcon field="specialization"></p-sortIcon></th>
+                        <th>Actions</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-doctor>
+                    <tr>
+                        <td>{{doctor.doctorname}}</td>
+                        <td>{{doctor.email}}</td>
+                        <td>{{doctor.phone}}</td>
+                        <td>
+                            <p-tag [value]="doctor.specialization" severity="primary"></p-tag>
+                        </td>
+                        <td>
+                            <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-warning mr-2" 
+                                (click)="editDoctor(doctor)" pTooltip="Edit" tooltipPosition="top"></button>
+                            <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" 
+                                (click)="deleteDoctor(doctor)" pTooltip="Delete" tooltipPosition="top"></button>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="5" class="text-center">No doctors found</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
