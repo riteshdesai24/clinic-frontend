@@ -31,13 +31,15 @@
 
                 <ng-template pTemplate="body" let-doctor>
                     <tr>
-                        <td>{{doctor.doctorname}}</td>
+                        <td>{{doctor.name}}</td>
                         <td>{{doctor.email}}</td>
                         <td>{{doctor.phone}}</td>
                         <td>
                             <p-tag [value]="doctor.specialization" severity="primary"></p-tag>
                         </td>
                         <td>
+                            <button pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-warning mr-2" 
+                                (click)="viewDoctor(doctor)" pTooltip="View" tooltipPosition="top"></button>
                             <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-warning mr-2" 
                                 (click)="editDoctor(doctor)" pTooltip="Edit" tooltipPosition="top"></button>
                             <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" 
