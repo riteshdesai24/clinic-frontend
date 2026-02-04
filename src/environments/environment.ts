@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiUrl: "https://clinic-backend-g6cx.onrender.com"
+  apiUrl: "https://localhost:5000"
 };
 
 /*
