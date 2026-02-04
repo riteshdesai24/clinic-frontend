@@ -14,6 +14,12 @@ import { IconService } from './demo/service/icon.service';
 import { NodeService } from './demo/service/node.service';
 import { PhotoService } from './demo/service/photo.service';
 import { MessageService } from 'primeng/api';
+import { MenusModule } from './demo/components/uikit/menus/menus.module';
+import { MenuModule } from 'primeng/menu';
+import { MenubarModule } from 'primeng/menubar';
+import { StepsModule } from 'primeng/steps';
+import { TabMenuModule } from 'primeng/tabmenu';
+import { TieredMenuModule } from 'primeng/tieredmenu';
 
 @NgModule({
     declarations: [
@@ -22,7 +28,13 @@ import { MessageService } from 'primeng/api';
     imports: [
         AppRoutingModule,
         AppLayoutModule,
-        HttpClientModule
+        HttpClientModule,
+        MenusModule,
+        MenubarModule,
+        TabMenuModule,
+        StepsModule,
+        TieredMenuModule,
+        MenuModule,
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },

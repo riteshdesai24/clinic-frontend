@@ -4,105 +4,207 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { AuthService } from 'src/app/demo/service/auth.service';
 
 @Component({
-    selector: 'app-staff-list',
-    templateUrl: './staff-list.component.html',
-    styles: []
+  selector: 'app-staff-list',
+  templateUrl: './staff-list.component.html',
+  styles: []
 })
 export class StaffListComponent implements OnInit {
 
-    staffList: any[] = [];
-    filteredStaffList: any[] = [];
-    loading: boolean = false;
-    clinicId: string = '';
-    // pagination
-    count: number = 0;
-    hasNextPage: boolean = false;
-    nextCursor: string | null = null;
-    pageSize: number = 20;
+  staffList: any[] = [];
+  filteredStaffList: any[] = [];
 
-    constructor(
-        private router: Router,
-        private confirmationService: ConfirmationService,
-        private messageService: MessageService,
-        private authService: AuthService
-    ) { }
+  loading = false;
+  clinicId = '';
 
-    ngOnInit() {
-        this.clinicId = localStorage.getItem('clinicid') || sessionStorage.getItem('clinicid') || '';
-        this.loadStaffList();
-    }
+  // Pagination
+  count = 0;
+  hasNextPage = false;
+  nextCursor: string | null = null;
+  pageSize = 20;
 
-    loadStaffList(cursor?: string | null, append: boolean = false) {
-        if (!this.clinicId) return;
-        this.loading = true;
-        this.authService.getStaffList(this.clinicId, cursor, this.pageSize).subscribe({
-            next: (response: any) => {
-                const data = response.data || [];
-                if (append) {
-                    this.staffList = this.staffList.concat(data);
-                } else {
-                    this.staffList = data;
-                }
-                this.filteredStaffList = this.staffList;
-                this.count = response.count || this.staffList.length;
-                this.hasNextPage = !!response.hasNextPage;
-                this.nextCursor = response.nextCursor || null;
-                this.loading = false;
-            },
-            error: (error) => {
-                console.error('Error fetching staff list:', error);
-                this.loading = false;
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load staff list' });
-            }
+  constructor(
+    private router: Router,
+    private confirmationService: ConfirmationService,
+    private messageService: MessageService,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+
+    this.clinicId =
+      localStorage.getItem('clinicid') ||
+      sessionStorage.getItem('clinicid') || '';
+
+    this.loadStaffList();
+  }
+
+  // ======================
+  // LOAD STAFF
+  // ======================
+  loadStaffList(cursor?: string | null, append = false): void {
+
+    if (!this.clinicId) return;
+
+    this.loading = true;
+
+    this.authService.getStaffList(this.clinicId, cursor, this.pageSize).subscribe({
+
+      next: res => {
+
+        const data = res.data || [];
+
+        this.staffList = append
+          ? this.staffList.concat(data)
+          : data;
+
+        this.filteredStaffList = this.staffList;
+
+        this.count = res.count || this.staffList.length;
+        this.hasNextPage = !!res.hasNextPage;
+        this.nextCursor = res.nextCursor || null;
+
+        this.loading = false;
+      },
+
+      error: err => {
+
+        console.error('Staff list error:', err);
+
+        this.loading = false;
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load staff list'
         });
+      }
+    });
+  }
+
+  loadMore(): void {
+
+    if (this.hasNextPage && this.nextCursor) {
+      this.loadStaffList(this.nextCursor, true);
+    }
+  }
+
+  // ======================
+  // SEARCH
+  // ======================
+  onStaffSearch(event: any): void {
+
+    const value = (event.target as HTMLInputElement)
+      .value
+      .toLowerCase();
+
+    if (!value) {
+      this.filteredStaffList = this.staffList;
+      return;
     }
 
-    loadMore() {
-        if (this.hasNextPage && this.nextCursor) {
-            this.loadStaffList(this.nextCursor, true);
+    this.filteredStaffList = this.staffList.filter(s =>
+      s.staffname?.toLowerCase().includes(value) ||
+      s.email?.toLowerCase().includes(value) ||
+      s.phone?.includes(value) ||
+      s.role?.toLowerCase().includes(value)
+    );
+  }
+
+  // ======================
+  // CREATE
+  // ======================
+  createNewStaff(): void {
+
+    this.router.navigate(
+      ['/pages/staff'],
+      { queryParams: { isUser: 'Staff' } }
+    );
+  }
+
+  // ======================
+  // EDIT STAFF
+  // ======================
+  editStaff(staff: any): void {
+
+    this.router.navigate(
+      ['/pages/staff'],
+      {
+        queryParams: {
+          isUser: 'Staff',
+          id: staff._id
         }
-    }
+      }
+    );
 
-    onStaffSearch(event: any) {
-        const searchValue = (event.target as HTMLInputElement).value.toLowerCase();
-        if (!searchValue) {
-            this.filteredStaffList = this.staffList;
-        } else {
-            this.filteredStaffList = this.staffList.filter(staff =>
-                staff.staffname.toLowerCase().includes(searchValue) ||
-                staff.email.toLowerCase().includes(searchValue) ||
-                staff.phone.includes(searchValue) ||
-                staff.role.toLowerCase().includes(searchValue)
-            );
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Edit',
+      detail: `Editing ${staff.staffname}`
+    });
+  }
+
+  // ======================
+  // VIEW STAFF
+  // ======================
+  viewStaff(staff: any): void {
+
+    this.router.navigate(
+      ['/pages/staff'],
+      {
+        queryParams: {
+          isUser: 'Staff',
+          id: staff._id,
+          view: true
         }
-    }
+      }
+    );
 
-    createNewStaff() {
-        this.router.navigate(['/pages/staff']);
-    }
+    this.messageService.add({
+      severity: 'info',
+      summary: 'View',
+      detail: `Viewing ${staff.staffname}`
+    });
+  }
 
-    deleteStaff(staff: any) {
-        this.confirmationService.confirm({
-            message: `Are you sure you want to delete ${staff.staffname}?`,
-            header: 'Confirm Delete',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.authService.deleteStaff(staff._id).subscribe({
-                    next: (response) => {
-                        this.messageService.add({ severity: 'success', summary: 'Deleted', detail: `${staff.staffname} has been deleted` });
-                        this.loadStaffList();
-                    },
-                    error: (error) => {
-                        console.error('Error deleting staff:', error);
-                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete staff' });
-                    }
-                });
-            }
+  // ======================
+  // DELETE
+  // ======================
+  deleteStaff(staff: any): void {
+
+    this.confirmationService.confirm({
+
+      message: `Are you sure you want to delete ${staff.staffname}?`,
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+
+      accept: () => {
+
+        this.authService.deleteStaff(staff._id).subscribe({
+
+          next: () => {
+
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Deleted',
+              detail: `${staff.staffname} deleted`
+            });
+
+            this.loadStaffList();
+          },
+
+          error: err => {
+
+            console.error('Delete error:', err);
+
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to delete staff'
+            });
+          }
         });
-    }
+      }
+    });
+  }
 
-    editStaff(staff: any) {
-        // TODO: Navigate to edit staff page with staff ID
-        this.messageService.add({ severity: 'info', summary: 'Edit', detail: `Editing staff: ${staff.staffname}` });
-    }
 }

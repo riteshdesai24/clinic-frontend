@@ -78,18 +78,18 @@ export class DoctorListComponent implements OnInit {
     }
 
     createNewDoctor() {
-        this.router.navigate(['/pages/doctor']);
+        this.router.navigate(['/pages/staff'], { queryParams: { isUser:'Doctor', } });
     }
 
     editDoctor(doctor: any) {
         // TODO: Navigate to edit doctor page with doctor ID
-        this.router.navigate(['/pages/doctor'], { queryParams: { edit: true, id: doctor._id } });
+        this.router.navigate(['/pages/staff'], { queryParams: { isUser:'Doctor', edit: true, id: doctor._id } });
         this.messageService.add({ severity: 'info', summary: 'Edit', detail: `Editing doctor: ${doctor.doctorname}` });
     }
 
     viewDoctor(doctor: any) {
         // TODO: Navigate to edit doctor page with doctor ID
-        this.router.navigate(['/pages/doctor'], { queryParams: { view: true, id: doctor._id } });
+        this.router.navigate(['/pages/staff'], { queryParams: { isUser:'Doctor', view: true, id: doctor._id } });
         this.messageService.add({ severity: 'info', summary: 'View', detail: `Viewing doctor: ${doctor.doctorname}` });
     }
 

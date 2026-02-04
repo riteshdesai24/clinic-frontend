@@ -29,7 +29,7 @@ export class AppMenuComponent implements OnInit {
                         icon: 'pi pi-fw pi-users',
                         routerLink: ['/pages/staff-list']
                     }] : []),
-                    { label: 'Doctor', icon: 'pi pi-fw pi-user-md', routerLink: ['/pages/doctor-list'], badge: 'NEW' }
+                    { label: 'Doctor', icon: 'pi pi-fw pi-user', routerLink: ['/pages/doctor-list'], badge: 'NEW' }
                 ]
             }
             /* {

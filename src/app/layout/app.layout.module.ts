@@ -17,6 +17,13 @@ import { AppFooterComponent } from './app.footer.component';
 import { AppConfigModule } from './config/config.module';
 import { AppSidebarComponent } from "./app.sidebar.component";
 import { AppLayoutComponent } from "./app.layout.component";
+import { MenuModule } from 'primeng/menu';
+import { MenubarModule } from 'primeng/menubar';
+import { StepsModule } from 'primeng/steps';
+import { TabMenuModule } from 'primeng/tabmenu';
+import { TieredMenuModule } from 'primeng/tieredmenu';
+import { MenusModule } from '../demo/components/uikit/menus/menus.module';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
 
 @NgModule({
     declarations: [
@@ -39,7 +46,14 @@ import { AppLayoutComponent } from "./app.layout.component";
         InputSwitchModule,
         RippleModule,
         RouterModule,
-        AppConfigModule
+        AppConfigModule,
+        MenusModule,
+        MenubarModule,
+        TabMenuModule,
+        StepsModule,
+        TieredMenuModule,
+        MenuModule,
+        OverlayPanelModule
     ],
     exports: [AppLayoutComponent]
 })

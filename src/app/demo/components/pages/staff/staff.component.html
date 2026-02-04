@@ -1,78 +1,213 @@
 <div class="grid">
     <div class="col-12">
         <div class="card">
-            <h5>Create Staff</h5>
-            
+            <!-- Heading -->
+            <h5 class="mb-3">
+                {{
+                    isUser === "Staff"
+                        ? "Create Staff"
+                        : isUser === "Doctor"
+                          ? "Create Doctor"
+                          : "Create User"
+                }}
+            </h5>
+
             <form [formGroup]="staffForm" (ngSubmit)="onSubmit()">
+                <!-- Clinic Info -->
+                <div class="grid mb-3">
+                    <div class="col-12 md:col-8">
+                        <label class="font-bold block mb-2">
+                            Clinic Name
+                        </label>
+
+                        <input
+                            pInputText
+                            type="text"
+                            class="w-full"
+                            formControlName="clinicName"
+                            disabled
+                        />
+                    </div>
+                </div>
+
+                <hr class="mb-3" />
+
+                <!-- User Details -->
                 <div class="grid">
-                    <div class="col-12 md:col-6">
-                        <div class="field">
-                            <label for="clinicName" class="font-bold block mb-2">Clinic Name</label>
-                            <input id="clinicName" type="text" pInputText formControlName="clinicName" class="w-full" [disabled]="true">
-                        </div>
+                    <!-- Name -->
+                    <div class="col-12 md:col-4">
+                        <label class="font-bold block mb-2">
+                            {{
+                                isUser === "Doctor"
+                                    ? "Doctor Name"
+                                    : "Staff Name"
+                            }}
+                            <span class="text-red-500">*</span>
+                        </label>
+
+                        <span class="p-input-icon-left w-full">
+                            <i class="pi pi-user"></i>
+
+                            <input
+                                pInputText
+                                type="text"
+                                class="w-full"
+                                formControlName="staffname"
+                            />
+                        </span>
+
+                        <small
+                            class="p-error"
+                            *ngIf="
+                                f['staffname'].touched && f['staffname'].invalid
+                            "
+                        >
+                            Min 3 characters required
+                        </small>
                     </div>
 
-                    <div class="col-12 md:col-6">
-                        <div class="field">
-                            <label for="staffname" class="font-bold block mb-2">Staff Name</label>
-                            <input id="staffname" type="text" placeholder="Staff name" pInputText formControlName="staffname" class="w-full">
-                            <small class="p-error block" *ngIf="f['staffname'].touched && f['staffname'].invalid">
-                                <span *ngIf="f['staffname'].errors?.required">Staff name is required.</span>
-                                <span *ngIf="f['staffname'].errors?.minlength">Staff name must be at least {{f['staffname'].errors?.minlength.requiredLength}} characters.</span>
-                            </small>
-                        </div>
+                    <!-- Email -->
+                    <div class="col-12 md:col-4">
+                        <label class="font-bold block mb-2">
+                            {{
+                                isUser === "Doctor"
+                                    ? "Doctor Email"
+                                    : "Staff Email"
+                            }}
+                            <span class="text-red-500">*</span>
+                        </label>
+
+                        <span class="p-input-icon-left w-full">
+                            <i class="pi pi-envelope"></i>
+
+                            <input
+                                pInputText
+                                type="email"
+                                class="w-full"
+                                formControlName="email"
+                            />
+                        </span>
+
+                        <small
+                            class="p-error"
+                            *ngIf="f['email'].touched && f['email'].invalid"
+                        >
+                            Valid email required
+                        </small>
                     </div>
 
-                    <div class="col-12 md:col-6">
-                        <div class="field">
-                            <label for="email" class="font-bold block mb-2">Email</label>
-                            <input id="email" type="email" placeholder="Email address" pInputText formControlName="email" class="w-full">
-                            <small class="p-error block" *ngIf="f['email'].touched && f['email'].invalid">
-                                <span *ngIf="f['email'].errors?.required">Email is required.</span>
-                                <span *ngIf="f['email'].errors?.email">Enter a valid email address.</span>
-                            </small>
-                        </div>
+                    <!-- Phone -->
+                    <div class="col-12 md:col-4">
+                        <label class="font-bold block mb-2">
+                            {{
+                                isUser === "Doctor"
+                                    ? "Doctor Phone"
+                                    : "Staff Phone"
+                            }}
+                            <span class="text-red-500">*</span>
+                        </label>
+
+                        <span class="p-input-icon-left w-full">
+                            <i class="pi pi-phone"></i>
+
+                            <input
+                                pInputText
+                                type="text"
+                                class="w-full"
+                                formControlName="phone"
+                            />
+                        </span>
                     </div>
 
-                    <div class="col-12 md:col-6">
-                        <div class="field">
-                            <label for="phone" class="font-bold block mb-2">Phone</label>
-                            <input id="phone" type="text" placeholder="Phone number" pInputText formControlName="phone" class="w-full">
-                            <small class="p-error block" *ngIf="f['phone'].touched && f['phone'].invalid">
-                                <span *ngIf="f['phone'].errors?.required">Phone number is required.</span>
-                            </small>
-                        </div>
+                    <!-- Password -->
+                    <div class="col-12 md:col-4" *ngIf="!isEdit && !isview">
+                        <label class="font-bold block mb-2">
+                            Password <span class="text-red-500">*</span>
+                        </label>
+
+                        <p-password
+                            formControlName="password"
+                            [toggleMask]="true"
+                            styleClass="w-full"
+                            inputStyleClass="w-full"
+                        >
+                        </p-password>
                     </div>
 
-                    <div class="col-12 md:col-6">
-                        <div class="field">
-                            <label for="password" class="font-bold block mb-2">Password</label>
-                            <p-password id="password" formControlName="password" placeholder="Password" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full"></p-password>
-                            <small class="p-error block" *ngIf="f['password'].touched && f['password'].invalid">
-                                <span *ngIf="f['password'].errors?.required">Password is required.</span>
-                                <span *ngIf="f['password'].errors?.minlength">Password must be at least {{f['password'].errors?.minlength.requiredLength}} characters.</span>
-                            </small>
-                        </div>
+                    <!-- Role -->
+                    <div class="col-12 md:col-4">
+                        <label class="font-bold block mb-2">
+                            Role <span class="text-red-500">*</span>
+                        </label>
+
+                        <p-dropdown
+                            [options]="roles"
+                            formControlName="role"
+                            placeholder="Select role"
+                            styleClass="w-full"
+                        >
+                        </p-dropdown>
                     </div>
 
-                    <div class="col-12 md:col-6">
-                        <div class="field">
-                            <label for="role" class="font-bold block mb-2">Role</label>
-                            <p-dropdown id="role" [options]="roles" formControlName="role" placeholder="Select role" styleClass="w-full"></p-dropdown>
-                            <small class="p-error block" *ngIf="f['role'].touched && f['role'].invalid">
-                                <span *ngIf="f['role'].errors?.required">Role is required.</span>
-                            </small>
-                        </div>
-                    </div>
+                    <!-- Specialization -->
+                    <div
+                        class="col-12 md:col-4"
+                        *ngIf="f['role'].value === 'DOCTOR'"
+                    >
+                        <label class="font-bold block mb-2">
+                            Specialization <span class="text-red-500">*</span>
+                        </label>
 
-                    <div class="col-12">
-                        <div *ngIf="error" class="p-error block mb-3">{{error}}</div>
-                        <div *ngIf="success" class="p-success block mb-3">{{success}}</div>
-                    </div>
+                        <input
+                            pInputText
+                            type="text"
+                            class="w-full"
+                            formControlName="specialization"
+                        />
 
-                    <div class="col-12">
-                        <button pButton pRipple type="submit" label="Create Staff" class="w-full" [disabled]="staffForm.invalid || loading" [loading]="loading"></button>
+                        <small
+                            class="p-error"
+                            *ngIf="
+                                f['specialization'].touched &&
+                                f['specialization'].invalid
+                            "
+                        >
+                            Specialization required
+                        </small>
                     </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="mt-3">
+                    <small class="p-error" *ngIf="error">
+                        {{ error }}
+                    </small>
+
+                    <small class="p-success" *ngIf="success">
+                        {{ success }}
+                    </small>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex justify-content-end gap-2 mt-4">
+                    <button
+                        pButton
+                        type="submit"
+                        label="Create"
+                        icon="pi pi-check"
+                        class="p-button-sm"
+                        [loading]="loading"
+                        [disabled]="staffForm.invalid || loading"
+                    ></button>
+
+                    <button
+                        pButton
+                        type="button"
+                        label="Cancel"
+                        icon="pi pi-times"
+                        class="p-button-sm p-button-secondary"
+                        (click)="onCancel()"
+                    ></button>
                 </div>
             </form>
         </div>
