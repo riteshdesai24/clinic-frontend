@@ -41,9 +41,9 @@ export class AuthService {
         return this.http.delete(url);
     }
 
-    createDoctor(doctorname: string, email: string, phone: string, password: string, specialization: string, clinicId: string): Observable<any> {
+    createDoctor(name: string, email: string, phone: string, password: string, specialization: string, clinicId: string, active: boolean): Observable<any> {
         const url = `${environment.apiUrl}/api/doctors`;
-        return this.http.post(url, { doctorname, email, phone, password, specialization, clinicId });
+        return this.http.post(url, { name, email, phone, password, specialization, clinicId });
     }
 
     getDoctorList(clinicId: string, cursor?: string | null, limit?: number): Observable<any> {
@@ -62,6 +62,11 @@ export class AuthService {
     deleteDoctor(doctorId: string): Observable<any> {
         const url = `${environment.apiUrl}/api/doctors/${doctorId}`;
         return this.http.delete(url);
+    }
+
+    getDoctorDetails(doctorId: string): Observable<any> {
+        const url = `${environment.apiUrl}/api/doctors/${doctorId}`;
+        return this.http.get(url);
     }
 
 }

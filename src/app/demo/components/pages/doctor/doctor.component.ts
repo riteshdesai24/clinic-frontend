@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { LayoutService } from 'src/app/layout/service/app.layout.service';
 import { AuthService } from 'src/app/demo/service/auth.service';
@@ -25,16 +25,25 @@ export class DoctorComponent implements OnInit {
     success: string | null = null;
     clinicName: string = '';
     clinicId: string = '';
+    isEditMode: boolean = false;
+    isViewMode: boolean = false;
 
     constructor(
         public layoutService: LayoutService,
         private fb: FormBuilder,
         private router: Router,
+        private route: ActivatedRoute,
         private authService: AuthService,
         private messageService: MessageService
     ) { }
 
     ngOnInit() {
+        const doctorId = this.route.snapshot.queryParamMap.get('id');
+        this.isEditMode = this.route.snapshot.queryParamMap.get('edit') === 'true';
+        this.isViewMode = this.route.snapshot.queryParamMap.get('view') === 'true';
+        if (doctorId) {
+            this.loadDoctorDetails(doctorId);
+        }
         this.clinicName = localStorage.getItem('clinicname') || sessionStorage.getItem('clinicname') || '';
         this.clinicId = localStorage.getItem('clinicid') || sessionStorage.getItem('clinicid') || '';
 
@@ -63,12 +72,12 @@ export class DoctorComponent implements OnInit {
         this.success = null;
 
         const { doctorname, email, phone, password, specialization } = this.doctorForm.value;
-
-        this.authService.createDoctor(doctorname, email, phone, password, specialization, this.clinicId).subscribe({
+        let isactive = true;
+        this.authService.createDoctor(doctorname, email, phone, password, specialization, this.clinicId, isactive).subscribe({
             next: (res) => {
                 if (res.success == true) {
                     this.success = 'Doctor created successfully!';
-                    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Doctor created successfully' });
+                    this.messageService.add({key: 'tst', severity: 'success', summary: 'Success', detail: 'Doctor created successfully' });
                     this.doctorForm.reset({
                         clinicName: this.clinicName
                     });
@@ -81,11 +90,38 @@ export class DoctorComponent implements OnInit {
             },
             error: (err) => {
                 this.error = err?.error?.message || err?.message || 'Failed to create doctor';
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: this.error });
+                this.messageService.add({key: 'tst', severity: 'error', summary: 'Error', detail: this.error });
                 this.loading = false;
             },
             complete: () => this.loading = false
         });
     }
 
+    onCancel() {
+        this.doctorForm.reset();
+        this.router.navigate(['/pages/doctor-list']);
+    }
+
+    loadDoctorDetails(doctorId: string) {
+        this.loading = true;
+        this.authService.getDoctorDetails(doctorId).subscribe({
+            next: (res) => {
+                console.log(res);
+                const doctor = res.data.doctor;
+                this.doctorForm.patchValue({
+                    clinicName: this.clinicName,
+                    doctorname: doctor.name,
+                    email: doctor.email,
+                    phone: doctor.phone,
+                    specialization: doctor.specialization
+                });
+                this.loading = false;
+            },
+            error: (err) => {
+                this.error = err?.error?.message || err?.message || 'Failed to load doctor details';
+                this.messageService.add({key: 'tst', severity: 'error', summary: 'Error', detail: this.error });
+                this.loading = false;
+            }
+        });
+    }
 }

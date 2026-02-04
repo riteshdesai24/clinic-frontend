@@ -15,7 +15,7 @@
                     <div class="col-12 md:col-6">
                         <div class="field">
                             <label for="doctorname" class="font-bold block mb-2">Doctor Name</label>
-                            <input id="doctorname" type="text" placeholder="Doctor name" pInputText formControlName="doctorname" class="w-full">
+                            <input id="doctorname" type="text" placeholder="Doctor name" pInputText formControlName="doctorname" [disabled]="this.isViewMode" class="w-full">
                             <small class="p-error block" *ngIf="f['doctorname'].touched && f['doctorname'].invalid">
                                 <span *ngIf="f['doctorname'].errors?.required">Doctor name is required.</span>
                                 <span *ngIf="f['doctorname'].errors?.minlength">Doctor name must be at least {{f['doctorname'].errors?.minlength.requiredLength}} characters.</span>
@@ -26,7 +26,7 @@
                     <div class="col-12 md:col-6">
                         <div class="field">
                             <label for="email" class="font-bold block mb-2">Email</label>
-                            <input id="email" type="email" placeholder="Email address" pInputText formControlName="email" class="w-full">
+                            <input id="email" type="email" placeholder="Email address" pInputText formControlName="email" [disabled]="this.isViewMode" class="w-full">
                             <small class="p-error block" *ngIf="f['email'].touched && f['email'].invalid">
                                 <span *ngIf="f['email'].errors?.required">Email is required.</span>
                                 <span *ngIf="f['email'].errors?.email">Enter a valid email address.</span>
@@ -37,7 +37,7 @@
                     <div class="col-12 md:col-6">
                         <div class="field">
                             <label for="phone" class="font-bold block mb-2">Phone</label>
-                            <input id="phone" type="text" placeholder="Phone number" pInputText formControlName="phone" class="w-full">
+                            <input id="phone" type="text" placeholder="Phone number" pInputText formControlName="phone" [disabled]="this.isViewMode" class="w-full">
                             <small class="p-error block" *ngIf="f['phone'].touched && f['phone'].invalid">
                                 <span *ngIf="f['phone'].errors?.required">Phone number is required.</span>
                             </small>
@@ -47,7 +47,7 @@
                     <div class="col-12 md:col-6">
                         <div class="field">
                             <label for="password" class="font-bold block mb-2">Password</label>
-                            <p-password id="password" formControlName="password" placeholder="Password" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full"></p-password>
+                            <p-password id="password" formControlName="password" placeholder="Password" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" [disabled]="this.isViewMode"></p-password>
                             <small class="p-error block" *ngIf="f['password'].touched && f['password'].invalid">
                                 <span *ngIf="f['password'].errors?.required">Password is required.</span>
                                 <span *ngIf="f['password'].errors?.minlength">Password must be at least {{f['password'].errors?.minlength.requiredLength}} characters.</span>
@@ -58,23 +58,27 @@
                     <div class="col-12 md:col-6">
                         <div class="field">
                             <label for="specialization" class="font-bold block mb-2">Specialization</label>
-                            <input id="specialization" type="text" placeholder="Specialization" pInputText formControlName="specialization" class="w-full">
+                            <input id="specialization" type="text" placeholder="Specialization" pInputText formControlName="specialization" [disabled]="this.isViewMode" class="w-full">
                             <small class="p-error block" *ngIf="f['specialization'].touched && f['specialization'].invalid">
                                 <span *ngIf="f['specialization'].errors?.required">Specialization is required.</span>
                             </small>
                         </div>
                     </div>
 
-                    <div class="col-12">
+                    <!-- <div class="col-12">
                         <div *ngIf="error" class="p-error block mb-3">{{error}}</div>
                         <div *ngIf="success" class="p-success block mb-3">{{success}}</div>
-                    </div>
+                    </div> -->
 
-                    <div class="col-12">
-                        <button pButton pRipple type="submit" label="Create Doctor" class="w-full" [disabled]="doctorForm.invalid || loading" [loading]="loading"></button>
+                    <div class="col-2" *ngIf="!isViewMode">
+                        <button pButton pRipple type="submit" label="Save" class="w-full" [disabled]="doctorForm.invalid || loading" [loading]="loading"></button>
+                    </div>
+                    <div class="col-2">
+                        <button pButton pRipple (click)="onCancel()" label="Cancel" class="w-full" [disabled]="loading"></button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
+    <p-toast key="tst"></p-toast>
 </div>
