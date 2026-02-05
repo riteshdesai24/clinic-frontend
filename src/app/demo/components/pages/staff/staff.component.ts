@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
+
 import { LayoutService } from 'src/app/layout/service/app.layout.service';
 import { AuthService } from 'src/app/demo/service/auth.service';
 
@@ -44,13 +45,15 @@ export class StaffComponent implements OnInit {
     private messageService: MessageService
   ) {}
 
+  // ======================
+  // INIT
+  // ======================
   ngOnInit(): void {
 
     // Params
     this.userId = this.route.snapshot.queryParamMap.get('id');
     this.isUser = this.route.snapshot.queryParamMap.get('isUser');
 
-    // Modes
     if (this.userId) this.isEdit = true;
 
     const viewMode = this.route.snapshot.queryParamMap.get('view');
@@ -76,8 +79,9 @@ export class StaffComponent implements OnInit {
       specialization: ['']
     });
 
-    // Auto role
+    // Doctor role
     if (this.isUser === 'Doctor') {
+
       this.staffForm.patchValue({ role: 'DOCTOR' });
       this.staffForm.get('role')?.disable();
     }
@@ -97,10 +101,10 @@ export class StaffComponent implements OnInit {
       spec?.updateValueAndValidity();
     });
 
-    // Password validation
+    // Password rules
     this.togglePasswordValidation();
 
-    // 🔥 Load data for BOTH Staff & Doctor
+    // Load data
     if (this.isEdit && this.userId) {
 
       if (this.isUser === 'Doctor') {
@@ -116,19 +120,27 @@ export class StaffComponent implements OnInit {
     }
   }
 
+  // ======================
+  // GETTER
+  // ======================
   get f() {
     return this.staffForm.controls;
   }
 
-  // Password validation
+  // ======================
+  // PASSWORD RULES
+  // ======================
   togglePasswordValidation(): void {
 
     const pass = this.staffForm.get('password');
 
     if (this.isEdit || this.isview) {
+
       pass?.clearValidators();
       pass?.setValue('');
+
     } else {
+
       pass?.setValidators([
         Validators.required,
         Validators.minLength(6)
@@ -162,22 +174,19 @@ export class StaffComponent implements OnInit {
 
     this.loading = true;
 
-    const {
-      staffname,
-      email,
-      phone,
-      password,
-      role
-    } = this.staffForm.getRawValue();
+    const formData = this.staffForm.getRawValue();
 
-    this.authService.createStaff(
-      staffname,
-      email,
-      phone,
-      password,
-      role,
-      this.clinicId
-    ).subscribe({
+    const data = {
+      staffname: formData.staffname,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
+      role: formData.role,
+      specialization: formData.specialization,
+      clinicId: this.clinicId
+    };
+
+    this.authService.createStaff(data).subscribe({
 
       next: () => {
 
@@ -211,9 +220,10 @@ export class StaffComponent implements OnInit {
       delete data.password;
     }
 
-    const api$ = this.isUser === 'Doctor'
-      ? this.authService.updateDoctor(this.userId, data)
-      : this.authService.updateStaff(this.userId, data);
+    const api$ =
+      this.isUser === 'Doctor'
+        ? this.authService.updateDoctor(this.userId, data)
+        : this.authService.updateStaff(this.userId, data);
 
     api$.subscribe({
 
@@ -245,9 +255,10 @@ export class StaffComponent implements OnInit {
 
     this.loading = true;
 
-    const api$ = this.isUser === 'Doctor'
-      ? this.authService.deleteDoctor(this.userId)
-      : this.authService.deleteStaff(this.userId);
+    const api$ =
+      this.isUser === 'Doctor'
+        ? this.authService.deleteDoctor(this.userId)
+        : this.authService.deleteStaff(this.userId);
 
     api$.subscribe({
 
@@ -280,7 +291,6 @@ export class StaffComponent implements OnInit {
         const s = res.data.staff;
 
         this.staffForm.patchValue({
-          clinicName: this.clinicName,
           staffname: s.staffname,
           email: s.email,
           phone: s.phone
@@ -309,7 +319,6 @@ export class StaffComponent implements OnInit {
         const d = res.data.doctor;
 
         this.staffForm.patchValue({
-          clinicName: this.clinicName,
           staffname: d.staffname,
           email: d.email,
           phone: d.phone,

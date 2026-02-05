@@ -1,0 +1,286 @@
+<div class="grid">
+  <div class="col-12">
+
+    <div class="card">
+
+      <!-- Heading -->
+      <h5 class="mb-4">
+        {{ isEdit ? 'Edit Patient' : 'Create Patient' }}
+      </h5>
+
+      <form [formGroup]="patientForm" (ngSubmit)="onSubmit()">
+
+        <!-- ================= Clinic Section ================= -->
+        <div class="grid mb-3">
+
+          <div class="col-12 md:col-8">
+
+            <label class="font-bold block mb-2">
+              Clinic Name
+            </label>
+
+            <input
+              pInputText
+              class="w-full"
+              [value]="clinicId"
+              disabled
+            />
+
+          </div>
+
+        </div>
+
+        <hr class="mb-4" />
+
+        <!-- ================= Patient Info ================= -->
+        <div class="grid">
+
+          <!-- First Name -->
+          <div class="col-12 md:col-4">
+
+            <label class="font-bold block mb-2">
+              First Name <span class="text-red-500">*</span>
+            </label>
+
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-user"></i>
+
+              <input
+                pInputText
+                formControlName="firstName"
+                class="w-full"
+              />
+            </span>
+
+          </div>
+
+
+          <!-- Last Name -->
+          <div class="col-12 md:col-4">
+
+            <label class="font-bold block mb-2">
+              Last Name <span class="text-red-500">*</span>
+            </label>
+
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-user"></i>
+
+              <input
+                pInputText
+                formControlName="lastName"
+                class="w-full"
+              />
+            </span>
+
+          </div>
+
+
+          <!-- Phone -->
+          <div class="col-12 md:col-4">
+
+            <label class="font-bold block mb-2">
+              Phone <span class="text-red-500">*</span>
+            </label>
+
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-phone"></i>
+
+              <input
+                pInputText
+                formControlName="phone"
+                class="w-full"
+              />
+            </span>
+
+          </div>
+
+
+          <!-- Email -->
+          <div class="col-12 md:col-4">
+
+            <label class="font-bold block mb-2">
+              Email
+            </label>
+
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-envelope"></i>
+
+              <input
+                pInputText
+                formControlName="email"
+                class="w-full"
+              />
+            </span>
+
+          </div>
+
+
+          <!-- Age -->
+          <div class="col-12 md:col-4">
+
+            <label class="font-bold block mb-2">
+              Age
+            </label>
+
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-calendar"></i>
+
+              <input
+                pInputText
+                type="number"
+                formControlName="age"
+                class="w-full"
+              />
+            </span>
+
+          </div>
+
+
+          <!-- Gender -->
+          <div class="col-12 md:col-4">
+
+            <label class="font-bold block mb-2">
+              Gender <span class="text-red-500">*</span>
+            </label>
+
+            <p-dropdown
+              [options]="genders"
+              optionLabel="label"
+              optionValue="value"
+              formControlName="gender"
+              placeholder="Select Gender"
+              styleClass="w-full"
+            >
+            </p-dropdown>
+
+          </div>
+
+
+          <!-- Address 1 -->
+          <div class="col-12 md:col-4">
+
+            <label class="font-bold block mb-2">
+              Address Line 1
+            </label>
+
+            <input
+              pInputText
+              formControlName="address1"
+              class="w-full"
+            />
+
+          </div>
+
+
+          <!-- Address 2 -->
+          <div class="col-12 md:col-4">
+
+            <label class="font-bold block mb-2">
+              Address Line 2
+            </label>
+
+            <input
+              pInputText
+              formControlName="address2"
+              class="w-full"
+            />
+
+          </div>
+
+
+          <!-- Address 3 -->
+          <div class="col-12 md:col-4">
+
+            <label class="font-bold block mb-2">
+              Address Line 3
+            </label>
+
+            <input
+              pInputText
+              formControlName="address3"
+              class="w-full"
+            />
+
+          </div>
+
+
+          <!-- Pincode -->
+          <div class="col-12 md:col-4">
+
+            <label class="font-bold block mb-2">
+              Pincode
+            </label>
+
+            <input
+              pInputText
+              formControlName="pincode"
+              class="w-full"
+            />
+
+          </div>
+
+
+          <!-- Medical Allergies -->
+          <div class="col-12">
+
+            <label class="font-bold block mb-2">
+              Medical Allergies
+            </label>
+
+            <textarea
+              pInputTextarea
+              rows="3"
+              formControlName="medicalAllergies"
+              class="w-full"
+            ></textarea>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================= Messages ================= -->
+        <div class="mt-3">
+
+          <small class="p-error" *ngIf="error">
+            {{ error }}
+          </small>
+
+          <small class="p-success" *ngIf="success">
+            {{ success }}
+          </small>
+
+        </div>
+
+
+        <!-- ================= Buttons ================= -->
+        <div class="flex justify-content-end gap-2 mt-4">
+
+          <button
+           *ngIf="!isView"
+            pButton
+            type="submit"
+            icon="pi pi-check"
+            [label]="isEdit ? 'Update' : 'Create'"
+            class="p-button-sm"
+            [loading]="loading"
+            [disabled]="patientForm.invalid || loading"
+          ></button>
+
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            label="Cancel"
+            class="p-button-sm p-button-secondary"
+            (click)="onCancel()"
+          ></button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+</div>

@@ -4,113 +4,204 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { AuthService } from 'src/app/demo/service/auth.service';
 
 @Component({
-    selector: 'app-doctor-list',
-    templateUrl: './doctor-list.component.html',
-    styles: []
+  selector: 'app-doctor-list',
+  templateUrl: './doctor-list.component.html',
+  styles: []
 })
 export class DoctorListComponent implements OnInit {
 
-    doctorList: any[] = [];
-    filteredDoctorList: any[] = [];
-    loading: boolean = false;
-    clinicId: string = '';
-    // pagination
-    count: number = 0;
-    hasNextPage: boolean = false;
-    nextCursor: string | null = null;
-    pageSize: number = 20;
+  doctorList: any[] = [];
+  filteredDoctorList: any[] = [];
 
-    constructor(
-        private router: Router,
-        private confirmationService: ConfirmationService,
-        private messageService: MessageService,
-        private authService: AuthService
-    ) { }
+  loading = false;
+  clinicId = '';
 
-    ngOnInit() {
-        this.clinicId = localStorage.getItem('clinicid') || sessionStorage.getItem('clinicid') || '';
-        this.loadDoctorList();
-    }
+  count = 0;
+  hasNextPage = false;
+  nextCursor: string | null = null;
+  pageSize = 20;
 
-    loadDoctorList(cursor?: string | null, append: boolean = false) {
-        if (!this.clinicId) return;
-        this.loading = true;
-        this.authService.getDoctorList(this.clinicId, cursor, this.pageSize).subscribe({
-            next: (response: any) => {
-                const data = response.data || [];
-                if (append) {
-                    this.doctorList = this.doctorList.concat(data);
-                } else {
-                    this.doctorList = data;
-                }
-                this.filteredDoctorList = this.doctorList;
-                this.count = response.count || this.doctorList.length;
-                this.hasNextPage = !!response.hasNextPage;
-                this.nextCursor = response.nextCursor || null;
-                this.loading = false;
-            },
-            error: (error) => {
-                console.error('Error fetching doctor list:', error);
-                this.loading = false;
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load doctor list' });
-            }
-        });
-    }
+  constructor(
+    private router: Router,
+    private confirmationService: ConfirmationService,
+    private messageService: MessageService,
+    private authService: AuthService
+  ) {}
 
-    loadMore() {
-        if (this.hasNextPage && this.nextCursor) {
-            this.loadDoctorList(this.nextCursor, true);
-        }
-    }
+  ngOnInit(): void {
+    this.clinicId =
+      localStorage.getItem('clinicid') ||
+      sessionStorage.getItem('clinicid') || '';
 
-    onDoctorSearch(event: any) {
-        const searchValue = (event.target as HTMLInputElement).value.toLowerCase();
-        if (!searchValue) {
-            this.filteredDoctorList = this.doctorList;
+    this.loadDoctorList();
+  }
+
+  // ======================
+  // LOAD LIST
+  // ======================
+  loadDoctorList(cursor?: string | null, append = false): void {
+
+    if (!this.clinicId) return;
+
+    this.loading = true;
+
+    this.authService.getDoctorList(
+      this.clinicId,
+      cursor,
+      this.pageSize
+    ).subscribe({
+
+      next: (res: any) => {
+
+        const data = res.data || [];
+
+        if (append) {
+          this.doctorList = [...this.doctorList, ...data];
         } else {
-            this.filteredDoctorList = this.doctorList.filter(doctor =>
-                doctor.doctorname.toLowerCase().includes(searchValue) ||
-                doctor.email.toLowerCase().includes(searchValue) ||
-                doctor.phone.includes(searchValue) ||
-                doctor.specialization.toLowerCase().includes(searchValue)
-            );
+          this.doctorList = data;
         }
-    }
 
-    createNewDoctor() {
-        this.router.navigate(['/pages/staff'], { queryParams: { isUser:'Doctor', } });
-    }
+        this.filteredDoctorList = [...this.doctorList];
 
-    editDoctor(doctor: any) {
-        // TODO: Navigate to edit doctor page with doctor ID
-        this.router.navigate(['/pages/staff'], { queryParams: { isUser:'Doctor', edit: true, id: doctor._id } });
-        this.messageService.add({ severity: 'info', summary: 'Edit', detail: `Editing doctor: ${doctor.doctorname}` });
-    }
+        this.count = res.count || this.doctorList.length;
+        this.hasNextPage = !!res.hasNextPage;
+        this.nextCursor = res.nextCursor || null;
 
-    viewDoctor(doctor: any) {
-        // TODO: Navigate to edit doctor page with doctor ID
-        this.router.navigate(['/pages/staff'], { queryParams: { isUser:'Doctor', view: true, id: doctor._id } });
-        this.messageService.add({ severity: 'info', summary: 'View', detail: `Viewing doctor: ${doctor.doctorname}` });
-    }
+        this.loading = false;
+      },
 
-    deleteDoctor(doctor: any) {
-        this.confirmationService.confirm({
-            message: `Are you sure you want to delete ${doctor.doctorname}?`,
-            header: 'Confirm Delete',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.authService.deleteDoctor(doctor._id).subscribe({
-                    next: (response) => {
-                        this.messageService.add({ severity: 'success', summary: 'Deleted', detail: `${doctor.doctorname} has been deleted` });
-                        this.loadDoctorList();
-                    },
-                    error: (error) => {
-                        console.error('Error deleting doctor:', error);
-                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete doctor' });
-                    }
-                });
-            }
+      error: err => {
+
+        console.error(err);
+
+        this.loading = false;
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load doctor list'
         });
+      }
+    });
+  }
+
+  loadMore(): void {
+
+    if (this.hasNextPage && this.nextCursor) {
+      this.loadDoctorList(this.nextCursor, true);
+    }
+  }
+
+  // ======================
+  // SEARCH
+  // ======================
+  onDoctorSearch(event: any): void {
+
+    const value = (event.target as HTMLInputElement)
+      .value
+      .toLowerCase();
+
+    if (!value) {
+      this.filteredDoctorList = [...this.doctorList];
+      return;
     }
 
+    this.filteredDoctorList = this.doctorList.filter(d =>
+
+      d.staffname?.toLowerCase().includes(value) ||
+
+      d.email?.toLowerCase().includes(value) ||
+
+      d.phone?.includes(value) ||
+
+      d.specialization?.toLowerCase().includes(value)
+
+    );
+  }
+
+  // ======================
+  // NAVIGATION
+  // ======================
+  createNewDoctor(): void {
+
+    this.router.navigate(['/pages/staff'], {
+      queryParams: { isUser: 'Doctor' }
+    });
+  }
+
+  editDoctor(doctor: any): void {
+
+    this.router.navigate(['/pages/staff'], {
+      queryParams: {
+        isUser: 'Doctor',
+        edit: true,
+        id: doctor._id
+      }
+    });
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Edit',
+      detail: `Editing ${doctor.staffname}`
+    });
+  }
+
+  viewDoctor(doctor: any): void {
+
+    this.router.navigate(['/pages/staff'], {
+      queryParams: {
+        isUser: 'Doctor',
+        view: true,
+        id: doctor._id
+      }
+    });
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'View',
+      detail: `Viewing ${doctor.staffname}`
+    });
+  }
+
+  // ======================
+  // DELETE
+  // ======================
+  deleteDoctor(doctor: any): void {
+
+    this.confirmationService.confirm({
+
+      message: `Delete ${doctor.staffname}?`,
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+
+      accept: () => {
+
+        this.authService.deleteDoctor(doctor._id)
+          .subscribe({
+
+            next: () => {
+
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Deleted',
+                detail: `${doctor.staffname} deleted`
+              });
+
+              this.loadDoctorList();
+            },
+
+            error: err => {
+
+              console.error(err);
+
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Delete failed'
+              });
+            }
+          });
+      }
+    });
+  }
 }

@@ -191,9 +191,10 @@
                 <!-- Buttons -->
                 <div class="flex justify-content-end gap-2 mt-4">
                     <button
+                        *ngIf="!isview"
                         pButton
                         type="submit"
-                        label="Create"
+                        [label]="isEdit ? 'Update' : 'Create'"
                         icon="pi pi-check"
                         class="p-button-sm"
                         [loading]="loading"

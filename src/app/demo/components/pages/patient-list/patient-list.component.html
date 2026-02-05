@@ -6,22 +6,21 @@
       <!-- Header -->
       <div class="flex justify-content-between align-items-center mb-4">
 
-        <h5>Doctor List</h5>
+        <h5>Patient List</h5>
 
         <button
           pButton
           icon="pi pi-plus"
           class="p-button-rounded p-button-success"
-          (click)="createNewDoctor()"
-          pTooltip="Add Doctor"
-          tooltipPosition="left">
+          (click)="createPatient()"
+          pTooltip="Add Patient">
         </button>
 
       </div>
 
       <!-- Table -->
       <p-table
-        [value]="filteredDoctorList"
+        [value]="filteredPatientList"
         [loading]="loading"
         responsiveLayout="scroll"
         [paginator]="true"
@@ -30,21 +29,17 @@
         <!-- Search -->
         <ng-template pTemplate="caption">
 
-          <div class="flex justify-content-between">
+          <span class="p-input-icon-left">
 
-            <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
 
-              <i class="pi pi-search"></i>
+            <input
+              pInputText
+              type="text"
+              (input)="onSearch($event)"
+              placeholder="Search patients..." />
 
-              <input
-                pInputText
-                type="text"
-                (input)="onDoctorSearch($event)"
-                placeholder="Search doctors..." />
-
-            </span>
-
-          </div>
+          </span>
 
         </ng-template>
 
@@ -53,13 +48,10 @@
 
           <tr>
 
-            <th pSortableColumn="staffname">
-              Name <p-sortIcon field="staffname"></p-sortIcon>
-            </th>
-
-            <th>Email</th>
+            <th>Name</th>
             <th>Phone</th>
-            <th>Specialization</th>
+            <th>Email</th>
+            <th>Gender</th>
             <th>Actions</th>
 
           </tr>
@@ -67,23 +59,19 @@
         </ng-template>
 
         <!-- Body -->
-        <ng-template pTemplate="body" let-doctor>
+        <ng-template pTemplate="body" let-p>
 
           <tr>
 
-            <td>{{ doctor.staffname }}</td>
-
-            <td>{{ doctor.email }}</td>
-
-            <td>{{ doctor.phone }}</td>
-
             <td>
-              <p-tag
-                *ngIf="doctor.specialization"
-                [value]="doctor.specialization"
-                severity="info">
-              </p-tag>
+              {{ p.firstName }} {{ p.lastName }}
             </td>
+
+            <td>{{ p.phone }}</td>
+
+            <td>{{ p.email || '-' }}</td>
+
+            <td>{{ p.gender }}</td>
 
             <td>
 
@@ -91,21 +79,21 @@
                 pButton
                 icon="pi pi-eye"
                 class="p-button-rounded p-button-warning mr-2"
-                (click)="viewDoctor(doctor)">
+                (click)="viewPatient(p)">
               </button>
 
               <button
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-rounded p-button-info mr-2"
-                (click)="editDoctor(doctor)">
+                (click)="editPatient(p)">
               </button>
 
               <button
                 pButton
                 icon="pi pi-trash"
                 class="p-button-rounded p-button-danger"
-                (click)="deleteDoctor(doctor)">
+                (click)="deletePatient(p)">
               </button>
 
             </td>
@@ -119,7 +107,7 @@
 
           <tr>
             <td colspan="5" class="text-center">
-              No doctors found
+              No patients found
             </td>
           </tr>
 

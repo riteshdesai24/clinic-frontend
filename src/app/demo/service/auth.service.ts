@@ -5,120 +5,144 @@ import { environment } from 'src/environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-    constructor(private http: HttpClient) {}
 
-    login(email: string, password: string): Observable<any> {
-        const url = `${environment.apiUrl}/api/auth/login`;
-        return this.http.post(url, { email, password });
-    }
+  constructor(private http: HttpClient) {}
 
-    register(
-        name: string,
-        email: string,
-        phone: string,
-        password: string,
-        clinicName: string,
-    ): Observable<any> {
-        const url = `${environment.apiUrl}/api/auth/register`;
-        return this.http.post(url, {
-            name,
-            email,
-            phone,
-            password,
-            clinicName,
-        });
-    }
+  // ================= AUTH =================
 
-    createStaff(
-        staffname: string,
-        email: string,
-        phone: string,
-        password: string,
-        role: string,
-        clinicId: string,
-    ): Observable<any> {
-        const url = `${environment.apiUrl}/api/staff`;
-        return this.http.post(url, {
-            staffname,
-            email,
-            phone,
-            password,
-            role,
-            clinicId,
-        });
-    }
+  login(email: string, password: string): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/api/auth/login`,
+      { email, password }
+    );
+  }
 
-    getStaffList(
-        clinicId: string,
-        cursor?: string | null,
-        limit?: number,
-    ): Observable<any> {
-        let params = `?clinicId=${clinicId}`;
-        if (cursor) params += `&cursor=${cursor}`;
-        if (limit) params += `&limit=${limit}`;
-        const url = `${environment.apiUrl}/api/staff${params}`;
-        return this.http.get(url);
-    }
+  register(
+    name: string,
+    email: string,
+    phone: string,
+    password: string,
+    clinicName: string
+  ): Observable<any> {
 
-    updateStaff(staffId: string, data: any): Observable<any> {
-        const url = `${environment.apiUrl}/api/staff/${staffId}`;
-        return this.http.put(url, data);
-    }
+    return this.http.post(
+      `${environment.apiUrl}/api/auth/register`,
+      { name, email, phone, password, clinicName }
+    );
+  }
 
-    deleteStaff(staffId: string): Observable<any> {
-        const url = `${environment.apiUrl}/api/staff/${staffId}`;
-        return this.http.delete(url);
-    }
+  // ================= STAFF =================
 
-    createDoctor(
-        name: string,
-        email: string,
-        phone: string,
-        password: string,
-        specialization: string,
-        clinicId: string,
-        active: boolean,
-    ): Observable<any> {
-        const url = `${environment.apiUrl}/api/doctors`;
-        return this.http.post(url, {
-            name,
-            email,
-            phone,
-            password,
-            specialization,
-            clinicId,
-        });
-    }
+  createStaff(data: any): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/api/staff`,
+      data
+    );
+  }
 
-    getDoctorList(
-        clinicId: string,
-        cursor?: string | null,
-        limit?: number,
-    ): Observable<any> {
-        let params = `?clinicId=${clinicId}`;
-        if (cursor) params += `&cursor=${cursor}`;
-        if (limit) params += `&limit=${limit}`;
-        const url = `${environment.apiUrl}/api/doctors${params}`;
-        return this.http.get(url);
-    }
+  getStaffList(clinicId: string, cursor?: string, limit?: number): Observable<any> {
 
-    updateDoctor(doctorId: string, data: any): Observable<any> {
-        const url = `${environment.apiUrl}/api/doctors/${doctorId}`;
-        return this.http.put(url, data);
-    }
+    let params = `?clinicId=${clinicId}`;
 
-    deleteDoctor(doctorId: string): Observable<any> {
-        const url = `${environment.apiUrl}/api/doctors/${doctorId}`;
-        return this.http.delete(url);
-    }
+    if (cursor) params += `&cursor=${cursor}`;
+    if (limit) params += `&limit=${limit}`;
 
-    getDoctorDetails(doctorId: string): Observable<any> {
-        const url = `${environment.apiUrl}/api/doctors/${doctorId}`;
-        return this.http.get(url);
-    }
+    return this.http.get(
+      `${environment.apiUrl}/api/staff${params}`
+    );
+  }
 
-    getStaffDetails(staffId: string): Observable<any> {
-        const url = `${environment.apiUrl}/api/staff/${staffId}`;
-        return this.http.get(url);
-    }
+  updateStaff(id: string, data: any): Observable<any> {
+    return this.http.put(
+      `${environment.apiUrl}/api/staff/${id}`,
+      data
+    );
+  }
+
+  deleteStaff(id: string): Observable<any> {
+    return this.http.delete(
+      `${environment.apiUrl}/api/staff/${id}`
+    );
+  }
+
+  getStaffDetails(id: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/staff/${id}`
+    );
+  }
+
+  // ================= DOCTOR =================
+
+  createDoctor(data: any): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/api/doctors`,
+      data
+    );
+  }
+
+  getDoctorList(clinicId: string, cursor?: string, limit?: number): Observable<any> {
+
+    let params = `?clinicId=${clinicId}`;
+
+    if (cursor) params += `&cursor=${cursor}`;
+    if (limit) params += `&limit=${limit}`;
+
+    return this.http.get(
+      `${environment.apiUrl}/api/doctors${params}`
+    );
+  }
+
+  updateDoctor(id: string, data: any): Observable<any> {
+    return this.http.put(
+      `${environment.apiUrl}/api/doctors/${id}`,
+      data
+    );
+  }
+
+  deleteDoctor(id: string): Observable<any> {
+    return this.http.delete(
+      `${environment.apiUrl}/api/doctors/${id}`
+    );
+  }
+
+  getDoctorDetails(id: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/doctors/${id}`
+    );
+  }
+
+  // ================= PATIENT =================
+
+  createPatient(data: any): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/api/patients`,
+      data
+    );
+  }
+
+  getPatientList(clinicId: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/patients?clinicId=${clinicId}`
+    );
+  }
+
+  getPatientDetails(id: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/patients/${id}`
+    );
+  }
+
+  updatePatient(id: string, data: any): Observable<any> {
+    return this.http.put(
+      `${environment.apiUrl}/api/patients/${id}`,
+      data
+    );
+  }
+
+  deletePatient(id: string): Observable<any> {
+    return this.http.delete(
+      `${environment.apiUrl}/api/patients/${id}`
+    );
+  }
+
 }
