@@ -31,6 +31,16 @@ export class AuthService {
     );
   }
 
+  // ADD THIS INSIDE AuthService
+
+forgotPassword(email: string): Observable<any> {
+  return this.http.post(
+    `${environment.apiUrl}/api/auth/forgot-password`,
+    { email }
+  );
+}
+
+
   // ================= STAFF =================
 
   createStaff(data: any): Observable<any> {
