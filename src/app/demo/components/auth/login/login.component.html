@@ -5,36 +5,62 @@
             <div class="w-full surface-card py-8 px-5 sm:px-8" style="border-radius:53px">
                 <div class="text-center mb-5">
                     <img src="assets/demo/images/login/avatar.png" alt="Image" height="50" class="mb-3">
-                    <div class="text-900 text-3xl font-medium mb-3">Welcome, Isabel!</div>
-                    <span class="text-600 font-medium">Sign in to continue</span>
+                    <div class="text-900 text-3xl font-medium mb-3">
+                        {{ showForgot ? 'Reset Password' : 'Welcome Back' }}
+                    </div>
+                    <span class="text-600 font-medium">
+                        {{ showForgot ? 'Enter your email to receive reset link' : 'Sign in to continue' }}
+                    </span>
                 </div>
 
-                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+                <!-- LOGIN FORM -->
+                <form *ngIf="!showForgot" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
                     <label for="email1" class="block text-900 text-xl font-medium mb-2">Email</label>
                     <input id="email1" type="text" placeholder="Email address" pInputText formControlName="email" class="w-full md:w-30rem mb-2" style="padding:1rem">
-                    <div class="text-red-500 mb-3" *ngIf="f['email'].touched && f['email'].invalid">
-                        <div *ngIf="f['email'].errors?.required">Email is required.</div>
-                        <div *ngIf="f['email'].errors?.email">Enter a valid email address.</div>
-                    </div>
 
                     <label for="password1" class="block text-900 font-medium text-xl mb-2">Password</label>
                     <p-password id="password1" formControlName="password" placeholder="Password" [toggleMask]="true" styleClass="mb-2" inputStyleClass="w-full p-3 md:w-30rem"></p-password>
-                    <div class="text-red-500 mb-3" *ngIf="f['password'].touched && f['password'].invalid">
-                        <div *ngIf="f['password'].errors?.required">Password is required.</div>
-                        <div *ngIf="f['password'].errors?.minlength">Password must be at least {{f['password'].errors?.minlength.requiredLength}} characters.</div>
-                    </div>
 
-                    <div class="flex align-items-center justify-content-center mb-5 gap-2">
+                    <!-- Forgot password + Register -->
+                    <div class="flex align-items-center justify-content-between mb-5 gap-2">
+                        <a class="font-medium no-underline cursor-pointer" style="color: var(--primary-color)" (click)="toggleForgot()">
+                            Forgot Password?
+                        </a>
+
                         <span class="text-600 font-medium">Don't have an account?</span>
-                        <a routerLink="/auth/register" class="font-medium no-underline cursor-pointer" style="color: var(--primary-color)">Sign up here</a>
+                        <a routerLink="/auth/register" class="font-medium no-underline cursor-pointer" style="color: var(--primary-color)">
+                            Sign up here
+                        </a>
                     </div>
 
                     <div *ngIf="error" class="text-red-600 mb-3">{{error}}</div>
+
                     <button type="submit" pButton pRipple class="w-full p-3 text-xl" [disabled]="loginForm.invalid || loading">
                         <span *ngIf="!loading">Sign In</span>
                         <span *ngIf="loading">Signing in...</span>
                     </button>
                 </form>
+
+                <!-- FORGOT PASSWORD FORM -->
+                <form *ngIf="showForgot" [formGroup]="forgotForm" (ngSubmit)="onForgotSubmit()">
+                    <label class="block text-900 text-xl font-medium mb-2">Email</label>
+                    <input type="text" placeholder="Email address" pInputText formControlName="email" class="w-full md:w-30rem mb-3" style="padding:1rem">
+
+                    <div *ngIf="resetMessage" class="text-green-600 mb-3">{{ resetMessage }}</div>
+                    <div *ngIf="error" class="text-red-600 mb-3">{{ error }}</div>
+
+                    <button type="submit" pButton pRipple class="w-full p-3 text-xl" [disabled]="forgotForm.invalid || loading">
+                        <span *ngIf="!loading">Send Reset Link</span>
+                        <span *ngIf="loading">Sending...</span>
+                    </button>
+
+                    <div class="text-center mt-3">
+                        <a class="font-medium no-underline cursor-pointer" style="color: var(--primary-color)" (click)="toggleForgot()">
+                            Back to Login
+                        </a>
+                    </div>
+                </form>
+
             </div>
         </div>
     </div>
