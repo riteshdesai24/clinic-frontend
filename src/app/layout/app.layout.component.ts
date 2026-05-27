@@ -7,7 +7,26 @@ import { AppTopBarComponent } from './app.topbar.component';
 
 @Component({
     selector: 'app-layout',
-    templateUrl: './app.layout.component.html'
+    templateUrl: './app.layout.component.html',
+    styles: [`
+        :host ::ng-deep .layout-wrapper {
+            padding-top: 60px;
+        }
+        :host ::ng-deep .layout-topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 60px;
+        }
+        :host ::ng-deep .layout-sidebar {
+            margin-top: 20px;
+        }
+        :host ::ng-deep .layout-main-container {
+            margin-top: 20px;
+        }
+    `]
 })
 export class AppLayoutComponent implements OnDestroy {
 

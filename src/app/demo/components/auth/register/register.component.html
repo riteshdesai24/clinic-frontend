@@ -1,0 +1,128 @@
+<div class="auth-bg">
+  <div class="auth-container">
+
+    <!-- LEFT: Form -->
+    <div class="auth-left">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="pi pi-heart"></i>
+        </div>
+        <span class="brand-name">MyClinic</span>
+      </div>
+
+      <h2 class="form-title">Create Account</h2>
+      <p class="form-sub">Register to get started</p>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+        <div class="form-grid">
+
+          <div class="field">
+            <label for="name">Full Name</label>
+            <input id="name" pInputText formControlName="name"
+              placeholder="Full name" class="full-input" />
+            <div class="error-text" *ngIf="f['name'].touched && f['name'].invalid">
+              <span *ngIf="f['name'].errors?.required">Full name is required.</span>
+              <span *ngIf="f['name'].errors?.minlength">Min {{ f['name'].errors?.minlength.requiredLength }} characters.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="clinicName">Clinic Name</label>
+            <input id="clinicName" pInputText formControlName="clinicName"
+              placeholder="Clinic name" class="full-input" />
+            <div class="error-text" *ngIf="f['clinicName'].touched && f['clinicName'].invalid">
+              <span *ngIf="f['clinicName'].errors?.required">Clinic name is required.</span>
+              <span *ngIf="f['clinicName'].errors?.minlength">Min {{ f['clinicName'].errors?.minlength.requiredLength }} characters.</span>
+            </div>
+          </div>
+
+          <div class="field field-full">
+            <label for="email">Email</label>
+            <input id="email" pInputText formControlName="email"
+              placeholder="Email address" class="full-input" />
+            <div class="error-text" *ngIf="f['email'].touched && f['email'].invalid">
+              <span *ngIf="f['email'].errors?.required">Email is required.</span>
+              <span *ngIf="f['email'].errors?.email">Enter a valid email address.</span>
+            </div>
+          </div>
+
+          <div class="field field-full">
+            <label for="phone">Phone</label>
+            <input id="phone" pInputText formControlName="phone"
+              placeholder="Phone number" class="full-input" />
+            <div class="error-text" *ngIf="f['phone'].touched && f['phone'].invalid">
+              <span *ngIf="f['phone'].errors?.required">Phone number is required.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <p-password id="password" formControlName="password"
+              placeholder="Password" [toggleMask]="true" [feedback]="false"
+              styleClass="w-full" inputStyleClass="w-full full-input">
+            </p-password>
+            <div class="error-text" *ngIf="f['password'].touched && f['password'].invalid">
+              <span *ngIf="f['password'].errors?.required">Password is required.</span>
+              <span *ngIf="f['password'].errors?.minlength">Min {{ f['password'].errors?.minlength.requiredLength }} characters.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="confirmPassword">Confirm Password</label>
+            <p-password id="confirmPassword" formControlName="confirmPassword"
+              placeholder="Confirm password" [toggleMask]="true" [feedback]="false"
+              styleClass="w-full" inputStyleClass="w-full full-input">
+            </p-password>
+            <div class="error-text" *ngIf="f['confirmPassword'].touched && registerForm.errors?.['passwordMismatch']">
+              Passwords do not match.
+            </div>
+          </div>
+
+        </div>
+
+        <div style="height: 1rem;"></div>
+
+        <div *ngIf="error" class="error-text mb-2">{{ error }}</div>
+        <div *ngIf="success" class="success-text mb-2">{{ success }}</div>
+
+        <div class="register-row">
+          Already have an account?
+          <a routerLink="/auth/login" class="link-btn">Sign in</a>
+        </div>
+
+        <button pButton type="submit" class="full-btn"
+          [disabled]="registerForm.invalid || loading">
+          <span *ngIf="!loading">Sign Up</span>
+          <span *ngIf="loading">Creating account...</span>
+        </button>
+
+      </form>
+    </div>
+
+    <!-- RIGHT: Branding panel -->
+    <div class="auth-right">
+      <div class="right-blob blob-1"></div>
+      <div class="right-blob blob-2"></div>
+
+      <div class="feature-card">
+        <div class="feature-tag">
+          <i class="pi pi-shield"></i> Clinic Management
+        </div>
+        <h3 class="feature-heading">Everything your clinic needs, in one place</h3>
+        <ul class="feature-list">
+          <li><i class="pi pi-check-circle"></i> Manage patients, appointments & staff</li>
+          <li><i class="pi pi-check-circle"></i> Track attendance & work hours</li>
+          <li><i class="pi pi-check-circle"></i> Billing, payments & treatment records</li>
+          <li><i class="pi pi-check-circle"></i> Secure & HIPAA-ready infrastructure</li>
+        </ul>
+        <div class="stats-row">
+          <div class="stat"><div class="stat-num">500+</div><div class="stat-lbl">Clinics</div></div>
+          <div class="stat"><div class="stat-num">50k+</div><div class="stat-lbl">Patients</div></div>
+          <div class="stat"><div class="stat-num">99.9%</div><div class="stat-lbl">Uptime</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

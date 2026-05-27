@@ -1,0 +1,128 @@
+<div class="grid">
+  <div class="col-12">
+    <div class="pl-card">
+
+      <!-- Header -->
+      <div class="pl-header">
+        <div class="pl-header-left">
+          <div class="pl-icon">
+            <i class="pi pi-users"></i>
+          </div>
+          <div>
+            <h5 class="pl-title">Patient List</h5>
+            <p class="pl-sub">{{ filteredPatientList.length }} patients found</p>
+          </div>
+        </div>
+        <button
+          pButton
+          icon="pi pi-plus"
+          label="Add Patient"
+          class="pl-add-btn"
+          (click)="createPatient()">
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="pl-search-wrap">
+        <span class="p-input-icon-left pl-search">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            (input)="onSearch($event)"
+            placeholder="Search by name, phone or email..." />
+        </span>
+      </div>
+
+      <!-- Table -->
+      <p-table
+        [value]="filteredPatientList"
+        [loading]="loading"
+        responsiveLayout="scroll"
+        [paginator]="true"
+        [rows]="10"
+        styleClass="pl-table">
+
+        <!-- Header -->
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Patient</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Gender</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </ng-template>
+
+        <!-- Body -->
+        <ng-template pTemplate="body" let-p>
+          <tr>
+            <td>
+              <div class="patient-cell">
+                <div class="patient-avatar">
+                  {{ p.firstName?.charAt(0) }}{{ p.lastName?.charAt(0) }}
+                </div>
+                <div>
+                  <p class="patient-name">{{ p.firstName }} {{ p.lastName }}</p>
+                  <p class="patient-age" *ngIf="p.age">Age {{ p.age }}</p>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="cell-text">
+                <i class="pi pi-phone cell-icon"></i> {{ p.phone }}
+              </span>
+            </td>
+            <td>
+              <span class="cell-text">{{ p.email || '—' }}</span>
+            </td>
+            <td>
+              <span class="gender-badge" [ngClass]="'gender-' + p.gender?.toLowerCase()">
+                {{ p.gender }}
+              </span>
+            </td>
+            <td>
+              <div class="action-row">
+                <button
+                  pButton
+                  icon="pi pi-eye"
+                  class="action-btn action-view"
+                  pTooltip="View"
+                  (click)="viewPatient(p)">
+                </button>
+                <button
+                  pButton
+                  icon="pi pi-pencil"
+                  class="action-btn action-edit"
+                  pTooltip="Edit"
+                  (click)="editPatient(p)">
+                </button>
+                <button
+                  pButton
+                  icon="pi pi-trash"
+                  class="action-btn action-delete"
+                  pTooltip="Delete"
+                  (click)="deletePatient(p)">
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <!-- Empty -->
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="pi pi-users"></i>
+                <p>No patients found</p>
+                <span>Try adjusting your search or add a new patient</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+      </p-table>
+    </div>
+  </div>
+</div>

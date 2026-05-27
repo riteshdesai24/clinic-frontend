@@ -1,0 +1,47 @@
+@import '../login/login.component.scss';
+
+/* Register-only additions */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1rem;
+}
+
+.field-full {
+  grid-column: span 2;
+}
+
+:host ::ng-deep .p-password {
+  width: 100%;
+}
+
+:host ::ng-deep .p-password input {
+  width: 100%;
+  height: 42px;
+  border-radius: 10px !important;
+  border: 1px solid #e5e7eb !important;
+  background: #f9fafb !important;
+  font-size: 0.875rem !important;
+}
+
+@media (max-width: 768px) {
+  .auth-container { flex-direction: column; }
+  .auth-left, .auth-right { width: 100%; }
+  .auth-right { display: none; }
+  .form-grid { grid-template-columns: 1fr; }
+  .field-full { grid-column: span 1; }
+}
+
+/* ── Fixes ── */
+.register-row {
+  margin-top: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.auth-right {
+  justify-content: center;
+}
+
+.full-btn {
+  margin-top: 0 !important;
+}

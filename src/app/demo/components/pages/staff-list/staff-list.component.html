@@ -1,0 +1,57 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card">
+            <div class="flex justify-content-between align-items-center mb-4">
+                <h5>Staff List</h5>
+                <button pButton pRipple icon="pi pi-plus" class="p-button-rounded p-button-success" 
+                    (click)="createNewStaff()" pTooltip="Add New Staff" tooltipPosition="left"></button>
+            </div>
+
+            <p-table [value]="filteredStaffList" [loading]="loading" responsiveLayout="scroll" 
+                [paginator]="true" [rows]="10">
+                <ng-template pTemplate="caption">
+                    <div class="flex align-items-center justify-content-between">
+                        <span class="p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onStaffSearch($event)" 
+                                placeholder="Search staff..." />
+                        </span>
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="staffname">Name <p-sortIcon field="staffname"></p-sortIcon></th>
+                        <th pSortableColumn="email">Email <p-sortIcon field="email"></p-sortIcon></th>
+                        <th pSortableColumn="phone">Phone <p-sortIcon field="phone"></p-sortIcon></th>
+                        <th pSortableColumn="role">Role <p-sortIcon field="role"></p-sortIcon></th>
+                        <th>Actions</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-staff>
+                    <tr>
+                        <td>{{staff.staffname}}</td>
+                        <td>{{staff.email}}</td>
+                        <td>{{staff.phone}}</td>
+                        <td>
+                            <p-tag [value]="staff.role" [severity]="staff.role === 'ADMIN' ? 'danger' : 'info'"></p-tag>
+                        </td>
+                        <td>
+                            <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-warning mr-2" 
+                                (click)="editStaff(staff)" pTooltip="Edit" tooltipPosition="top"></button>
+                            <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" 
+                                (click)="deleteStaff(staff)" pTooltip="Delete" tooltipPosition="top"></button>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="5" class="text-center">No staff found</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
