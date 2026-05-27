@@ -40,6 +40,13 @@ forgotPassword(email: string): Observable<any> {
   );
 }
 
+resetPassword(data: any): Observable<any> {
+  return this.http.post(
+    `${environment.apiUrl}/api/auth/reset-password`,
+     data 
+  );
+}
+
 
   // ================= STAFF =================
 

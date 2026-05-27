@@ -23,7 +23,6 @@ import { RouterModule } from '@angular/router';
       { path: 'patient', loadChildren: () => import('./patient/patient.module').then(m => m.PatientModule) },
 
       { path: 'patient-list', loadChildren: () => import('./patient-list/patient-list.module').then(m => m.PatientListModule) },
-
       // FALLBACK
       { path: '**', redirectTo: '/notfound' }
 

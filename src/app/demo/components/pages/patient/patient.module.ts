@@ -12,7 +12,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { InputTextareaModule } from 'primeng/inputtextarea';
-
+import { CalendarModule } from 'primeng/calendar';
 
 @NgModule({
   declarations: [
@@ -29,7 +29,8 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
     InputTextModule,
     ButtonModule,
     ProgressSpinnerModule,
-    InputTextareaModule
+    InputTextareaModule,
+    CalendarModule
   ]
 })
 export class PatientModule { }

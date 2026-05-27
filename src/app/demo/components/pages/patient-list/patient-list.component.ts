@@ -5,7 +5,8 @@ import { AuthService } from 'src/app/demo/service/auth.service';
 
 @Component({
   selector: 'app-patient-list',
-  templateUrl: './patient-list.component.html'
+  templateUrl: './patient-list.component.html',
+  styleUrls: ['./patient-list.component.scss']
 })
 export class PatientListComponent implements OnInit {
 

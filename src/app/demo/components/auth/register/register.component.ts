@@ -7,14 +7,7 @@ import { AuthService } from 'src/app/demo/service/auth.service';
 @Component({
     selector: 'app-register',
     templateUrl: './register.component.html',
-    styles: [`
-        :host ::ng-deep .pi-eye,
-        :host ::ng-deep .pi-eye-slash {
-            transform:scale(1.6);
-            margin-right: 1rem;
-            color: var(--primary-color) !important;
-        }
-    `]
+    styleUrls: ['./register.component.scss'] 
 })
 export class RegisterComponent implements OnInit {
 

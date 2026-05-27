@@ -6,6 +6,7 @@ import { AuthService } from 'src/app/demo/service/auth.service';
 
 @Component({
     selector: 'app-login',
+    styleUrls: ['./login.component.scss'],
     templateUrl: './login.component.html'
 })
 export class LoginComponent implements OnInit {
@@ -26,9 +27,14 @@ export class LoginComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        this.initForms();
+    }
+
+    // ✅ Initialize Forms
+    private initForms() {
         this.loginForm = this.fb.group({
             email: ['', [Validators.required, Validators.email]],
-            password: ['', [Validators.required]]
+            password: ['', [Validators.required, Validators.minLength(6)]]
         });
 
         this.forgotForm = this.fb.group({
@@ -36,45 +42,89 @@ export class LoginComponent implements OnInit {
         });
     }
 
+    // ✅ Toggle Forgot/Login
     toggleForgot() {
         this.showForgot = !this.showForgot;
+
         this.error = null;
         this.resetMessage = null;
+
+        // Reset forms for better UX
+        this.loginForm.reset();
+        this.forgotForm.reset();
     }
 
+    // ✅ LOGIN
     onSubmit() {
-        if (this.loginForm.invalid) return;
+        if (this.loginForm.invalid) {
+            this.loginForm.markAllAsTouched();
+            return;
+        }
 
         this.loading = true;
+        this.error = null;
+
         const { email, password } = this.loginForm.value;
 
         this.authService.login(email, password).subscribe({
             next: (res) => {
-                localStorage.setItem('token', res.token);
+                // ✅ Store token safely
+                if (res?.token) {
+                    localStorage.setItem('token', res.token);
+                }
+
+                // Optional: store user data
+                if (res?.user) {
+                    localStorage.setItem('user', JSON.stringify(res.user));
+                }
+
+                // Navigate
                 this.router.navigate(['/']);
             },
-            error: err => {
-                this.error = err?.error?.message || 'Login failed';
+
+            error: (err) => {
+                this.error = err?.error?.message || 'Invalid email or password';
                 this.loading = false;
             },
-            complete: () => this.loading = false
+
+            complete: () => {
+                this.loading = false;
+            }
         });
     }
 
+    // ✅ FORGOT PASSWORD
     onForgotSubmit() {
-        if (this.forgotForm.invalid) return;
+        if (this.forgotForm.invalid) {
+            this.forgotForm.markAllAsTouched();
+            return;
+        }
 
         this.loading = true;
+        this.error = null;
+        this.resetMessage = null;
+
         const { email } = this.forgotForm.value;
 
         this.authService.forgotPassword(email).subscribe({
-            next: res => {
-                this.resetMessage = res.message || 'Reset link sent';
+            next: (res) => {
+                this.resetMessage = res?.message || 'Reset link sent successfully';
             },
-            error: err => {
+
+            error: (err) => {
                 this.error = err?.error?.message || 'Failed to send reset link';
+                this.loading = false;
             },
-            complete: () => this.loading = false
+
+            complete: () => {
+                this.loading = false;
+            }
         });
+    }
+
+    // ✅ Helpers (for UI validation)
+    isInvalid(controlName: string, form: FormGroup) {
+        const control = form.get(controlName);
+        return control?.invalid && (control?.touched || control?.dirty);
     }
 }

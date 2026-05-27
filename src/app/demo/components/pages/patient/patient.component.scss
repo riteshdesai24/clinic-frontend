@@ -1,0 +1,135 @@
+.pf-card {
+  background: var(--surface-card);
+  border-radius: 16px;
+  border: 1px solid var(--surface-border);
+  padding: 2rem 2.25rem;
+}
+
+// Header
+.pf-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 2rem;
+}
+
+.pf-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #eeedfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #534ab7;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.pf-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 2px;
+}
+
+.pf-sub {
+  font-size: 0.8rem;
+  color: var(--text-color-secondary);
+  margin: 0;
+}
+
+// Section labels
+.section-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-color-secondary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+// Field grids
+.field-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g2 { grid-template-columns: repeat(2, 1fr); }
+.g1 { grid-template-columns: 1fr; }
+
+.mb-section { margin-bottom: 1.5rem; }
+
+// Individual field
+.pf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+  }
+}
+
+.req { color: #e24b4a; }
+
+// Divider + buttons
+.pf-divider {
+  height: 1px;
+  background: var(--surface-border);
+  margin: 1.5rem 0 1rem;
+}
+
+.pf-btn-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.pf-btn-primary {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+  border-color: transparent !important;
+}
+
+// p-dropdown full width fix
+::ng-deep .p-dropdown {
+  width: 100%;
+}
+
+// Responsive
+@media (max-width: 960px) {
+  .g3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .g3, .g2 { grid-template-columns: 1fr; }
+  .pf-card { padding: 1.25rem; }
+}
+
+.age-hint {
+  font-size: 0.7rem;
+  color: var(--text-color-secondary);
+  font-weight: 400;
+  font-style: italic;
+}
+
+// Make age field look readonly
+::ng-deep input[readonly] {
+  background: var(--surface-ground) !important;
+  cursor: not-allowed;
+  color: var(--text-color-secondary) !important;
+}
+
+::ng-deep .p-calendar {
+  width: 100%;
+
+  .p-inputtext {
+    width: 100%;
+    border-radius: 10px !important;
+  }
+}

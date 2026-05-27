@@ -8,7 +8,10 @@ import { AuthGuard } from './guards/auth.guard';
     imports: [
         RouterModule.forRoot([
             {
-                path: '', component: AppLayoutComponent, canActivate: [AuthGuard],
+                path: '',
+                component: AppLayoutComponent,
+                canActivate: [AuthGuard],
+                canActivateChild: [AuthGuard], // 🔥 IMPORTANT
                 children: [
                     { path: '', loadChildren: () => import('./demo/components/dashboard/dashboard.module').then(m => m.DashboardModule) },
                     { path: 'uikit', loadChildren: () => import('./demo/components/uikit/uikit.module').then(m => m.UIkitModule) },
@@ -18,14 +21,21 @@ import { AuthGuard } from './guards/auth.guard';
                     { path: 'pages', loadChildren: () => import('./demo/components/pages/pages.module').then(m => m.PagesModule) }
                 ]
             },
+
+            // ✅ PUBLIC ROUTES (NO GUARD)
             { path: 'auth', loadChildren: () => import('./demo/components/auth/auth.module').then(m => m.AuthModule) },
+
             { path: 'landing', loadChildren: () => import('./demo/components/landing/landing.module').then(m => m.LandingModule) },
             { path: 'notfound', component: NotfoundComponent },
             { path: 'patient', loadChildren: () => import('./demo/components/pages/patient/patient.module').then(m => m.PatientModule) },
+
             { path: '**', redirectTo: '/notfound' },
-        ], { scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled', onSameUrlNavigation: 'reload' })
+        ], {
+            scrollPositionRestoration: 'enabled',
+            anchorScrolling: 'enabled',
+            onSameUrlNavigation: 'reload'
+        })
     ],
     exports: [RouterModule]
 })
-export class AppRoutingModule {
-}
+export class AppRoutingModule {}

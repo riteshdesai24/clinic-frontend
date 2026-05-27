@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-
 import { AuthService } from 'src/app/demo/service/auth.service';
 
 @Component({
   selector: 'app-patient',
-  templateUrl: './patient.component.html'
+  templateUrl: './patient.component.html',
+  styleUrls: ['./patient.component.scss']
 })
 export class PatientComponent implements OnInit {
 
@@ -43,53 +43,36 @@ export class PatientComponent implements OnInit {
   // ======================
   ngOnInit(): void {
 
-    // Params
     this.patientId = this.route.snapshot.queryParamMap.get('id');
 
-    if (this.patientId) {
-      this.isEdit = true;
-    }
+    if (this.patientId) this.isEdit = true;
 
     if (this.route.snapshot.queryParamMap.get('view') === 'true') {
       this.isView = true;
     }
 
-    // Clinic
     this.clinicId =
       localStorage.getItem('clinicid') ||
       sessionStorage.getItem('clinicid') || '';
 
-    // Form
     this.patientForm = this.fb.group({
-
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-
-      phone: ['', Validators.required],
-      email: [''],
-
-      age: [''],
-      gender: ['', Validators.required],
-
-      address1: [''],
-      address2: [''],
-      address3: [''],
-
-      pincode: [''],
-
+      firstName:        ['', Validators.required],
+      lastName:         ['', Validators.required],
+      phone:            ['', Validators.required],
+      email:            [''],
+      dob:              [''],
+      age:              [''],
+      gender:           ['', Validators.required],
+      address1:         [''],
+      address2:         [''],
+      address3:         [''],
+      pincode:          [''],
       medicalAllergies: ['']
-
     });
 
-    // Load if edit
-    if (this.isEdit) {
-      this.loadPatient();
-    }
+    if (this.isEdit) this.loadPatient();
 
-    // View mode
-    if (this.isView) {
-      this.patientForm.disable();
-    }
+    if (this.isView) this.patientForm.disable();
   }
 
   // ======================
@@ -100,27 +83,40 @@ export class PatientComponent implements OnInit {
   }
 
   // ======================
+  // DOB → AGE
+  // ======================
+  onDobSelect(date: Date): void {
+  if (!date) {
+    this.patientForm.patchValue({ age: null });
+    return;
+  }
+
+  const today = new Date();
+  let age = today.getFullYear() - date.getFullYear();
+  const monthDiff = today.getMonth() - date.getMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+    age--;
+  }
+
+  this.patientForm.patchValue({ age });
+}
+
+  // ======================
   // SUBMIT
   // ======================
   onSubmit(): void {
-
     if (this.patientForm.invalid) {
       this.patientForm.markAllAsTouched();
       return;
     }
-
-    if (this.isEdit) {
-      this.updatePatient();
-    } else {
-      this.createPatient();
-    }
+    this.isEdit ? this.updatePatient() : this.createPatient();
   }
 
   // ======================
   // CREATE
   // ======================
   createPatient(): void {
-
     this.loading = true;
 
     const data = {
@@ -129,20 +125,11 @@ export class PatientComponent implements OnInit {
     };
 
     this.api.createPatient(data).subscribe({
-
       next: () => {
-
         this.success = 'Patient created successfully';
-
-        this.msg.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: this.success
-        });
-
+        this.msg.add({ severity: 'success', summary: 'Success', detail: this.success });
         this.afterSave();
       },
-
       error: err => this.handleError(err)
     });
   }
@@ -151,9 +138,7 @@ export class PatientComponent implements OnInit {
   // UPDATE
   // ======================
   updatePatient(): void {
-
     if (!this.patientId) return;
-
     this.loading = true;
 
     const data = {
@@ -162,20 +147,11 @@ export class PatientComponent implements OnInit {
     };
 
     this.api.updatePatient(this.patientId, data).subscribe({
-
       next: () => {
-
         this.success = 'Patient updated successfully';
-
-        this.msg.add({
-          severity: 'success',
-          summary: 'Updated',
-          detail: this.success
-        });
-
+        this.msg.add({ severity: 'success', summary: 'Updated', detail: this.success });
         this.afterSave();
       },
-
       error: err => this.handleError(err)
     });
   }
@@ -184,68 +160,60 @@ export class PatientComponent implements OnInit {
   // LOAD
   // ======================
   loadPatient(): void {
-
     this.loading = true;
 
     this.api.getPatientDetails(this.patientId!).subscribe({
-
       next: (res: any) => {
-
         const p = res.data.patient;
 
         if (p) {
           this.patientForm.patchValue({
-            firstName: p.firstName,
-            lastName: p.lastName,
-            phone: p.phone,
-            email: p.email,
-            age: p.age,
-            gender: p.gender,
-            address1: p.address1,
-            address2: p.address2,
-            address3: p.address3,
-            pincode: p.pincode,
+            firstName:        p.firstName,
+            lastName:         p.lastName,
+            phone:            p.phone,
+            email:            p.email,
+            dob:              p.dob ? new Date(p.dob) : null,  
+            age:              p.age,
+            gender:           p.gender,
+            address1:         p.address1,
+            address2:         p.address2,
+            address3:         p.address3,
+            pincode:          p.pincode,
             medicalAllergies: p.medicalAllergies
           });
         }
 
         this.loading = false;
       },
-
       error: err => this.handleError(err)
     });
+  }
+
+  // Format ISO date → YYYY-MM-DD for date input
+  formatDateForInput(dateStr: string): string {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
   }
 
   // ======================
   // HELPERS
   // ======================
   afterSave(): void {
-
     this.loading = false;
-
-    setTimeout(() => {
-      this.router.navigate(['/pages/patient-list']);
-    }, 1000);
+    setTimeout(() => this.router.navigate(['/pages/patient-list']), 1000);
   }
 
   handleError(err: any): void {
-
     this.loading = false;
-
-    this.error =
-      err?.error?.message ||
-      err?.message ||
-      'Operation failed';
-
-    this.msg.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: this.error
-    });
+    this.error = err?.error?.message || err?.message || 'Operation failed';
+    this.msg.add({ severity: 'error', summary: 'Error', detail: this.error });
   }
 
   onCancel(): void {
     this.router.navigate(['/pages/patient-list']);
   }
-
 }

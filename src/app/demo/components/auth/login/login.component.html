@@ -1,67 +1,95 @@
-<div class="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden">
-    <div class="flex flex-column align-items-center justify-content-center">
-        <img src="assets/layout/images/{{layoutService.config().colorScheme === 'light' ? 'logo-dark' : 'logo-white'}}.svg" alt="Sakai logo" class="mb-5 w-6rem flex-shrink-0">                
-        <div style="border-radius:56px; padding:0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%);">
-            <div class="w-full surface-card py-8 px-5 sm:px-8" style="border-radius:53px">
-                <div class="text-center mb-5">
-                    <img src="assets/demo/images/login/avatar.png" alt="Image" height="50" class="mb-3">
-                    <div class="text-900 text-3xl font-medium mb-3">
-                        {{ showForgot ? 'Reset Password' : 'Welcome Back' }}
-                    </div>
-                    <span class="text-600 font-medium">
-                        {{ showForgot ? 'Enter your email to receive reset link' : 'Sign in to continue' }}
-                    </span>
-                </div>
+<div class="auth-bg">
+  <div class="auth-container">
 
-                <!-- LOGIN FORM -->
-                <form *ngIf="!showForgot" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-                    <label for="email1" class="block text-900 text-xl font-medium mb-2">Email</label>
-                    <input id="email1" type="text" placeholder="Email address" pInputText formControlName="email" class="w-full md:w-30rem mb-2" style="padding:1rem">
-
-                    <label for="password1" class="block text-900 font-medium text-xl mb-2">Password</label>
-                    <p-password id="password1" formControlName="password" placeholder="Password" [toggleMask]="true" styleClass="mb-2" inputStyleClass="w-full p-3 md:w-30rem"></p-password>
-
-                    <!-- Forgot password + Register -->
-                    <div class="flex align-items-center justify-content-between mb-5 gap-2">
-                        <a class="font-medium no-underline cursor-pointer" style="color: var(--primary-color)" (click)="toggleForgot()">
-                            Forgot Password?
-                        </a>
-
-                        <span class="text-600 font-medium">Don't have an account?</span>
-                        <a routerLink="/auth/register" class="font-medium no-underline cursor-pointer" style="color: var(--primary-color)">
-                            Sign up here
-                        </a>
-                    </div>
-
-                    <div *ngIf="error" class="text-red-600 mb-3">{{error}}</div>
-
-                    <button type="submit" pButton pRipple class="w-full p-3 text-xl" [disabled]="loginForm.invalid || loading">
-                        <span *ngIf="!loading">Sign In</span>
-                        <span *ngIf="loading">Signing in...</span>
-                    </button>
-                </form>
-
-                <!-- FORGOT PASSWORD FORM -->
-                <form *ngIf="showForgot" [formGroup]="forgotForm" (ngSubmit)="onForgotSubmit()">
-                    <label class="block text-900 text-xl font-medium mb-2">Email</label>
-                    <input type="text" placeholder="Email address" pInputText formControlName="email" class="w-full md:w-30rem mb-3" style="padding:1rem">
-
-                    <div *ngIf="resetMessage" class="text-green-600 mb-3">{{ resetMessage }}</div>
-                    <div *ngIf="error" class="text-red-600 mb-3">{{ error }}</div>
-
-                    <button type="submit" pButton pRipple class="w-full p-3 text-xl" [disabled]="forgotForm.invalid || loading">
-                        <span *ngIf="!loading">Send Reset Link</span>
-                        <span *ngIf="loading">Sending...</span>
-                    </button>
-
-                    <div class="text-center mt-3">
-                        <a class="font-medium no-underline cursor-pointer" style="color: var(--primary-color)" (click)="toggleForgot()">
-                            Back to Login
-                        </a>
-                    </div>
-                </form>
-
-            </div>
+    <!-- LEFT: Form -->
+    <div class="auth-left">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="pi pi-heart"></i>
         </div>
+        <span class="brand-name">MyClinic</span>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form *ngIf="!showForgot" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <h2 class="form-title">Welcome back</h2>
+        <p class="form-sub">Sign in to your clinic account</p>
+
+        <div class="field">
+          <label>Email address</label>
+          <input pInputText formControlName="email" placeholder="you@example.com" class="full-input" />
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <p-password formControlName="password" placeholder="Enter password"
+            [toggleMask]="true" [feedback]="false"
+            styleClass="w-full" inputStyleClass="w-full full-input">
+          </p-password>
+        </div>
+
+        <div class="forgot-row">
+          <span class="link-btn" (click)="toggleForgot()">Forgot password?</span>
+        </div>
+
+        <div *ngIf="error" class="error-text">{{ error }}</div>
+
+        <button pButton type="submit" class="full-btn" [disabled]="loginForm.invalid || loading">
+          <span *ngIf="!loading">Sign In</span>
+          <span *ngIf="loading">Please wait...</span>
+        </button>
+
+        <div class="divider"><span>or</span></div>
+
+        <div class="register-row">
+          New here? <a routerLink="/auth/register" class="link-btn">Create an account</a>
+        </div>
+      </form>
+
+      <!-- FORGOT FORM -->
+      <form *ngIf="showForgot" [formGroup]="forgotForm" (ngSubmit)="onForgotSubmit()">
+        <h2 class="form-title">Reset Password</h2>
+        <p class="form-sub">We'll send a reset link to your email</p>
+
+        <div class="field">
+          <label>Email address</label>
+          <input pInputText formControlName="email" placeholder="you@example.com" class="full-input" />
+        </div>
+
+        <div *ngIf="resetMessage" class="success-text">{{ resetMessage }}</div>
+        <div *ngIf="error" class="error-text">{{ error }}</div>
+
+        <button pButton type="submit" class="full-btn">Send Reset Link</button>
+
+        <div class="text-center mt-3">
+          <span class="link-btn" (click)="toggleForgot()">← Back to login</span>
+        </div>
+      </form>
     </div>
+
+    <!-- RIGHT: Branding panel -->
+    <div class="auth-right">
+      <div class="right-blob blob-1"></div>
+      <div class="right-blob blob-2"></div>
+
+      <div class="feature-card">
+        <div class="feature-tag">
+          <i class="pi pi-shield"></i> Clinic Management
+        </div>
+        <h3 class="feature-heading">Everything your clinic needs, in one place</h3>
+        <ul class="feature-list">
+          <li><i class="pi pi-check-circle"></i> Manage patients, appointments & staff</li>
+          <li><i class="pi pi-check-circle"></i> Track attendance & work hours</li>
+          <li><i class="pi pi-check-circle"></i> Billing, payments & treatment records</li>
+          <li><i class="pi pi-check-circle"></i> Secure & HIPAA-ready infrastructure</li>
+        </ul>
+        <div class="stats-row">
+          <div class="stat"><div class="stat-num">500+</div><div class="stat-lbl">Clinics</div></div>
+          <div class="stat"><div class="stat-num">50k+</div><div class="stat-lbl">Patients</div></div>
+          <div class="stat"><div class="stat-num">99.9%</div><div class="stat-lbl">Uptime</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
