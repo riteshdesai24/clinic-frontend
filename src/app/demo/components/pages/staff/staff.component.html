@@ -1,216 +1,156 @@
 <div class="grid">
-    <div class="col-12">
-        <div class="card">
-            <!-- Heading -->
-            <h5 class="mb-3">
-                {{
-                    isUser === "Staff"
-                        ? "Create Staff"
-                        : isUser === "Doctor"
-                          ? "Create Doctor"
-                          : "Create User"
-                }}
-            </h5>
+  <div class="col-12">
+    <div class="pf-card">
 
-            <form [formGroup]="staffForm" (ngSubmit)="onSubmit()">
-                <!-- Clinic Info -->
-                <div class="grid mb-3">
-                    <div class="col-12 md:col-8">
-                        <label class="font-bold block mb-2">
-                            Clinic Name
-                        </label>
-
-                        <input
-                            pInputText
-                            type="text"
-                            class="w-full"
-                            formControlName="clinicName"
-                            disabled
-                        />
-                    </div>
-                </div>
-
-                <hr class="mb-3" />
-
-                <!-- User Details -->
-                <div class="grid">
-                    <!-- Name -->
-                    <div class="col-12 md:col-4">
-                        <label class="font-bold block mb-2">
-                            {{
-                                isUser === "Doctor"
-                                    ? "Doctor Name"
-                                    : "Staff Name"
-                            }}
-                            <span class="text-red-500">*</span>
-                        </label>
-
-                        <span class="p-input-icon-left w-full">
-                            <i class="pi pi-user"></i>
-
-                            <input
-                                pInputText
-                                type="text"
-                                class="w-full"
-                                formControlName="staffname"
-                            />
-                        </span>
-
-                        <small
-                            class="p-error"
-                            *ngIf="
-                                f['staffname'].touched && f['staffname'].invalid
-                            "
-                        >
-                            Min 3 characters required
-                        </small>
-                    </div>
-
-                    <!-- Email -->
-                    <div class="col-12 md:col-4">
-                        <label class="font-bold block mb-2">
-                            {{
-                                isUser === "Doctor"
-                                    ? "Doctor Email"
-                                    : "Staff Email"
-                            }}
-                            <span class="text-red-500">*</span>
-                        </label>
-
-                        <span class="p-input-icon-left w-full">
-                            <i class="pi pi-envelope"></i>
-
-                            <input
-                                pInputText
-                                type="email"
-                                class="w-full"
-                                formControlName="email"
-                            />
-                        </span>
-
-                        <small
-                            class="p-error"
-                            *ngIf="f['email'].touched && f['email'].invalid"
-                        >
-                            Valid email required
-                        </small>
-                    </div>
-
-                    <!-- Phone -->
-                    <div class="col-12 md:col-4">
-                        <label class="font-bold block mb-2">
-                            {{
-                                isUser === "Doctor"
-                                    ? "Doctor Phone"
-                                    : "Staff Phone"
-                            }}
-                            <span class="text-red-500">*</span>
-                        </label>
-
-                        <span class="p-input-icon-left w-full">
-                            <i class="pi pi-phone"></i>
-
-                            <input
-                                pInputText
-                                type="text"
-                                class="w-full"
-                                formControlName="phone"
-                            />
-                        </span>
-                    </div>
-
-                    <!-- Password -->
-                    <div class="col-12 md:col-4" *ngIf="!isEdit && !isview">
-                        <label class="font-bold block mb-2">
-                            Password <span class="text-red-500">*</span>
-                        </label>
-
-                        <p-password
-                            formControlName="password"
-                            [toggleMask]="true"
-                            styleClass="w-full"
-                            inputStyleClass="w-full"
-                        >
-                        </p-password>
-                    </div>
-
-                    <!-- Role -->
-                    <div class="col-12 md:col-4">
-                        <label class="font-bold block mb-2">
-                            Role <span class="text-red-500">*</span>
-                        </label>
-
-                        <p-dropdown
-                            [options]="roles"
-                            formControlName="role"
-                            placeholder="Select role"
-                            styleClass="w-full"
-                        >
-                        </p-dropdown>
-                    </div>
-
-                    <!-- Specialization -->
-                    <div
-                        class="col-12 md:col-4"
-                        *ngIf="f['role'].value === 'DOCTOR'"
-                    >
-                        <label class="font-bold block mb-2">
-                            Specialization <span class="text-red-500">*</span>
-                        </label>
-
-                        <input
-                            pInputText
-                            type="text"
-                            class="w-full"
-                            formControlName="specialization"
-                        />
-
-                        <small
-                            class="p-error"
-                            *ngIf="
-                                f['specialization'].touched &&
-                                f['specialization'].invalid
-                            "
-                        >
-                            Specialization required
-                        </small>
-                    </div>
-                </div>
-
-                <!-- Messages -->
-                <div class="mt-3">
-                    <small class="p-error" *ngIf="error">
-                        {{ error }}
-                    </small>
-
-                    <small class="p-success" *ngIf="success">
-                        {{ success }}
-                    </small>
-                </div>
-
-                <!-- Buttons -->
-                <div class="flex justify-content-end gap-2 mt-4">
-                    <button
-                        *ngIf="!isview"
-                        pButton
-                        type="submit"
-                        [label]="isEdit ? 'Update' : 'Create'"
-                        icon="pi pi-check"
-                        class="p-button-sm"
-                        [loading]="loading"
-                        [disabled]="staffForm.invalid || loading"
-                    ></button>
-
-                    <button
-                        pButton
-                        type="button"
-                        label="Cancel"
-                        icon="pi pi-times"
-                        class="p-button-sm p-button-secondary"
-                        (click)="onCancel()"
-                    ></button>
-                </div>
-            </form>
+      <!-- Header -->
+      <div class="pf-header">
+        <div class="pf-icon">
+          <i class="pi pi-user-plus"></i>
         </div>
+        <div>
+          <h5 class="pf-title">
+            {{ isEdit ? (isUser === 'Doctor' ? 'Edit Doctor' : 'Edit Staff') : isview ? (isUser === 'Doctor' ? 'View Doctor' : 'View Staff') : (isUser === 'Doctor' ? 'Create Doctor' : 'Create Staff') }}
+          </h5>
+          <p class="pf-sub">
+            {{ isview ? 'Details (read-only)' : 'Fill in the details below' }}
+          </p>
+        </div>
+      </div>
+
+      <form [formGroup]="staffForm" (ngSubmit)="onSubmit()">
+
+        <!-- Clinic -->
+        <p class="section-label">Clinic</p>
+        <div class="field-grid g1 mb-section">
+          <div class="pf-field">
+            <label>Clinic Name</label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-building"></i>
+              <input pInputText class="w-full" [value]="clinicname" disabled />
+            </span>
+          </div>
+        </div>
+
+        <!-- Info -->
+        <p class="section-label">{{ isUser === 'Doctor' ? 'Doctor Info' : 'Staff Info' }}</p>
+        <div class="field-grid g3 mb-section">
+
+          <div class="pf-field">
+            <label>{{ isUser === 'Doctor' ? 'Doctor Name' : 'Staff Name' }} <span class="req">*</span></label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-user"></i>
+              <input pInputText formControlName="staffname"
+                [placeholder]="isUser === 'Doctor' ? 'Doctor name' : 'Staff name'"
+                class="w-full" />
+            </span>
+            <small class="p-error" *ngIf="f['staffname'].touched && f['staffname'].errors?.['required']">Name is required.</small>
+            <small class="p-error" *ngIf="f['staffname'].touched && f['staffname'].errors?.['minlength']">Minimum {{ f['staffname'].errors?.['minlength'].requiredLength }} characters.</small>
+          </div>
+
+          <div class="pf-field">
+            <label>Email <span class="req">*</span></label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-envelope"></i>
+              <input pInputText formControlName="email" placeholder="Email address" class="w-full" />
+            </span>
+            <small class="p-error" *ngIf="f['email'].touched && f['email'].errors?.['required']">Email is required.</small>
+            <small class="p-error" *ngIf="f['email'].touched && f['email'].errors?.['email']">Enter a valid email.</small>
+          </div>
+
+          <div class="pf-field">
+            <label>Phone <span class="req">*</span></label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-phone"></i>
+              <input pInputText formControlName="phone" placeholder="Phone number" class="w-full" />
+            </span>
+            <small class="p-error" *ngIf="f['phone'].touched && f['phone'].errors?.['required']">Phone is required.</small>
+          </div>
+
+          <!-- Specialization — only for Doctor -->
+          <div class="pf-field" *ngIf="isUser === 'Doctor'">
+            <label>Specialization <span class="req">*</span></label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-star"></i>
+              <input pInputText formControlName="specialization" placeholder="Specialization" class="w-full" />
+            </span>
+            <small class="p-error" *ngIf="f['specialization'].touched && f['specialization'].errors?.['required']">Specialization is required.</small>
+          </div>
+
+          <!-- Role — only for Staff -->
+          <div class="pf-field" *ngIf="isUser !== 'Doctor'">
+            <label>Role <span class="req">*</span></label>
+            <p-dropdown
+              [options]="roles"
+              formControlName="role"
+              placeholder="Select Role"
+              styleClass="w-full">
+            </p-dropdown>
+            <small class="p-error" *ngIf="f['role'].touched && f['role'].errors?.['required']">Role is required.</small>
+          </div>
+
+          <!-- Password — hidden in view mode -->
+          <!-- <div class="pf-field" *ngIf="!isview">
+            <label>Password <span class="req" *ngIf="!isEdit">*</span></label>
+            <div class="password-field-wrap">
+              <p-password
+                formControlName="password"
+                placeholder="{{ isEdit ? 'Leave blank to keep current' : 'Password' }}"
+                [toggleMask]="true"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+                [feedback]="false">
+              </p-password>
+              <button
+                *ngIf="!isEdit"
+                type="button"
+                pButton
+                pRipple
+                icon="pi pi-refresh"
+                pTooltip="Auto-generate password"
+                tooltipPosition="top"
+                class="p-button-sm p-button-outlined gen-btn"
+                (click)="generatePassword()">
+              </button>
+            </div>
+            <small class="p-error" *ngIf="f['password'].touched && f['password'].errors?.['required']">Password is required.</small>
+            <small class="p-error" *ngIf="f['password'].touched && f['password'].errors?.['minlength']">Minimum {{ f['password'].errors?.['minlength'].requiredLength }} characters.</small>
+            <small class="gen-hint" *ngIf="passwordSent">
+              <i class="pi pi-check-circle"></i> Password sent to {{ adminEmail }}
+            </small>
+          </div> -->
+
+        </div>
+
+        <!-- Error -->
+        <small class="p-error" *ngIf="error">{{ error }}</small>
+
+        <!-- Buttons -->
+        <div class="pf-divider"></div>
+        <div class="pf-btn-row">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            label="Cancel"
+            class="p-button-sm p-button-secondary"
+            [disabled]="loading"
+            (click)="onCancel()">
+          </button>
+          <button
+            *ngIf="!isview"
+            pButton
+            type="submit"
+            icon="pi pi-check"
+            [label]="isEdit ? 'Update' : (isUser === 'Doctor' ? 'Create Doctor' : 'Create Staff')"
+            class="p-button-sm pf-btn-primary"
+            [loading]="loading"
+            [disabled]="staffForm.invalid || loading">
+          </button>
+        </div>
+
+      </form>
     </div>
+  </div>
+
+  <p-toast key="tst"></p-toast>
 </div>

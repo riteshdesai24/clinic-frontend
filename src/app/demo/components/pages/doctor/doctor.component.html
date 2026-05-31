@@ -1,84 +1,137 @@
 <div class="grid">
-    <div class="col-12">
-        <div class="card">
-            <h5>Create Doctor</h5>
-            
-            <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()">
-                <div class="grid">
-                    <div class="col-12 md:col-6">
-                        <div class="field">
-                            <label for="clinicName" class="font-bold block mb-2">Clinic Name</label>
-                            <input id="clinicName" type="text" pInputText formControlName="clinicName" class="w-full" [disabled]="true">
-                        </div>
-                    </div>
+  <div class="col-12">
+    <div class="pf-card">
 
-                    <div class="col-12 md:col-6">
-                        <div class="field">
-                            <label for="doctorname" class="font-bold block mb-2">Doctor Name</label>
-                            <input id="doctorname" type="text" placeholder="Doctor name" pInputText formControlName="doctorname" [disabled]="this.isViewMode" class="w-full">
-                            <small class="p-error block" *ngIf="f['doctorname'].touched && f['doctorname'].invalid">
-                                <span *ngIf="f['doctorname'].errors?.required">Doctor name is required.</span>
-                                <span *ngIf="f['doctorname'].errors?.minlength">Doctor name must be at least {{f['doctorname'].errors?.minlength.requiredLength}} characters.</span>
-                            </small>
-                        </div>
-                    </div>
-
-                    <div class="col-12 md:col-6">
-                        <div class="field">
-                            <label for="email" class="font-bold block mb-2">Email</label>
-                            <input id="email" type="email" placeholder="Email address" pInputText formControlName="email" [disabled]="this.isViewMode" class="w-full">
-                            <small class="p-error block" *ngIf="f['email'].touched && f['email'].invalid">
-                                <span *ngIf="f['email'].errors?.required">Email is required.</span>
-                                <span *ngIf="f['email'].errors?.email">Enter a valid email address.</span>
-                            </small>
-                        </div>
-                    </div>
-
-                    <div class="col-12 md:col-6">
-                        <div class="field">
-                            <label for="phone" class="font-bold block mb-2">Phone</label>
-                            <input id="phone" type="text" placeholder="Phone number" pInputText formControlName="phone" [disabled]="this.isViewMode" class="w-full">
-                            <small class="p-error block" *ngIf="f['phone'].touched && f['phone'].invalid">
-                                <span *ngIf="f['phone'].errors?.required">Phone number is required.</span>
-                            </small>
-                        </div>
-                    </div>
-
-                    <div class="col-12 md:col-6">
-                        <div class="field">
-                            <label for="password" class="font-bold block mb-2">Password</label>
-                            <p-password id="password" formControlName="password" placeholder="Password" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" [disabled]="this.isViewMode"></p-password>
-                            <small class="p-error block" *ngIf="f['password'].touched && f['password'].invalid">
-                                <span *ngIf="f['password'].errors?.required">Password is required.</span>
-                                <span *ngIf="f['password'].errors?.minlength">Password must be at least {{f['password'].errors?.minlength.requiredLength}} characters.</span>
-                            </small>
-                        </div>
-                    </div>
-
-                    <div class="col-12 md:col-6">
-                        <div class="field">
-                            <label for="specialization" class="font-bold block mb-2">Specialization</label>
-                            <input id="specialization" type="text" placeholder="Specialization" pInputText formControlName="specialization" [disabled]="this.isViewMode" class="w-full">
-                            <small class="p-error block" *ngIf="f['specialization'].touched && f['specialization'].invalid">
-                                <span *ngIf="f['specialization'].errors?.required">Specialization is required.</span>
-                            </small>
-                        </div>
-                    </div>
-
-                    <!-- <div class="col-12">
-                        <div *ngIf="error" class="p-error block mb-3">{{error}}</div>
-                        <div *ngIf="success" class="p-success block mb-3">{{success}}</div>
-                    </div> -->
-
-                    <div class="col-2" *ngIf="!isViewMode">
-                        <button pButton pRipple type="submit" label="Save" class="w-full" [disabled]="doctorForm.invalid || loading" [loading]="loading"></button>
-                    </div>
-                    <div class="col-2">
-                        <button pButton pRipple (click)="onCancel()" label="Cancel" class="w-full" [disabled]="loading"></button>
-                    </div>
-                </div>
-            </form>
+      <!-- Header -->
+      <div class="pf-header">
+        <div class="pf-icon">
+          <i class="pi pi-user-plus"></i>
         </div>
+        <div>
+          <h5 class="pf-title">{{ isEditMode ? 'Edit Doctor' : isViewMode ? 'View Doctor' : 'Create Doctor' }}</h5>
+          <p class="pf-sub">{{ isViewMode ? 'Doctor details' : 'Fill in the doctor details below' }}</p>
+        </div>
+      </div>
+
+      <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()">
+
+        <!-- Clinic -->
+        <p class="section-label">Clinic</p>
+        <div class="field-grid g1 mb-section">
+          <div class="pf-field">
+            <label>Clinic Name</label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-building"></i>
+              <input pInputText class="w-full" [value]="clinicName" disabled />
+            </span>
+          </div>
+        </div>
+
+        <!-- Doctor Info -->
+        <p class="section-label">Doctor Info</p>
+        <div class="field-grid g3 mb-section">
+
+          <div class="pf-field">
+            <label>Doctor Name <span class="req">*</span></label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-user"></i>
+              <input pInputText formControlName="doctorname" placeholder="Doctor name" class="w-full" />
+            </span>
+            <small class="p-error" *ngIf="f['doctorname'].touched && f['doctorname'].errors?.['required']">Doctor name is required.</small>
+            <small class="p-error" *ngIf="f['doctorname'].touched && f['doctorname'].errors?.['minlength']">Minimum {{ f['doctorname'].errors?.['minlength'].requiredLength }} characters.</small>
+          </div>
+
+          <div class="pf-field">
+            <label>Email <span class="req">*</span></label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-envelope"></i>
+              <input pInputText formControlName="email" placeholder="Email address" class="w-full" />
+            </span>
+            <small class="p-error" *ngIf="f['email'].touched && f['email'].errors?.['required']">Email is required.</small>
+            <small class="p-error" *ngIf="f['email'].touched && f['email'].errors?.['email']">Enter a valid email address.</small>
+          </div>
+
+          <div class="pf-field">
+            <label>Phone <span class="req">*</span></label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-phone"></i>
+              <input pInputText formControlName="phone" placeholder="Phone number" class="w-full" />
+            </span>
+            <small class="p-error" *ngIf="f['phone'].touched && f['phone'].errors?.['required']">Phone number is required.</small>
+          </div>
+
+          <div class="pf-field">
+            <label>Specialization <span class="req">*</span></label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-star"></i>
+              <input pInputText formControlName="specialization" placeholder="Specialization" class="w-full" />
+            </span>
+            <small class="p-error" *ngIf="f['specialization'].touched && f['specialization'].errors?.['required']">Specialization is required.</small>
+          </div>
+
+          <!-- Password — hidden in view mode -->
+          <div class="pf-field" *ngIf="!isViewMode">
+            <label>Password <span class="req">*</span></label>
+            <div class="password-field-wrap">
+              <p-password
+                formControlName="password"
+                placeholder="Password"
+                [toggleMask]="true"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+                [feedback]="false">
+              </p-password>
+              <button
+                *ngIf="!isEditMode"
+                type="button"
+                pButton
+                pRipple
+                icon="pi pi-refresh"
+                pTooltip="Auto-generate password"
+                tooltipPosition="top"
+                class="p-button-sm p-button-outlined gen-btn"
+                (click)="generatePassword()">
+              </button>
+            </div>
+            <small class="p-error" *ngIf="f['password'].touched && f['password'].errors?.['required']">Password is required.</small>
+            <small class="p-error" *ngIf="f['password'].touched && f['password'].errors?.['minlength']">Minimum {{ f['password'].errors?.['minlength'].requiredLength }} characters.</small>
+            <small class="gen-hint" *ngIf="passwordSent">
+              <i class="pi pi-check-circle"></i> Password sent to {{ adminEmail }}
+            </small>
+          </div>
+
+        </div>
+
+        <!-- Error -->
+        <small class="p-error" *ngIf="error">{{ error }}</small>
+
+        <!-- Buttons -->
+        <div class="pf-divider"></div>
+        <div class="pf-btn-row">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            label="Cancel"
+            class="p-button-sm p-button-secondary"
+            [disabled]="loading"
+            (click)="onCancel()">
+          </button>
+          <button
+            *ngIf="!isViewMode"
+            pButton
+            type="submit"
+            icon="pi pi-check"
+            [label]="isEditMode ? 'Update Doctor' : 'Create Doctor'"
+            class="p-button-sm pf-btn-primary"
+            [loading]="loading"
+            [disabled]="doctorForm.invalid || loading">
+          </button>
+        </div>
+
+      </form>
     </div>
-    <p-toast key="tst"></p-toast>
+  </div>
+
+  <p-toast key="tst"></p-toast>
 </div>

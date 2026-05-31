@@ -68,14 +68,21 @@ export class LoginComponent implements OnInit {
 
         this.authService.login(email, password).subscribe({
             next: (res) => {
+                console.log('Login successful:', res);
                 // ✅ Store token safely
                 if (res?.token) {
                     localStorage.setItem('token', res.token);
+                    sessionStorage.setItem('token', res.token);
                 }
 
                 // Optional: store user data
                 if (res?.user) {
                     localStorage.setItem('user', JSON.stringify(res.user));
+                    sessionStorage.setItem('user', JSON.stringify(res.user));
+                }
+                if (res?.clinic) {
+                    localStorage.setItem('clinic', JSON.stringify(res.clinic));
+                    sessionStorage.setItem('clinic', JSON.stringify(res.clinic));
                 }
 
                 // Navigate
