@@ -6,7 +6,7 @@ import { AuthService } from 'src/app/demo/service/auth.service';
 @Component({
   selector: 'app-doctor-list',
   templateUrl: './doctor-list.component.html',
-  styles: []
+  styleUrls: ['./doctor-list.component.scss']
 })
 export class DoctorListComponent implements OnInit {
 
@@ -14,7 +14,6 @@ export class DoctorListComponent implements OnInit {
   filteredDoctorList: any[] = [];
 
   loading = false;
-  clinicId = '';
 
   count = 0;
   hasNextPage = false;
@@ -29,10 +28,6 @@ export class DoctorListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.clinicId =
-      localStorage.getItem('clinicid') ||
-      sessionStorage.getItem('clinicid') || '';
-
     this.loadDoctorList();
   }
 
@@ -40,42 +35,30 @@ export class DoctorListComponent implements OnInit {
   // LOAD LIST
   // ======================
   loadDoctorList(cursor?: string | null, append = false): void {
-
-    if (!this.clinicId) return;
-
     this.loading = true;
 
-    this.authService.getDoctorList(
-      this.clinicId,
-      cursor,
-      this.pageSize
-    ).subscribe({
+    // ✅ No clinicId — server reads it from JWT token
+    this.authService.getDoctorList(cursor ?? undefined, this.pageSize).subscribe({
 
       next: (res: any) => {
-
         const data = res.data || [];
 
-        if (append) {
-          this.doctorList = [...this.doctorList, ...data];
-        } else {
-          this.doctorList = data;
-        }
+        this.doctorList = append
+          ? [...this.doctorList, ...data]
+          : data;
 
         this.filteredDoctorList = [...this.doctorList];
 
-        this.count = res.count || this.doctorList.length;
+        this.count       = res.count || this.doctorList.length;
         this.hasNextPage = !!res.hasNextPage;
-        this.nextCursor = res.nextCursor || null;
+        this.nextCursor  = res.nextCursor || null;
 
         this.loading = false;
       },
 
       error: err => {
-
         console.error(err);
-
         this.loading = false;
-
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -86,7 +69,6 @@ export class DoctorListComponent implements OnInit {
   }
 
   loadMore(): void {
-
     if (this.hasNextPage && this.nextCursor) {
       this.loadDoctorList(this.nextCursor, true);
     }
@@ -96,10 +78,7 @@ export class DoctorListComponent implements OnInit {
   // SEARCH
   // ======================
   onDoctorSearch(event: any): void {
-
-    const value = (event.target as HTMLInputElement)
-      .value
-      .toLowerCase();
+    const value = (event.target as HTMLInputElement).value.toLowerCase();
 
     if (!value) {
       this.filteredDoctorList = [...this.doctorList];
@@ -107,15 +86,10 @@ export class DoctorListComponent implements OnInit {
     }
 
     this.filteredDoctorList = this.doctorList.filter(d =>
-
       d.staffname?.toLowerCase().includes(value) ||
-
       d.email?.toLowerCase().includes(value) ||
-
       d.phone?.includes(value) ||
-
       d.specialization?.toLowerCase().includes(value)
-
     );
   }
 
@@ -123,22 +97,18 @@ export class DoctorListComponent implements OnInit {
   // NAVIGATION
   // ======================
   createNewDoctor(): void {
-
     this.router.navigate(['/pages/staff'], {
       queryParams: { isUser: 'Doctor' }
     });
   }
 
   editDoctor(doctor: any): void {
-
     this.router.navigate(['/pages/staff'], {
       queryParams: {
         isUser: 'Doctor',
-        edit: true,
         id: doctor._id
       }
     });
-
     this.messageService.add({
       severity: 'info',
       summary: 'Edit',
@@ -147,7 +117,6 @@ export class DoctorListComponent implements OnInit {
   }
 
   viewDoctor(doctor: any): void {
-
     this.router.navigate(['/pages/staff'], {
       queryParams: {
         isUser: 'Doctor',
@@ -155,7 +124,6 @@ export class DoctorListComponent implements OnInit {
         id: doctor._id
       }
     });
-
     this.messageService.add({
       severity: 'info',
       summary: 'View',
@@ -167,40 +135,29 @@ export class DoctorListComponent implements OnInit {
   // DELETE
   // ======================
   deleteDoctor(doctor: any): void {
-
     this.confirmationService.confirm({
-
       message: `Delete ${doctor.staffname}?`,
       header: 'Confirm Delete',
       icon: 'pi pi-exclamation-triangle',
-
       accept: () => {
-
-        this.authService.deleteDoctor(doctor._id)
-          .subscribe({
-
-            next: () => {
-
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Deleted',
-                detail: `${doctor.staffname} deleted`
-              });
-
-              this.loadDoctorList();
-            },
-
-            error: err => {
-
-              console.error(err);
-
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Delete failed'
-              });
-            }
-          });
+        this.authService.deleteDoctor(doctor._id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Deleted',
+              detail: `${doctor.staffname} deleted`
+            });
+            this.loadDoctorList();
+          },
+          error: err => {
+            console.error(err);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Delete failed'
+            });
+          }
+        });
       }
     });
   }

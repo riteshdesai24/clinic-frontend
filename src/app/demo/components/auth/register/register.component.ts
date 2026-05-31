@@ -58,27 +58,19 @@ export class RegisterComponent implements OnInit {
 
         this.authService.register(name, email, phone, password, clinicName).subscribe({
             next: (res) => {
-                if (res.success == true) {
-                    sessionStorage.setItem('clinicid', res.clinic._id);
-                    sessionStorage.setItem('clinicname', res.clinic.name);
-                    sessionStorage.setItem('clinicplan', res.clinic.plan);
-                    sessionStorage.setItem('clinicphone', res.clinic.phone);
-                    sessionStorage.setItem('useremail', res.user.email);
-                    sessionStorage.setItem('userrole', res.user.role);
-                    sessionStorage.setItem('userid', res.user._id);
-                    sessionStorage.setItem('token', res.token);
-
+                if (res?.token) {
                     localStorage.setItem('token', res.token);
-                    localStorage.setItem('clinicid', res.clinic._id);
-                    localStorage.setItem('clinicname', res.clinic.name);
-                    localStorage.setItem('clinicplan', res.clinic.plan);
-                    localStorage.setItem('clinicphone', res.clinic.phone);
-                    localStorage.setItem('useremail', res.user.email);
-                    localStorage.setItem('userrole', res.user.role);
-                    localStorage.setItem('userid', res.user._id);
-
-                    this.router.navigate(['/']);
+                    sessionStorage.setItem('token', res.token);
                 }
+                if (res?.user) {
+                    localStorage.setItem('user', JSON.stringify(res.user));
+                    sessionStorage.setItem('user', JSON.stringify(res.user));
+                }
+                if (res?.clinic) {
+                    localStorage.setItem('clinic', JSON.stringify(res.clinic));
+                    sessionStorage.setItem('clinic', JSON.stringify(res.clinic));
+                }
+                this.router.navigate(['/']);
             },
             error: (err) => {
                 this.error = err?.error?.message || err?.message || 'Registration failed';

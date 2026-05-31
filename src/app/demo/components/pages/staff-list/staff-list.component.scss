@@ -1,0 +1,249 @@
+// ── Card ──────────────────────────────────────────────────────────────────────
+.pl-card {
+  background: var(--surface-card);
+  border-radius: 16px;
+  border: 1px solid var(--surface-border);
+  padding: 1.75rem 2rem;
+  overflow: hidden;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.pl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.pl-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pl-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #eeedfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #534ab7;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.pl-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 2px;
+}
+
+.pl-sub {
+  font-size: 0.78rem;
+  color: var(--text-color-secondary);
+  margin: 0;
+}
+
+.pl-add-btn {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+  border-color: transparent !important;
+  border-radius: 10px !important;
+  font-size: 0.875rem !important;
+  height: 38px !important;
+  padding: 0 1.1rem !important;
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+.pl-search-wrap {
+  margin-bottom: 1.25rem;
+}
+
+.pl-search {
+  width: 100%;
+  max-width: 380px;
+
+  input {
+    width: 100%;
+    border-radius: 10px !important;
+    border: 1px solid var(--surface-border) !important;
+    background: var(--surface-ground) !important;
+    height: 38px !important;
+    font-size: 0.875rem !important;
+
+    &:focus {
+      border-color: #6366f1 !important;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+    }
+  }
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+::ng-deep .pl-table {
+  .p-datatable-thead > tr > th {
+    background: var(--surface-ground) !important;
+    color: var(--text-color-secondary) !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 0.75rem 1rem !important;
+    border-bottom: 1px solid var(--surface-border) !important;
+    border-top: none !important;
+  }
+
+  .p-datatable-tbody > tr {
+    transition: background 0.15s;
+
+    > td {
+      padding: 0.85rem 1rem !important;
+      border-bottom: 1px solid var(--surface-border) !important;
+      font-size: 0.875rem !important;
+      vertical-align: middle !important;
+    }
+
+    &:hover > td {
+      background: var(--surface-ground) !important;
+    }
+
+    &:last-child > td {
+      border-bottom: none !important;
+    }
+  }
+
+  .p-paginator {
+    border-top: 1px solid var(--surface-border) !important;
+    background: transparent !important;
+    padding: 0.75rem 0 0 !important;
+    margin-top: 0.5rem !important;
+  }
+}
+
+// ── Staff name cell ───────────────────────────────────────────────────────────
+.patient-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.patient-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #eeedfe;
+  color: #534ab7;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.patient-name {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--text-color);
+  margin: 0 0 2px;
+}
+
+.patient-age {
+  font-size: 0.75rem;
+  color: var(--text-color-secondary);
+  margin: 0;
+}
+
+// ── Cell text ─────────────────────────────────────────────────────────────────
+.cell-text {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cell-icon {
+  font-size: 12px;
+  opacity: 0.5;
+}
+
+// ── Role badge ────────────────────────────────────────────────────────────────
+.spec-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #eeedfe;
+  color: #534ab7;
+}
+
+// ── Action buttons ────────────────────────────────────────────────────────────
+.action-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.action-btn {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  border: 1px solid transparent !important;
+  padding: 0 !important;
+
+  .p-button-icon {
+    font-size: 13px !important;
+  }
+}
+
+.action-view {
+  background: #e6f1fb !important;
+  color: #185fa5 !important;
+  &:hover { background: #b5d4f4 !important; }
+}
+
+.action-edit {
+  background: #eeedfe !important;
+  color: #534ab7 !important;
+  &:hover { background: #cecbf6 !important; }
+}
+
+.action-delete {
+  background: #fcebeb !important;
+  color: #a32d2d !important;
+  &:hover { background: #f7c1c1 !important; }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1rem;
+  color: var(--text-color-secondary);
+
+  i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+
+  p {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-color);
+    margin: 0 0 4px;
+  }
+
+  span {
+    font-size: 0.82rem;
+  }
+}

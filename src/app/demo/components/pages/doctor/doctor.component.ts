@@ -8,16 +8,7 @@ import { AuthService } from 'src/app/demo/service/auth.service';
 @Component({
     selector: 'app-doctor',
     templateUrl: './doctor.component.html',
-    styles: [
-        `
-            :host ::ng-deep .pi-eye,
-            :host ::ng-deep .pi-eye-slash {
-                transform: scale(1.6);
-                margin-right: 1rem;
-                color: var(--primary-color) !important;
-            }
-        `,
-    ],
+    styleUrls: ['./doctor.component.scss'],
 })
 export class DoctorComponent implements OnInit {
     doctorForm!: FormGroup;

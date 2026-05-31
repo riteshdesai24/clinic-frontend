@@ -1,22 +1,37 @@
 <div class="grid">
   <div class="col-12">
-
-    <div class="card">
+    <div class="pl-card">
 
       <!-- Header -->
-      <div class="flex justify-content-between align-items-center mb-4">
-
-        <h5>Doctor List</h5>
-
+      <div class="pl-header">
+        <div class="pl-header-left">
+          <div class="pl-icon">
+            <i class="pi pi-user"></i>
+          </div>
+          <div>
+            <h5 class="pl-title">Doctor List</h5>
+            <p class="pl-sub">{{ filteredDoctorList.length }} doctors found</p>
+          </div>
+        </div>
         <button
           pButton
           icon="pi pi-plus"
-          class="p-button-rounded p-button-success"
-          (click)="createNewDoctor()"
-          pTooltip="Add Doctor"
-          tooltipPosition="left">
+          label="Add Doctor"
+          class="pl-add-btn"
+          (click)="createNewDoctor()">
         </button>
+      </div>
 
+      <!-- Search -->
+      <div class="pl-search-wrap">
+        <span class="p-input-icon-left pl-search">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            (input)="onDoctorSearch($event)"
+            placeholder="Search by name, phone or email..." />
+        </span>
       </div>
 
       <!-- Table -->
@@ -25,109 +40,93 @@
         [loading]="loading"
         responsiveLayout="scroll"
         [paginator]="true"
-        [rows]="10">
-
-        <!-- Search -->
-        <ng-template pTemplate="caption">
-
-          <div class="flex justify-content-between">
-
-            <span class="p-input-icon-left">
-
-              <i class="pi pi-search"></i>
-
-              <input
-                pInputText
-                type="text"
-                (input)="onDoctorSearch($event)"
-                placeholder="Search doctors..." />
-
-            </span>
-
-          </div>
-
-        </ng-template>
+        [rows]="10"
+        styleClass="pl-table">
 
         <!-- Header -->
         <ng-template pTemplate="header">
-
           <tr>
-
-            <th pSortableColumn="staffname">
-              Name <p-sortIcon field="staffname"></p-sortIcon>
-            </th>
-
-            <th>Email</th>
+            <th>Doctor</th>
             <th>Phone</th>
+            <th>Email</th>
             <th>Specialization</th>
-            <th>Actions</th>
-
+            <th class="text-right">Actions</th>
           </tr>
-
         </ng-template>
 
         <!-- Body -->
         <ng-template pTemplate="body" let-doctor>
-
           <tr>
-
-            <td>{{ doctor.staffname }}</td>
-
-            <td>{{ doctor.email }}</td>
-
-            <td>{{ doctor.phone }}</td>
-
             <td>
-              <p-tag
-                *ngIf="doctor.specialization"
-                [value]="doctor.specialization"
-                severity="info">
-              </p-tag>
+              <div class="patient-cell">
+                <div class="patient-avatar">
+                  {{ doctor.staffname?.charAt(0) }}
+                </div>
+                <div>
+                  <p class="patient-name">{{ doctor.staffname }}</p>
+                  <p class="patient-age" *ngIf="doctor.specialization">{{ doctor.specialization }}</p>
+                </div>
+              </div>
             </td>
-
             <td>
-
-              <button
-                pButton
-                icon="pi pi-eye"
-                class="p-button-rounded p-button-warning mr-2"
-                (click)="viewDoctor(doctor)">
-              </button>
-
-              <button
-                pButton
-                icon="pi pi-pencil"
-                class="p-button-rounded p-button-info mr-2"
-                (click)="editDoctor(doctor)">
-              </button>
-
-              <button
-                pButton
-                icon="pi pi-trash"
-                class="p-button-rounded p-button-danger"
-                (click)="deleteDoctor(doctor)">
-              </button>
-
+              <span class="cell-text">
+                <i class="pi pi-phone cell-icon"></i> {{ doctor.phone }}
+              </span>
             </td>
-
+            <td>
+              <span class="cell-text">{{ doctor.email || '—' }}</span>
+            </td>
+            <td>
+              <span class="spec-badge" *ngIf="doctor.specialization">
+                {{ doctor.specialization }}
+              </span>
+              <span *ngIf="!doctor.specialization">—</span>
+            </td>
+            <td>
+              <div class="action-row">
+                <button
+                  pButton
+                  icon="pi pi-eye"
+                  class="action-btn action-view"
+                  pTooltip="View"
+                  (click)="viewDoctor(doctor)">
+                </button>
+                <button
+                  pButton
+                  icon="pi pi-pencil"
+                  class="action-btn action-edit"
+                  pTooltip="Edit"
+                  (click)="editDoctor(doctor)">
+                </button>
+                <button
+                  pButton
+                  icon="pi pi-trash"
+                  class="action-btn action-delete"
+                  pTooltip="Delete"
+                  (click)="deleteDoctor(doctor)">
+                </button>
+              </div>
+            </td>
           </tr>
-
         </ng-template>
 
         <!-- Empty -->
         <ng-template pTemplate="emptymessage">
-
           <tr>
-            <td colspan="5" class="text-center">
-              No doctors found
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="pi pi-user"></i>
+                <p>No doctors found</p>
+                <span>Try adjusting your search or add a new doctor</span>
+              </div>
             </td>
           </tr>
-
         </ng-template>
 
       </p-table>
-
     </div>
-
   </div>
+
+  <p-confirmDialog></p-confirmDialog>
+  <p-toast></p-toast>
 </div>

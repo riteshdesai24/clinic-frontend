@@ -10,11 +10,15 @@ export class AppMenuComponent implements OnInit {
 
     model: any[] = [];
     clinicPlan: string = '';
+    user: any = {};
 
     constructor(public layoutService: LayoutService) { }
 
     ngOnInit() {
-        this.clinicPlan = localStorage.getItem('clinicplan') || sessionStorage.getItem('clinicplan') || '';
+        this.user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')!) : {};
+        this.clinicPlan = this.user.plan || '';
+        console.log('User:', this.user);
+        console.log('Clinic Plan:', this.clinicPlan);
         this.buildMenu();
     }
 

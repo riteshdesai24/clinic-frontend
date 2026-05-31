@@ -24,29 +24,25 @@ export class AuthService {
     password: string,
     clinicName: string
   ): Observable<any> {
-
     return this.http.post(
       `${environment.apiUrl}/api/auth/register`,
       { name, email, phone, password, clinicName }
     );
   }
 
-  // ADD THIS INSIDE AuthService
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/api/auth/forgot-password`,
+      { email }
+    );
+  }
 
-forgotPassword(email: string): Observable<any> {
-  return this.http.post(
-    `${environment.apiUrl}/api/auth/forgot-password`,
-    { email }
-  );
-}
-
-resetPassword(data: any): Observable<any> {
-  return this.http.post(
-    `${environment.apiUrl}/api/auth/reset-password`,
-     data 
-  );
-}
-
+  resetPassword(data: any): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/api/auth/reset-password`,
+      data
+    );
+  }
 
   // ================= STAFF =================
 
@@ -57,15 +53,18 @@ resetPassword(data: any): Observable<any> {
     );
   }
 
-  getStaffList(clinicId: string, cursor?: string, limit?: number): Observable<any> {
-
-    let params = `?clinicId=${clinicId}`;
-
+  getStaffList(cursor?: string, limit?: number): Observable<any> {
+    let params = `?role=STAFF`;
     if (cursor) params += `&cursor=${cursor}`;
-    if (limit) params += `&limit=${limit}`;
-
+    if (limit)  params += `&limit=${limit}`;
     return this.http.get(
       `${environment.apiUrl}/api/staff${params}`
+    );
+  }
+
+  getStaffDetails(id: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/staff/${id}`
     );
   }
 
@@ -82,49 +81,40 @@ resetPassword(data: any): Observable<any> {
     );
   }
 
-  getStaffDetails(id: string): Observable<any> {
+  // ================= DOCTOR =================
+
+  createDoctor(data: any): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/api/staff`,
+      data
+    );
+  }
+
+  getDoctorList(cursor?: string, limit?: number): Observable<any> {
+    let params = `?role=DOCTOR`;
+    if (cursor) params += `&cursor=${cursor}`;
+    if (limit)  params += `&limit=${limit}`;
+    return this.http.get(
+      `${environment.apiUrl}/api/staff${params}`
+    );
+  }
+
+  getDoctorDetails(id: string): Observable<any> {
     return this.http.get(
       `${environment.apiUrl}/api/staff/${id}`
     );
   }
 
-  // ================= DOCTOR =================
-
-  createDoctor(data: any): Observable<any> {
-    return this.http.post(
-      `${environment.apiUrl}/api/doctors`,
-      data
-    );
-  }
-
-  getDoctorList(clinicId: string, cursor?: string, limit?: number): Observable<any> {
-
-    let params = `?clinicId=${clinicId}`;
-
-    if (cursor) params += `&cursor=${cursor}`;
-    if (limit) params += `&limit=${limit}`;
-
-    return this.http.get(
-      `${environment.apiUrl}/api/doctors${params}`
-    );
-  }
-
   updateDoctor(id: string, data: any): Observable<any> {
     return this.http.put(
-      `${environment.apiUrl}/api/doctors/${id}`,
+      `${environment.apiUrl}/api/staff/${id}`,
       data
     );
   }
 
   deleteDoctor(id: string): Observable<any> {
     return this.http.delete(
-      `${environment.apiUrl}/api/doctors/${id}`
-    );
-  }
-
-  getDoctorDetails(id: string): Observable<any> {
-    return this.http.get(
-      `${environment.apiUrl}/api/doctors/${id}`
+      `${environment.apiUrl}/api/staff/${id}`
     );
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { AuthService } from 'src/app/demo/service/auth.service';
@@ -6,7 +6,8 @@ import { AuthService } from 'src/app/demo/service/auth.service';
 @Component({
   selector: 'app-staff-list',
   templateUrl: './staff-list.component.html',
-  styles: []
+  styleUrls: ['./staff-list.component.scss'],
+  encapsulation: ViewEncapsulation.None 
 })
 export class StaffListComponent implements OnInit {
 
@@ -14,7 +15,6 @@ export class StaffListComponent implements OnInit {
   filteredStaffList: any[] = [];
 
   loading = false;
-  clinicId = '';
 
   // Pagination
   count = 0;
@@ -30,11 +30,6 @@ export class StaffListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-
-    this.clinicId =
-      localStorage.getItem('clinicid') ||
-      sessionStorage.getItem('clinicid') || '';
-
     this.loadStaffList();
   }
 
@@ -42,15 +37,12 @@ export class StaffListComponent implements OnInit {
   // LOAD STAFF
   // ======================
   loadStaffList(cursor?: string | null, append = false): void {
-
-    if (!this.clinicId) return;
-
     this.loading = true;
 
-    this.authService.getStaffList(this.clinicId, cursor, this.pageSize).subscribe({
+    // ✅ No clinicId — server reads it from JWT token
+    this.authService.getStaffList(cursor ?? undefined, this.pageSize).subscribe({
 
       next: res => {
-
         const data = res.data || [];
 
         this.staffList = append
@@ -59,19 +51,16 @@ export class StaffListComponent implements OnInit {
 
         this.filteredStaffList = this.staffList;
 
-        this.count = res.count || this.staffList.length;
-        this.hasNextPage = !!res.hasNextPage;
-        this.nextCursor = res.nextCursor || null;
+        this.count        = res.count || this.staffList.length;
+        this.hasNextPage  = !!res.hasNextPage;
+        this.nextCursor   = res.nextCursor || null;
 
         this.loading = false;
       },
 
       error: err => {
-
         console.error('Staff list error:', err);
-
         this.loading = false;
-
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -82,7 +71,6 @@ export class StaffListComponent implements OnInit {
   }
 
   loadMore(): void {
-
     if (this.hasNextPage && this.nextCursor) {
       this.loadStaffList(this.nextCursor, true);
     }
@@ -92,10 +80,7 @@ export class StaffListComponent implements OnInit {
   // SEARCH
   // ======================
   onStaffSearch(event: any): void {
-
-    const value = (event.target as HTMLInputElement)
-      .value
-      .toLowerCase();
+    const value = (event.target as HTMLInputElement).value.toLowerCase();
 
     if (!value) {
       this.filteredStaffList = this.staffList;
@@ -114,7 +99,6 @@ export class StaffListComponent implements OnInit {
   // CREATE
   // ======================
   createNewStaff(): void {
-
     this.router.navigate(
       ['/pages/staff'],
       { queryParams: { isUser: 'Staff' } }
@@ -122,20 +106,13 @@ export class StaffListComponent implements OnInit {
   }
 
   // ======================
-  // EDIT STAFF
+  // EDIT
   // ======================
   editStaff(staff: any): void {
-
     this.router.navigate(
       ['/pages/staff'],
-      {
-        queryParams: {
-          isUser: 'Staff',
-          id: staff._id
-        }
-      }
+      { queryParams: { isUser: 'Staff', id: staff._id } }
     );
-
     this.messageService.add({
       severity: 'info',
       summary: 'Edit',
@@ -144,21 +121,13 @@ export class StaffListComponent implements OnInit {
   }
 
   // ======================
-  // VIEW STAFF
+  // VIEW
   // ======================
   viewStaff(staff: any): void {
-
     this.router.navigate(
       ['/pages/staff'],
-      {
-        queryParams: {
-          isUser: 'Staff',
-          id: staff._id,
-          view: true
-        }
-      }
+      { queryParams: { isUser: 'Staff', id: staff._id, view: true } }
     );
-
     this.messageService.add({
       severity: 'info',
       summary: 'View',
@@ -170,32 +139,22 @@ export class StaffListComponent implements OnInit {
   // DELETE
   // ======================
   deleteStaff(staff: any): void {
-
     this.confirmationService.confirm({
-
       message: `Are you sure you want to delete ${staff.staffname}?`,
       header: 'Confirm Delete',
       icon: 'pi pi-exclamation-triangle',
-
       accept: () => {
-
         this.authService.deleteStaff(staff._id).subscribe({
-
           next: () => {
-
             this.messageService.add({
               severity: 'success',
               summary: 'Deleted',
               detail: `${staff.staffname} deleted`
             });
-
             this.loadStaffList();
           },
-
           error: err => {
-
             console.error('Delete error:', err);
-
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
