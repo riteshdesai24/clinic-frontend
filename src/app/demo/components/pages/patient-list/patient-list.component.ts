@@ -25,11 +25,11 @@ export class PatientListComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.clinicId =
-      localStorage.getItem('clinicid') ||
-      sessionStorage.getItem('clinicid') || '';
-
-    this.loadPatients();
+    const clinicData = JSON.parse(
+    localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}'
+  );
+  this.clinicId = clinicData._id || '';
+  this.loadPatients();
   }
 
   // ====================

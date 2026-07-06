@@ -13,6 +13,9 @@ import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { CalendarModule } from 'primeng/calendar';
+import { TabMenuModule } from 'primeng/tabmenu';
+import { TabViewModule } from 'primeng/tabview';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 @NgModule({
   declarations: [
@@ -21,9 +24,11 @@ import { CalendarModule } from 'primeng/calendar';
   imports: [
     CommonModule,
     PatientRoutingModule,
-
+    TabMenuModule,
+    TabViewModule,
     FormsModule,
     ReactiveFormsModule,
+    MultiSelectModule,
 
     DropdownModule,
     InputTextModule,

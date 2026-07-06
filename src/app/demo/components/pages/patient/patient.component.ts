@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
+import { MenuItem, MessageService } from 'primeng/api';
 import { AuthService } from 'src/app/demo/service/auth.service';
 
 @Component({
@@ -24,11 +24,145 @@ export class PatientComponent implements OnInit {
 
   patientId: string | null = null;
 
+  // ---------- Personal Info ----------
+  titles = [
+    { label: 'Mr', value: 'MR' },
+    { label: 'Mrs', value: 'MRS' },
+    { label: 'Ms', value: 'MS' },
+    { label: 'Dr', value: 'DR' },
+    { label: 'Master', value: 'MASTER' }
+  ];
+
+  // NOTE [Guessing]: reference screen shows Male / Female / Transgender / Unknown as radio options.
   genders = [
     { label: 'Male', value: 'MALE' },
     { label: 'Female', value: 'FEMALE' },
+    { label: 'Transgender', value: 'TRANSGENDER' },
+    { label: 'Unknown', value: 'UNKNOWN' }
+  ];
+
+  maritalStatuses = [
+    { label: 'Single', value: 'SINGLE' },
+    { label: 'Married', value: 'MARRIED' },
+    { label: 'Divorced', value: 'DIVORCED' },
+    { label: 'Widowed', value: 'WIDOWED' }
+  ];
+
+  // ---------- Address / Contact ----------
+  // NOTE [Guessing]: trimmed sample list — replace with your actual state master data.
+  states = [
+    { label: 'Maharashtra', value: 'MH' },
+    { label: 'Delhi', value: 'DL' },
+    { label: 'Karnataka', value: 'KA' },
+    { label: 'Tamil Nadu', value: 'TN' }
+  ];
+
+  countries = [
+    { label: 'India', value: 'IN' },
+    { label: 'United States', value: 'US' },
+    { label: 'United Kingdom', value: 'UK' }
+  ];
+
+  // ---------- Medical ----------
+  // NOTE [Guessing]: option labels copied verbatim from your screenshot chips.
+  medicalConditionOptions = [
+    { label: 'Heart Diseases', value: 'HEART_DISEASES' },
+    { label: 'High/Low Blood Pressure', value: 'BLOOD_PRESSURE' },
+    { label: 'Asthma', value: 'ASTHMA' },
+    { label: 'Tuberculosis', value: 'TUBERCULOSIS' },
+    { label: 'Peptic Ulcer / Acidity', value: 'PEPTIC_ULCER' },
+    { label: 'Diabetes', value: 'DIABETES' },
+    { label: 'Anaemia', value: 'ANAEMIA' },
+    { label: 'Thalassaemia', value: 'THALASSAEMIA' },
+    { label: 'Kidney Diseases', value: 'KIDNEY_DISEASES' },
+    { label: 'Hemophilia', value: 'HEMOPHILIA' },
+    { label: 'Convulsions / Epilepsy', value: 'CONVULSIONS_EPILEPSY' },
+    { label: 'Psychiatric Problem', value: 'PSYCHIATRIC_PROBLEM' },
+    { label: 'AIDS / HIV', value: 'AIDS_HIV' },
+    { label: 'Jaundice / Hepatitis', value: 'JAUNDICE_HEPATITIS' },
+    { label: 'Rheumatic Fever', value: 'RHEUMATIC_FEVER' },
+    { label: 'Pregnancy', value: 'PREGNANCY' },
+    { label: 'Breast-feeding', value: 'BREAST_FEEDING' }
+  ];
+
+  dentalConditionOptions = [
+    { label: 'Bad Breath', value: 'BAD_BREATH' },
+    { label: 'Bleeding gums', value: 'BLEEDING_GUMS' },
+    { label: 'Sensitivity', value: 'SENSITIVITY' },
+    { label: 'Discoloured teeth', value: 'DISCOLOURED_TEETH' },
+    { label: 'Stained teeth', value: 'STAINED_TEETH' },
+    { label: 'Fractured teeth', value: 'FRACTURED_TEETH' },
+    { label: 'Missing teeth', value: 'MISSING_TEETH' },
+    { label: 'Cracked teeth', value: 'CRACKED_TEETH' },
+    { label: 'Dry Mouth', value: 'DRY_MOUTH' },
+    { label: 'Pus', value: 'PUS' },
+    { label: 'Tooth Wear', value: 'TOOTH_WEAR' },
+    { label: 'Loose Teeth', value: 'LOOSE_TEETH' },
+    { label: 'Loose Gums', value: 'LOOSE_GUMS' },
+    { label: 'Infection', value: 'INFECTION' },
+    { label: 'Extra Teeth', value: 'EXTRA_TEETH' },
+    { label: 'Crooked Bite', value: 'CROOKED_BITE' },
+    { label: 'Oral Thrush', value: 'ORAL_THRUSH' },
+    { label: 'Teeth Grinding', value: 'TEETH_GRINDING' },
+    { label: 'Jaw Joint Problems (TMJ)', value: 'JAW_JOINT_TMJ' },
+    { label: 'Oral Cancer (Early Signs)', value: 'ORAL_CANCER_EARLY' },
+    { label: 'Receding Gums', value: 'RECEDING_GUMS' },
+    { label: 'Mouth Sores', value: 'MOUTH_SORES' }
+  ];
+
+  // ---------- Insurance ----------
+  // NOTE [Guessing]: replace with your actual insurer master data.
+  insuranceCompanies = [
+    { label: 'Star Health', value: 'STAR_HEALTH' },
+    { label: 'ICICI Lombard', value: 'ICICI_LOMBARD' },
+    { label: 'HDFC Ergo', value: 'HDFC_ERGO' }
+  ];
+
+  // ---------- Demographics ----------
+  languages = [
+    { label: 'English', value: 'ENGLISH' },
+    { label: 'Hindi', value: 'HINDI' },
+    { label: 'Marathi', value: 'MARATHI' }
+  ];
+
+  religions = [
+    { label: 'Unknown', value: 'UNKNOWN' },
+    { label: 'Hindu', value: 'HINDU' },
+    { label: 'Muslim', value: 'MUSLIM' },
+    { label: 'Christian', value: 'CHRISTIAN' },
+    { label: 'Sikh', value: 'SIKH' },
     { label: 'Other', value: 'OTHER' }
   ];
+
+  occupations = [
+    { label: 'Unknown', value: 'UNKNOWN' },
+    { label: 'Student', value: 'STUDENT' },
+    { label: 'Employed', value: 'EMPLOYED' },
+    { label: 'Self-Employed', value: 'SELF_EMPLOYED' },
+    { label: 'Retired', value: 'RETIRED' }
+  ];
+
+  bloodGroups = [
+    { label: 'A+', value: 'A_POS' },
+    { label: 'A-', value: 'A_NEG' },
+    { label: 'B+', value: 'B_POS' },
+    { label: 'B-', value: 'B_NEG' },
+    { label: 'AB+', value: 'AB_POS' },
+    { label: 'AB-', value: 'AB_NEG' },
+    { label: 'O+', value: 'O_POS' },
+    { label: 'O-', value: 'O_NEG' }
+  ];
+
+  discProfiles = [
+    { label: 'Dominance', value: 'D' },
+    { label: 'Influence', value: 'I' },
+    { label: 'Steadiness', value: 'S' },
+    { label: 'Conscientiousness', value: 'C' }
+  ];
+
+  routeItems: MenuItem[] = [];
+  activeTab: number = 0;
+  clinicData: any;
 
   constructor(
     private fb: FormBuilder,
@@ -51,28 +185,82 @@ export class PatientComponent implements OnInit {
       this.isView = true;
     }
 
-    this.clinicId =
-      localStorage.getItem('clinicid') ||
-      sessionStorage.getItem('clinicid') || '';
+    this.clinicData = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
+
+    this.clinicId = this.clinicData._id || '';
 
     this.patientForm = this.fb.group({
-      firstName:        ['', Validators.required],
-      lastName:         ['', Validators.required],
-      phone:            ['', Validators.required],
-      email:            [''],
-      dob:              [''],
-      age:              [''],
-      gender:           ['', Validators.required],
-      address1:         [''],
-      address2:         [''],
-      address3:         [''],
-      pincode:          [''],
-      medicalAllergies: ['']
+      // Personal Info
+      title:              [''],
+      firstName:          ['', Validators.required],
+      middleName:         [''],
+      lastName:           ['', Validators.required],
+      suffix:             [''],
+      gender:             ['', Validators.required],
+      dob:                [''],
+      age:                [''],
+      maritalStatus:      [''],
+
+      // Contact
+      phone:              ['', Validators.required],
+      email:              [''],
+      whatsappNumber:     [''],
+      otherMobile:        [''],
+      workEmail:          [''],
+      landlineNumber:     [''],
+      areaCode:           [''],
+      emergencyContactName:   [''],
+      emergencyContactNumber: [''],
+      spouseName:             [''],
+      spouseContactNumber:    [''],
+      generalPractitioner:    [''],
+
+      // Address
+      address1:           [''],
+      address2:           [''],
+      address3:           [''],
+      locality:           [''],
+      city:               [''],
+      state:              [''],
+      country:            ['IN'],
+      pincode:            [''],
+
+      // Medical
+      medicalAllergies:   [''],
+      medicalConditions:  [[]],
+      dentalConditions:   [[]],
+      currentMedications: [''],
+      allergicTo:         [''],
+      habits:             [''],
+
+      // Insurance
+      insuranceCompany:    [''],
+      insuranceSubCompany: [''],
+      insurancePolicy:     [''],
+      insuranceIdNumber:   [''],
+
+      // Demographics
+      language:    ['ENGLISH'],
+      religion:    ['UNKNOWN'],
+      occupation:  ['UNKNOWN'],
+      ethnicGroup: [''],
+      race:        [''],
+      bloodGroup:  [''],
+      discProfile: ['']
     });
 
     if (this.isEdit) this.loadPatient();
 
     if (this.isView) this.patientForm.disable();
+
+    this.routeItems = [
+      { label: 'Personal Info', icon: 'pi pi-fw pi-user' },
+      { label: 'Contact', icon: 'pi pi-fw pi-phone' },
+      { label: 'Address', icon: 'pi pi-fw pi-home' },
+      { label: 'Medical', icon: 'pi pi-fw pi-heart' },
+      { label: 'Insurance', icon: 'pi pi-fw pi-shield' },
+      { label: 'Demographics', icon: 'pi pi-fw pi-globe' }
+    ];
   }
 
   // ======================
@@ -83,24 +271,31 @@ export class PatientComponent implements OnInit {
   }
 
   // ======================
+  // TAB CHANGE
+  // ======================
+  onTabChange(event: any): void {
+    this.activeTab = event.index;
+  }
+
+  // ======================
   // DOB → AGE
   // ======================
   onDobSelect(date: Date): void {
-  if (!date) {
-    this.patientForm.patchValue({ age: null });
-    return;
+    if (!date) {
+      this.patientForm.patchValue({ age: null });
+      return;
+    }
+
+    const today = new Date();
+    let age = today.getFullYear() - date.getFullYear();
+    const monthDiff = today.getMonth() - date.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+      age--;
+    }
+
+    this.patientForm.patchValue({ age });
   }
-
-  const today = new Date();
-  let age = today.getFullYear() - date.getFullYear();
-  const monthDiff = today.getMonth() - date.getMonth();
-
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
-    age--;
-  }
-
-  this.patientForm.patchValue({ age });
-}
 
   // ======================
   // SUBMIT
@@ -168,18 +363,57 @@ export class PatientComponent implements OnInit {
 
         if (p) {
           this.patientForm.patchValue({
-            firstName:        p.firstName,
-            lastName:         p.lastName,
-            phone:            p.phone,
-            email:            p.email,
-            dob:              p.dob ? new Date(p.dob) : null,  
-            age:              p.age,
-            gender:           p.gender,
+            title:              p.title,
+            firstName:          p.firstName,
+            middleName:         p.middleName,
+            lastName:           p.lastName,
+            suffix:             p.suffix,
+            phone:              p.phone,
+            email:              p.email,
+            dob:                p.dob ? new Date(p.dob) : null,
+            age:                p.age,
+            gender:             p.gender,
+            maritalStatus:      p.maritalStatus,
+
+            whatsappNumber:     p.whatsappNumber,
+            otherMobile:        p.otherMobile,
+            workEmail:          p.workEmail,
+            landlineNumber:     p.landlineNumber,
+            areaCode:           p.areaCode,
+            emergencyContactName:   p.emergencyContactName,
+            emergencyContactNumber: p.emergencyContactNumber,
+            spouseName:             p.spouseName,
+            spouseContactNumber:    p.spouseContactNumber,
+            generalPractitioner:    p.generalPractitioner,
+
             address1:         p.address1,
             address2:         p.address2,
             address3:         p.address3,
+            locality:         p.locality,
+            city:             p.city,
+            state:            p.state,
+            country:          p.country,
             pincode:          p.pincode,
-            medicalAllergies: p.medicalAllergies
+
+            medicalAllergies:   p.medicalAllergies,
+            medicalConditions:  p.medicalConditions,
+            dentalConditions:   p.dentalConditions,
+            currentMedications: p.currentMedications,
+            allergicTo:         p.allergicTo,
+            habits:             p.habits,
+
+            insuranceCompany:    p.insuranceCompany,
+            insuranceSubCompany: p.insuranceSubCompany,
+            insurancePolicy:     p.insurancePolicy,
+            insuranceIdNumber:   p.insuranceIdNumber,
+
+            language:    p.language,
+            religion:    p.religion,
+            occupation:  p.occupation,
+            ethnicGroup: p.ethnicGroup,
+            race:        p.race,
+            bloodGroup:  p.bloodGroup,
+            discProfile: p.discProfile
           });
         }
 

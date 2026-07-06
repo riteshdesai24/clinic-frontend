@@ -22,131 +22,436 @@
             <label>Clinic Name</label>
             <span class="p-input-icon-left w-full">
               <i class="pi pi-building"></i>
-              <input pInputText class="w-full" [value]="clinicId" disabled />
+              <input pInputText class="w-full" [value]="clinicData.clinicName" disabled />
             </span>
           </div>
         </div>
 
-        <!-- Personal Info -->
-        <p class="section-label">Personal Info</p>
-        <div class="field-grid g3 mb-section">
+        <!-- Tabs -->
+        <p-tabView [(activeIndex)]="activeTab" (onChange)="onTabChange($event)" styleClass="mb-section">
 
-          <div class="pf-field">
-            <label>First Name <span class="req">*</span></label>
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-user"></i>
-              <input pInputText formControlName="firstName" class="w-full" />
-            </span>
-          </div>
+          <!-- Tab 1: Personal Info -->
+          <p-tabPanel header="Personal Info" leftIcon="pi pi-fw pi-user">
+            <div class="field-grid g3 mb-section">
 
-          <div class="pf-field">
-            <label>Last Name <span class="req">*</span></label>
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-user"></i>
-              <input pInputText formControlName="lastName" class="w-full" />
-            </span>
-          </div>
+              <div class="pf-field">
+                <label>Title</label>
+                <p-dropdown
+                  [options]="titles"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="title"
+                  placeholder="Select Title"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
 
-          <div class="pf-field">
-            <label>Phone <span class="req">*</span></label>
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-phone"></i>
-              <input pInputText formControlName="phone" class="w-full" />
-            </span>
-          </div>
+              <div class="pf-field">
+                <label>First Name <span class="req">*</span></label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-user"></i>
+                  <input pInputText formControlName="firstName" class="w-full" />
+                </span>
+              </div>
 
-          <div class="pf-field">
-            <label>Email</label>
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-envelope"></i>
-              <input pInputText formControlName="email" class="w-full" />
-            </span>
-          </div>
+              <div class="pf-field">
+                <label>Middle Name</label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-user"></i>
+                  <input pInputText formControlName="middleName" class="w-full" />
+                </span>
+              </div>
 
-          <div class="pf-field">
-  <label>Date of Birth</label>
-  <p-calendar
-    formControlName="dob"
-    [showIcon]="true"
-    dateFormat="dd/mm/yy"
-    placeholder="DD/MM/YYYY"
-    [monthNavigator]="true"
-    [yearNavigator]="true"
-    yearRange="1900:2025"
-    styleClass="w-full"
-    inputStyleClass="w-full"
-    (onSelect)="onDobSelect($event)">
-  </p-calendar>
-</div>
+              <div class="pf-field">
+                <label>Last Name <span class="req">*</span></label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-user"></i>
+                  <input pInputText formControlName="lastName" class="w-full" />
+                </span>
+              </div>
 
-          <div class="pf-field">
-            <label>Age <span class="age-hint">(auto-calculated)</span></label>
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-hashtag"></i>
-              <input
-                pInputText
-                type="number"
-                formControlName="age"
-                class="w-full"
-                placeholder="Set via date of birth"
-                readonly
-              />
-            </span>
-          </div>
+              <div class="pf-field">
+                <label>Suffix</label>
+                <input pInputText formControlName="suffix" class="w-full" />
+              </div>
 
-          <div class="pf-field">
-            <label>Gender <span class="req">*</span></label>
-            <p-dropdown
-              [options]="genders"
-              optionLabel="label"
-              optionValue="value"
-              formControlName="gender"
-              placeholder="Select Gender"
-              styleClass="w-full">
-            </p-dropdown>
-          </div>
+              <div class="pf-field">
+                <label>Gender <span class="req">*</span></label>
+                <p-dropdown
+                  [options]="genders"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="gender"
+                  placeholder="Select Gender"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
 
-        </div>
+              <div class="pf-field">
+                <label>Date of Birth</label>
+                <p-calendar
+                  formControlName="dob"
+                  [showIcon]="true"
+                  dateFormat="dd/mm/yy"
+                  placeholder="DD/MM/YYYY"
+                  [monthNavigator]="true"
+                  [yearNavigator]="true"
+                  yearRange="1900:2025"
+                  styleClass="w-full"
+                  inputStyleClass="w-full"
+                  (onSelect)="onDobSelect($event)">
+                </p-calendar>
+              </div>
 
-        <!-- Address -->
-        <p class="section-label">Address</p>
-        <div class="field-grid g3 mb-section">
+              <div class="pf-field">
+                <label>Age <span class="age-hint">(auto-calculated)</span></label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-hashtag"></i>
+                  <input
+                    pInputText
+                    type="number"
+                    formControlName="age"
+                    class="w-full"
+                    placeholder="Set via date of birth"
+                    readonly
+                  />
+                </span>
+              </div>
 
-          <div class="pf-field">
-            <label>Address Line 1</label>
-            <input pInputText formControlName="address1" class="w-full" />
-          </div>
+              <div class="pf-field">
+                <label>Marital Status</label>
+                <p-dropdown
+                  [options]="maritalStatuses"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="maritalStatus"
+                  placeholder="Select Marital Status"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
 
-          <div class="pf-field">
-            <label>Address Line 2</label>
-            <input pInputText formControlName="address2" class="w-full" />
-          </div>
+            </div>
+          </p-tabPanel>
 
-          <div class="pf-field">
-            <label>Address Line 3</label>
-            <input pInputText formControlName="address3" class="w-full" />
-          </div>
+          <!-- Tab 2: Contact -->
+          <p-tabPanel header="Contact" leftIcon="pi pi-fw pi-phone">
+            <div class="field-grid g2 mb-section">
 
-          <div class="pf-field">
-            <label>Pincode</label>
-            <input pInputText formControlName="pincode" class="w-full" />
-          </div>
+              <div class="pf-field">
+                <label>Phone <span class="req">*</span></label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-phone"></i>
+                  <input pInputText formControlName="phone" class="w-full" />
+                </span>
+              </div>
 
-        </div>
+              <div class="pf-field">
+                <label>WhatsApp Number</label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-whatsapp"></i>
+                  <input pInputText formControlName="whatsappNumber" class="w-full" />
+                </span>
+              </div>
 
-        <!-- Medical -->
-        <p class="section-label">Medical</p>
-        <div class="field-grid g1 mb-section">
-          <div class="pf-field">
-            <label>Medical Allergies</label>
-            <textarea
-              pInputTextarea
-              rows="3"
-              formControlName="medicalAllergies"
-              class="w-full">
-            </textarea>
-          </div>
-        </div>
+              <div class="pf-field">
+                <label>Other Mobile</label>
+                <input pInputText formControlName="otherMobile" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>Personal Email</label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-envelope"></i>
+                  <input pInputText formControlName="email" class="w-full" />
+                </span>
+              </div>
+
+              <div class="pf-field">
+                <label>Work / Other Email</label>
+                <span class="p-input-icon-left w-full">
+                  <i class="pi pi-envelope"></i>
+                  <input pInputText formControlName="workEmail" class="w-full" />
+                </span>
+              </div>
+
+              <div class="pf-field">
+                <label>Area Code</label>
+                <input pInputText formControlName="areaCode" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>Landline Number</label>
+                <input pInputText formControlName="landlineNumber" class="w-full" />
+              </div>
+
+            </div>
+
+            <p class="section-label">Other Contacts</p>
+            <div class="field-grid g2 mb-section">
+
+              <div class="pf-field">
+                <label>Emergency Contact Name</label>
+                <input pInputText formControlName="emergencyContactName" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>Emergency Contact Number</label>
+                <input pInputText formControlName="emergencyContactNumber" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>Spouse Name</label>
+                <input pInputText formControlName="spouseName" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>Spouse Contact Number</label>
+                <input pInputText formControlName="spouseContactNumber" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>General Practitioner</label>
+                <input pInputText formControlName="generalPractitioner" class="w-full" />
+              </div>
+
+            </div>
+          </p-tabPanel>
+
+          <!-- Tab 3: Address -->
+          <p-tabPanel header="Address" leftIcon="pi pi-fw pi-home">
+            <div class="field-grid g3 mb-section">
+
+              <div class="pf-field">
+                <label>Address Line 1</label>
+                <input pInputText formControlName="address1" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>Address Line 2</label>
+                <input pInputText formControlName="address2" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>Address Line 3</label>
+                <input pInputText formControlName="address3" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>Locality</label>
+                <input pInputText formControlName="locality" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>City</label>
+                <input pInputText formControlName="city" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>Pincode</label>
+                <input pInputText formControlName="pincode" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>State</label>
+                <p-dropdown
+                  [options]="states"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="state"
+                  placeholder="Select State"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
+
+              <div class="pf-field">
+                <label>Country</label>
+                <p-dropdown
+                  [options]="countries"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="country"
+                  placeholder="Select Country"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
+
+            </div>
+          </p-tabPanel>
+
+          <!-- Tab 4: Medical -->
+          <p-tabPanel header="Medical" leftIcon="pi pi-fw pi-heart">
+
+            <p class="section-label">Medical Conditions</p>
+            <div class="field-grid g1 mb-section">
+              <div class="pf-field">
+                <p-multiSelect
+                  [options]="medicalConditionOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="medicalConditions"
+                  display="chip"
+                  placeholder="Select Medical Conditions"
+                  styleClass="w-full">
+                </p-multiSelect>
+              </div>
+            </div>
+
+            <p class="section-label">Dental Conditions</p>
+            <div class="field-grid g1 mb-section">
+              <div class="pf-field">
+                <p-multiSelect
+                  [options]="dentalConditionOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="dentalConditions"
+                  display="chip"
+                  placeholder="Select Dental Conditions"
+                  styleClass="w-full">
+                </p-multiSelect>
+              </div>
+            </div>
+
+            <div class="field-grid g1 mb-section">
+              <div class="pf-field">
+                <label>Current Medications</label>
+                <input pInputText formControlName="currentMedications" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>Allergic To</label>
+                <input pInputText formControlName="allergicTo" class="w-full" placeholder="e.g. Penicillin, Peanuts" />
+              </div>
+
+              <div class="pf-field">
+                <label>Medical Allergies</label>
+                <textarea
+                  pInputTextarea
+                  rows="3"
+                  formControlName="medicalAllergies"
+                  class="w-full">
+                </textarea>
+              </div>
+
+              <div class="pf-field">
+                <label>Habits</label>
+                <input pInputText formControlName="habits" class="w-full" placeholder="e.g. Smoking, Alcohol" />
+              </div>
+            </div>
+          </p-tabPanel>
+
+          <!-- Tab 5: Insurance -->
+          <p-tabPanel header="Insurance" leftIcon="pi pi-fw pi-shield">
+            <p class="section-label">Primary Insurance</p>
+            <div class="field-grid g2 mb-section">
+
+              <div class="pf-field">
+                <label>Company</label>
+                <p-dropdown
+                  [options]="insuranceCompanies"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="insuranceCompany"
+                  placeholder="Select Company"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
+
+              <div class="pf-field">
+                <label>Sub Company</label>
+                <input pInputText formControlName="insuranceSubCompany" class="w-full" placeholder="Select Sub Company" />
+              </div>
+
+              <div class="pf-field">
+                <label>Policy</label>
+                <input pInputText formControlName="insurancePolicy" class="w-full" placeholder="Select Policy" />
+              </div>
+
+              <div class="pf-field">
+                <label>Insurance ID Number</label>
+                <input pInputText formControlName="insuranceIdNumber" class="w-full" />
+              </div>
+
+            </div>
+          </p-tabPanel>
+
+          <!-- Tab 6: Demographics -->
+          <p-tabPanel header="Demographics" leftIcon="pi pi-fw pi-globe">
+            <div class="field-grid g3 mb-section">
+
+              <div class="pf-field">
+                <label>Language</label>
+                <p-dropdown
+                  [options]="languages"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="language"
+                  placeholder="Select Language"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
+
+              <div class="pf-field">
+                <label>Religion</label>
+                <p-dropdown
+                  [options]="religions"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="religion"
+                  placeholder="Select Religion"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
+
+              <div class="pf-field">
+                <label>Occupation</label>
+                <p-dropdown
+                  [options]="occupations"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="occupation"
+                  placeholder="Select Occupation"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
+
+              <div class="pf-field">
+                <label>Ethnic Group</label>
+                <input pInputText formControlName="ethnicGroup" class="w-full" placeholder="Select Ethnic Group" />
+              </div>
+
+              <div class="pf-field">
+                <label>Race</label>
+                <input pInputText formControlName="race" class="w-full" placeholder="Select Race" />
+              </div>
+
+              <div class="pf-field">
+                <label>Blood Group</label>
+                <p-dropdown
+                  [options]="bloodGroups"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="bloodGroup"
+                  placeholder="Select Blood Group"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
+
+              <div class="pf-field">
+                <label>DISC Profile</label>
+                <p-dropdown
+                  [options]="discProfiles"
+                  optionLabel="label"
+                  optionValue="value"
+                  formControlName="discProfile"
+                  placeholder="Select DISC Profile"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
+
+            </div>
+          </p-tabPanel>
+
+        </p-tabView>
 
         <!-- Messages -->
         <small class="p-error" *ngIf="error">{{ error }}</small>

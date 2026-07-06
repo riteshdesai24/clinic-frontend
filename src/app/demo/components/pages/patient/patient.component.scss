@@ -101,6 +101,40 @@
   width: 100%;
 }
 
+// p-multiSelect full width fix (added for Medical tab chips)
+::ng-deep .p-multiselect {
+  width: 100%;
+}
+
+// TabView styling
+::ng-deep .p-tabview {
+  .p-tabview-nav {
+    border-bottom: 2px solid var(--surface-border);
+  }
+
+  .p-tabview-panels {
+    padding: 1.5rem 0;
+  }
+
+  .p-tabview-nav li .p-tabview-nav-link {
+    padding: 0.75rem 1rem;
+    color: var(--text-color-secondary);
+    border: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+
+    &:hover {
+      background-color: transparent;
+      color: var(--text-color);
+    }
+
+    &.p-highlight {
+      color: #4f46e5;
+      border-bottom: 3px solid #4f46e5;
+    }
+  }
+}
+
 // Responsive
 @media (max-width: 960px) {
   .g3 { grid-template-columns: repeat(2, 1fr); }
@@ -109,6 +143,11 @@
 @media (max-width: 640px) {
   .g3, .g2 { grid-template-columns: 1fr; }
   .pf-card { padding: 1.25rem; }
+
+  ::ng-deep .p-tabview-nav li .p-tabview-nav-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
 }
 
 .age-hint {
