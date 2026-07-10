@@ -20,6 +20,7 @@ import { MenubarModule } from 'primeng/menubar';
 import { StepsModule } from 'primeng/steps';
 import { TabMenuModule } from 'primeng/tabmenu';
 import { TieredMenuModule } from 'primeng/tieredmenu';
+import { ToastModule } from 'primeng/toast';
 
 @NgModule({
     declarations: [
@@ -35,6 +36,7 @@ import { TieredMenuModule } from 'primeng/tieredmenu';
         StepsModule,
         TieredMenuModule,
         MenuModule,
+        ToastModule,
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },
