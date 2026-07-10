@@ -99,6 +99,12 @@ export class AuthService {
     );
   }
 
+  getTreatmentList(): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/treatments`
+    );
+  }
+
   getDoctorDetails(id: string): Observable<any> {
     return this.http.get(
       `${environment.apiUrl}/api/staff/${id}`
@@ -149,6 +155,151 @@ export class AuthService {
   deletePatient(id: string): Observable<any> {
     return this.http.delete(
       `${environment.apiUrl}/api/patients/${id}`
+    );
+  }
+
+  // ================= APPOINTMENT =================
+
+  createAppointment(data: any): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/api/appointments`,
+      data
+    );
+  }
+
+  getAppointmentList(clinicId: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/appointments?clinicId=${clinicId}`
+    );
+  }
+
+  getAppointmentDetails(id: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/appointments/${id}`
+    );
+  }
+
+  updateAppointment(id: string, data: any): Observable<any> {
+    return this.http.put(
+      `${environment.apiUrl}/api/appointments/${id}`,
+      data
+    );
+  }
+
+  deleteAppointment(id: string): Observable<any> {
+    return this.http.delete(
+      `${environment.apiUrl}/api/appointments/${id}`
+    );
+  }
+
+  // ================= STATE =================
+
+  createState(data: any): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/api/states`,
+      data
+    );
+  }
+
+  getStateList(clinicId?: string): Observable<any> {
+    const params = clinicId ? `?clinicId=${clinicId}` : '';
+    return this.http.get(
+      `${environment.apiUrl}/api/states${params}`
+    );
+  }
+
+  getStateDetails(id: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/states/${id}`
+    );
+  }
+
+  updateState(id: string, data: any): Observable<any> {
+    return this.http.put(
+      `${environment.apiUrl}/api/states/${id}`,
+      data
+    );
+  }
+
+  deleteState(id: string): Observable<any> {
+    return this.http.delete(
+      `${environment.apiUrl}/api/states/${id}`
+    );
+  }
+
+  // ================= CITY =================
+
+  createCity(data: any): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/api/cities`,
+      data
+    );
+  }
+
+  getCityList(clinicId?: string): Observable<any> {
+    const params = clinicId ? `?clinicId=${clinicId}` : '';
+    return this.http.get(
+      `${environment.apiUrl}/api/cities${params}`
+    );
+  }
+
+  getCityDetails(id: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/cities/${id}`
+    );
+  }
+
+  updateCity(id: string, data: any): Observable<any> {
+    return this.http.put(
+      `${environment.apiUrl}/api/cities/${id}`,
+      data
+    );
+  }
+
+  deleteCity(id: string): Observable<any> {
+    return this.http.delete(
+      `${environment.apiUrl}/api/cities/${id}`
+    );
+  }
+
+  bulkCreateCities(data: any[]): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/api/cities/bulk`,
+      data
+    );
+  }
+
+  // ================= INSURANCE =================
+
+  createInsurance(data: any): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/api/insurances`,
+      data
+    );
+  }
+
+  getInsuranceList(clinicId: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/insurances?clinicId=${clinicId}`
+    );
+  }
+
+  getInsuranceDetails(id: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/insurances/${id}`
+    );
+  }
+
+  updateInsurance(id: string, data: any): Observable<any> {
+    return this.http.put(
+      `${environment.apiUrl}/api/insurances/${id}`,
+      data
+    );
+  }
+
+  deleteInsurance(id: string): Observable<any> {
+    return this.http.delete(
+      `${environment.apiUrl}/api/insurances/${id}`
     );
   }
 

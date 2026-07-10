@@ -1,0 +1,137 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="pf-card">
+
+            <div class="pf-header">
+                <div class="pf-icon">
+                    <i class="pi pi-shield"></i>
+                </div>
+                <div>
+                    <h5 class="pf-title">{{ isEdit ? 'Edit Insurance' : 'Add Insurance' }}</h5>
+                    <p class="pf-sub">Enter the insurance details below</p>
+                </div>
+            </div>
+
+            <form [formGroup]="insuranceForm" (ngSubmit)="onSubmit()">
+
+                <!-- Clinic -->
+                <p class="section-label">Clinic</p>
+                <div class="field-grid g1 mb-section">
+                    <div class="pf-field">
+                        <label>Clinic Name</label>
+                        <span class="p-input-icon-left w-full">
+                            <i class="pi pi-building"></i>
+                            <input pInputText class="w-full" [value]="clinicData.clinicName" disabled />
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Insurance Info -->
+                <p class="section-label">Insurance Info</p>
+                <div class="field-grid g3 mb-section">
+
+                    <div class="pf-field">
+                        <label>Insurer Name <span class="req">*</span></label>
+                        <span class="p-input-icon-left w-full">
+                            <i class="pi pi-user"></i>
+                            <input pInputText formControlName="insurerName" class="w-full" />
+                        </span>
+                    </div>
+
+                    <div class="pf-field">
+                        <label>Company <span class="req">*</span></label>
+                        <span class="p-input-icon-left w-full">
+                            <i class="pi pi-briefcase"></i>
+                            <input pInputText formControlName="company" class="w-full" />
+                        </span>
+                    </div>
+
+                    <div class="pf-field">
+                        <label>Policy Number <span class="req">*</span></label>
+                        <span class="p-input-icon-left w-full">
+                            <i class="pi pi-hashtag"></i>
+                            <input pInputText formControlName="policyNumber" class="w-full" />
+                        </span>
+                    </div>
+
+                    <div class="pf-field">
+                        <label>Policy Type</label>
+                        <p-dropdown [options]="policyTypes" optionLabel="label" optionValue="value"
+                            formControlName="policyType" placeholder="Select Type" styleClass="w-full">
+                        </p-dropdown>
+                    </div>
+
+                    <div class="pf-field">
+                        <label>Coverage Amount</label>
+                        <span class="p-input-icon-left w-full">
+                            <i class="pi pi-dollar"></i>
+                            <input pInputText formControlName="coverageAmount" class="w-full" />
+                        </span>
+                    </div>
+
+                    <div class="pf-field">
+                        <label>Contact Number</label>
+                        <span class="p-input-icon-left w-full">
+                            <i class="pi pi-phone"></i>
+                            <input pInputText formControlName="contactNumber" class="w-full" />
+                        </span>
+                    </div>
+
+                    <div class="pf-field">
+                        <label>Email</label>
+                        <span class="p-input-icon-left w-full">
+                            <i class="pi pi-envelope"></i>
+                            <input pInputText formControlName="email" class="w-full" />
+                        </span>
+                    </div>
+
+                    <div class="pf-field">
+                        <label>Status</label>
+                        <p-dropdown [options]="statuses" optionLabel="label" optionValue="value"
+                            formControlName="status" placeholder="Select Status" styleClass="w-full">
+                        </p-dropdown>
+                    </div>
+
+                    <div class="pf-field">
+                        <label>Start Date</label>
+                        <p-calendar formControlName="startDate" [showIcon]="true" dateFormat="dd/mm/yy"
+                            placeholder="DD/MM/YYYY" [monthNavigator]="true" [yearNavigator]="true"
+                            yearRange="2000:2030" styleClass="w-full" inputStyleClass="w-full">
+                        </p-calendar>
+                    </div>
+
+                    <div class="pf-field">
+                        <label>End Date</label>
+                        <p-calendar formControlName="endDate" [showIcon]="true" dateFormat="dd/mm/yy"
+                            placeholder="DD/MM/YYYY" [monthNavigator]="true" [yearNavigator]="true"
+                            yearRange="2000:2030" styleClass="w-full" inputStyleClass="w-full">
+                        </p-calendar>
+                    </div>
+
+                </div>
+
+                <div class="field-grid g1 mb-section">
+                    <div class="pf-field">
+                        <label>Notes</label>
+                        <textarea pInputTextarea rows="4" formControlName="notes" class="w-full"></textarea>
+                    </div>
+                </div>
+
+                <small class="p-error" *ngIf="error">{{ error }}</small>
+                <small class="p-success" *ngIf="success">{{ success }}</small>
+
+                <div class="pf-divider"></div>
+                <div class="pf-btn-row">
+                    <button pButton type="button" icon="pi pi-times" label="Cancel"
+                        class="p-button-sm p-button-secondary" (click)="onCancel()">
+                    </button>
+                    <button *ngIf="!isView" pButton type="submit" icon="pi pi-check"
+                        [label]="isEdit ? 'Update Insurance' : 'Save Insurance'" class="p-button-sm pf-btn-primary"
+                        [loading]="loading" [disabled]="insuranceForm.invalid || loading">
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

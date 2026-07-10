@@ -1,0 +1,37 @@
+<div class="card">
+  <div class="mb-4 flex flex-column lg:flex-row lg:align-items-center lg:justify-content-between gap-3">
+    <div class="flex align-items-center gap-2">
+      <p-dropdown [options]="states" optionLabel="label" optionValue="value" [(ngModel)]="selectedState" placeholder="Filter by state" (onChange)="onStateChange()"></p-dropdown>
+      <button pButton type="button" label="Clear" class="p-button-secondary" (click)="selectedState = null; onStateChange()"></button>
+    </div>
+    <div class="flex gap-2">
+      <button pButton type="button" label="New City" class="p-button-primary" routerLink="/pages/city"></button>
+      <p-fileUpload #fileUpload name="cityUpload" chooseLabel="Upload CSV" mode="basic" accept=".csv" [customUpload]="true" (uploadHandler)="onUpload($event)"></p-fileUpload>
+    </div>
+  </div>
+
+  <p-table [value]="filteredCities" [loading]="loading" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>City</th>
+        <th>Code</th>
+        <th>State</th>
+        <th>Country</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-city>
+      <tr>
+        <td>{{ city.cityName || city.name }}</td>
+        <td>{{ city.cityCode || city.code }}</td>
+        <td>{{ city.stateName || city.state?.stateName || city.state?.name }}</td>
+        <td>{{ city.country }}</td>
+        <td>{{ city.status }}</td>
+        <td>
+          <button pButton type="button" icon="pi pi-pencil" class="p-button-text" [routerLink]="['/pages/city']" [queryParams]="{ id: city._id || city.id }"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

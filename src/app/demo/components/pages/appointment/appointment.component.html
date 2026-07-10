@@ -1,0 +1,160 @@
+<div class="grid">
+  <div class="col-12">
+    <div class="pf-card">
+
+      <div class="pf-header">
+        <div class="pf-icon">
+          <i class="pi pi-calendar-plus"></i>
+        </div>
+        <div>
+          <h5 class="pf-title">{{ isEdit ? 'Edit Appointment' : (dialogMode ? 'Book Appointment' : 'Create Appointment') }}</h5>
+          <p class="pf-sub">Enter appointment details below</p>
+        </div>
+      </div>
+
+      <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()">
+
+        <!-- Clinic -->
+        <p class="section-label">Clinic</p>
+        <div class="field-grid g1 mb-section">
+          <div class="pf-field">
+            <label>Clinic Name</label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-building"></i>
+              <input pInputText class="w-full" [value]="clinicData.clinicName" disabled />
+            </span>
+          </div>
+        </div>
+
+        <div class="field-grid g3 mb-section">
+
+          <div class="pf-field">
+            <label>Patient Name <span class="req">*</span></label>
+            <p-autoComplete
+              formControlName="patientName"
+              [suggestions]="filteredPatients"
+              (completeMethod)="searchPatients($event)"
+              field="label"
+              [dropdown]="true"
+              placeholder="Search patient..."
+              styleClass="w-full"
+              inputStyleClass="w-full">
+            </p-autoComplete>
+          </div>
+
+          <div class="pf-field">
+            <label>Doctor <span class="req">*</span></label>
+            <p-autoComplete
+              formControlName="doctorId"
+              [suggestions]="filteredDoctors"
+              (completeMethod)="searchDoctors($event)"
+              field="label"
+              [dropdown]="true"
+              placeholder="Search doctor..."
+              styleClass="w-full"
+              inputStyleClass="w-full">
+            </p-autoComplete>
+          </div>
+
+          <div class="pf-field">
+            <label>Treatment</label>
+            <p-dropdown
+              [options]="treatments"
+              optionLabel="label"
+              optionValue="value"
+              formControlName="treatmentId"
+              placeholder="Select Treatment"
+              styleClass="w-full">
+            </p-dropdown>
+          </div>
+
+          <div class="pf-field">
+            <label>Date <span class="req">*</span></label>
+            <p-calendar
+              formControlName="date"
+              [showIcon]="true"
+              dateFormat="dd/mm/yy"
+              placeholder="DD/MM/YYYY"
+              [monthNavigator]="true"
+              [yearNavigator]="true"
+              yearRange="2020:2030"
+              styleClass="w-full"
+              inputStyleClass="w-full">
+            </p-calendar>
+          </div>
+
+          <div class="pf-field">
+            <label>Time <span class="req">*</span></label>
+            <p-calendar
+              formControlName="time"
+              [timeOnly]="true"
+              [hourFormat]="'12'"
+              [showIcon]="true"
+              icon="pi pi-clock"
+              styleClass="w-full"
+              inputStyleClass="w-full">
+            </p-calendar>
+          </div>
+
+          <div class="pf-field">
+            <label>Status</label>
+            <p-dropdown
+              [options]="statuses"
+              optionLabel="label"
+              optionValue="value"
+              formControlName="status"
+              placeholder="Select Status"
+              styleClass="w-full">
+            </p-dropdown>
+          </div>
+
+        </div>
+
+        <div class="field-grid g1 mb-section">
+          <div class="pf-field">
+            <label>Notes</label>
+            <textarea pInputTextarea rows="4" formControlName="notes" class="w-full"></textarea>
+          </div>
+        </div>
+
+        <small class="p-error" *ngIf="error">{{ error }}</small>
+        <small class="p-success" *ngIf="success">{{ success }}</small>
+
+        <div class="pf-divider"></div>
+        <div class="pf-btn-row">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            label="Cancel"
+            class="p-button-sm p-button-secondary"
+            (click)="onCancel()">
+          </button>
+          <button
+            *ngIf="!dialogMode"
+            pButton
+            type="submit"
+            icon="pi pi-check"
+            [label]="isEdit ? 'Update Appointment' : 'Create Appointment'"
+            class="p-button-sm pf-btn-primary"
+            [loading]="loading"
+            [disabled]="appointmentForm.invalid || loading">
+          </button>
+          <button
+            *ngIf="dialogMode"
+            pButton
+            type="button"
+            icon="pi pi-check"
+            [label]="isEdit ? 'Update Appointment' : 'Save Appointment'"
+            class="p-button-sm pf-btn-primary"
+            [loading]="loading"
+            (click)="onSubmit()"
+            [disabled]="appointmentForm.invalid || loading">
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>

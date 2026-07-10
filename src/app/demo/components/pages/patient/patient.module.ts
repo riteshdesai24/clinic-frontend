@@ -16,6 +16,8 @@ import { CalendarModule } from 'primeng/calendar';
 import { TabMenuModule } from 'primeng/tabmenu';
 import { TabViewModule } from 'primeng/tabview';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { DialogModule } from 'primeng/dialog';
+import { AppointmentSharedModule } from '../appointment/shared/appointment-shared.module';
 
 @NgModule({
   declarations: [
@@ -29,6 +31,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
     FormsModule,
     ReactiveFormsModule,
     MultiSelectModule,
+    DialogModule,
+    AppointmentSharedModule,
 
     DropdownModule,
     InputTextModule,

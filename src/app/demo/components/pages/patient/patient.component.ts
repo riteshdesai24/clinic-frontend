@@ -23,6 +23,8 @@ export class PatientComponent implements OnInit {
   isView = false;
 
   patientId: string | null = null;
+  appointmentDialogVisible = false;
+  appointmentPatientName = '';
 
   // ---------- Personal Info ----------
   titles = [
@@ -306,6 +308,46 @@ export class PatientComponent implements OnInit {
       return;
     }
     this.isEdit ? this.updatePatient() : this.createPatient();
+  }
+
+  bookAppointment(): void {
+    if (this.patientId) {
+      this.openAppointmentDialog();
+      return;
+    }
+
+    if (this.patientForm.invalid) {
+      this.patientForm.markAllAsTouched();
+      return;
+    }
+
+    this.loading = true;
+    const data = {
+      ...this.patientForm.value,
+      clinicId: this.clinicId
+    };
+
+    this.api.createPatient(data).subscribe({
+      next: (res: any) => {
+        this.loading = false;
+        this.patientId = res.data?.patient?._id || res.data?._id || null;
+        this.success = 'Patient created successfully';
+        this.msg.add({ severity: 'success', summary: 'Success', detail: this.success });
+        this.openAppointmentDialog();
+      },
+      error: err => this.handleError(err)
+    });
+  }
+
+  openAppointmentDialog(): void {
+    const firstName = this.patientForm.value.firstName || '';
+    const lastName = this.patientForm.value.lastName || '';
+    this.appointmentPatientName = `${firstName} ${lastName}`.trim();
+    this.appointmentDialogVisible = true;
+  }
+
+  hideAppointmentDialog(): void {
+    this.appointmentDialogVisible = false;
   }
 
   // ======================

@@ -1,0 +1,132 @@
+<div class="grid">
+  <div class="col-12">
+    <div class="il-card">
+
+      <div class="il-header">
+        <div class="il-header-left">
+          <div class="il-icon">
+            <i class="pi pi-shield"></i>
+          </div>
+          <div>
+            <h5 class="il-title">Insurance List</h5>
+            <p class="il-sub">{{ filteredInsuranceList.length }} records found</p>
+          </div>
+        </div>
+        <div class="il-header-right">
+          <p-fileUpload
+            mode="basic"
+            name="insuranceExcel"
+            accept=".xlsx,.xls"
+            chooseLabel="Import Excel"
+            styleClass="il-import-btn"
+            [auto]="true"
+            [showUploadButton]="false"
+            [showCancelButton]="false"
+            (onSelect)="onInsuranceFileSelect($event)">
+          </p-fileUpload>
+          <button
+            pButton
+            icon="pi pi-plus"
+            label="Add Insurance"
+            class="il-add-btn"
+            (click)="createInsurance()">
+          </button>
+        </div>
+      </div>
+
+      <div class="il-search-wrap">
+        <span class="p-input-icon-left il-search">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            (input)="onSearch($event)"
+            placeholder="Search by insurer, policy or company..." />
+        </span>
+      </div>
+
+      <p-table
+        [value]="filteredInsuranceList"
+        [loading]="loading"
+        responsiveLayout="scroll"
+        [paginator]="true"
+        [rows]="10"
+        styleClass="il-table">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Insurer</th>
+            <th>Policy</th>
+            <th>Company</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>
+              <div class="insurance-cell">
+                <div class="insurance-avatar">
+                  {{ item.insurerName?.charAt(0) }}
+                </div>
+                <div>
+                  <p class="insurance-name">{{ item.insurerName }}</p>
+                  <p class="insurance-detail">{{ item.policyType }} Policy</p>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="cell-text">{{ item.policyNumber }}</span>
+            </td>
+            <td>
+              <span class="cell-text">{{ item.company || '—' }}</span>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="'status-' + item.status?.toLowerCase()">
+                {{ item.status }}
+              </span>
+            </td>
+            <td>
+              <div class="action-row">
+                <button
+                  pButton
+                  icon="pi pi-eye"
+                  class="action-btn action-view"
+                  pTooltip="View"
+                  (click)="viewInsurance(item)">
+                </button>
+                <button
+                  pButton
+                  icon="pi pi-pencil"
+                  class="action-btn action-edit"
+                  pTooltip="Edit"
+                  (click)="editInsurance(item)">
+                </button>
+                <button
+                  pButton
+                  icon="pi pi-trash"
+                  class="action-btn action-delete"
+                  pTooltip="Delete"
+                  (click)="deleteInsurance(item)">
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="pi pi-shield"></i>
+                <p>No insurance records found</p>
+                <span>Try adjusting your search or add a new record.</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>

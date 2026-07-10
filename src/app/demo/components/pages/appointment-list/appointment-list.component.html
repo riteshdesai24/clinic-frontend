@@ -1,0 +1,119 @@
+<div class="grid">
+  <div class="col-12">
+    <div class="pl-card">
+
+      <div class="pl-header">
+        <div class="pl-header-left">
+          <div class="pl-icon">
+            <i class="pi pi-calendar"></i>
+          </div>
+          <div>
+            <h5 class="pl-title">Appointment List</h5>
+            <p class="pl-sub">{{ filteredAppointmentList.length }} records found</p>
+          </div>
+        </div>
+        <button
+          pButton
+          icon="pi pi-plus"
+          label="Add Appointment"
+          class="pl-add-btn"
+          (click)="createAppointment()">
+        </button>
+      </div>
+
+      <div class="pl-search-wrap">
+        <span class="p-input-icon-left pl-search">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            (input)="onSearch($event)"
+            placeholder="Search by patient, doctor or status..." />
+        </span>
+      </div>
+
+      <p-table
+        [value]="filteredAppointmentList"
+        [loading]="loading"
+        responsiveLayout="scroll"
+        [paginator]="true"
+        [rows]="10"
+        styleClass="pl-table">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Patient</th>
+            <th>Doctor</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>
+              <div class="patient-cell">
+                <div class="patient-avatar">
+                  {{ item.patientName?.charAt(0) }}
+                </div>
+                <div>
+                  <p class="patient-name">{{ item.patientName }}</p>
+                  <p class="patient-age">{{ item.date | date:'shortDate' }}</p>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="cell-text">{{ item.doctor }}</span>
+            </td>
+            <td>
+              <span class="cell-text">{{ item.appointmentDate | date:'dd MMM yyyy' }}</span>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="'status-' + item.status?.toLowerCase()">
+                {{ item.status }}
+              </span>
+            </td>
+            <td>
+              <div class="action-row">
+                <button
+                  pButton
+                  icon="pi pi-eye"
+                  class="action-btn action-view"
+                  pTooltip="View"
+                  (click)="viewAppointment(item)">
+                </button>
+                <button
+                  pButton
+                  icon="pi pi-pencil"
+                  class="action-btn action-edit"
+                  pTooltip="Edit"
+                  (click)="editAppointment(item)">
+                </button>
+                <button
+                  pButton
+                  icon="pi pi-trash"
+                  class="action-btn action-delete"
+                  pTooltip="Delete"
+                  (click)="deleteAppointment(item)">
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="pi pi-calendar"></i>
+                <p>No appointments found</p>
+                <span>Add a new appointment or adjust your search.</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>

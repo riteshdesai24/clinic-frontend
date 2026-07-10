@@ -471,6 +471,16 @@
           <button
             *ngIf="!isView"
             pButton
+            type="button"
+            icon="pi pi-calendar-plus"
+            label="Create Patient and Book appointment"
+            class="p-button-sm p-button-help"
+            (click)="bookAppointment()"
+            [loading]="loading">
+          </button>
+          <button
+            *ngIf="!isView"
+            pButton
             type="submit"
             icon="pi pi-check"
             [label]="isEdit ? 'Update' : 'Create Patient'"
@@ -481,6 +491,20 @@
         </div>
 
       </form>
+      <p-dialog
+        header="Book Appointment"
+        [(visible)]="appointmentDialogVisible"
+        [modal]="true"
+        [style]="{ width: '55vw' }"
+        [breakpoints]="{ '960px': '90vw', '640px': '98vw' }"
+        [closable]="true">
+        <app-appointment
+          [patientId]="patientId"
+          [patientName]="appointmentPatientName"
+          [dialogMode]="true"
+          (close)="hideAppointmentDialog()">
+        </app-appointment>
+      </p-dialog>
     </div>
   </div>
 </div>

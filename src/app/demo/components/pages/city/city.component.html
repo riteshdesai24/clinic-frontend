@@ -1,0 +1,98 @@
+<div class="grid">
+  <div class="col-12">
+    <div class="pf-card">
+
+      <div class="pf-header">
+        <div class="pf-icon">
+          <i class="pi pi-map-marker"></i>
+        </div>
+        <div>
+          <h5 class="pf-title">{{ isEdit ? 'Edit City' : 'Add City' }}</h5>
+          <p class="pf-sub">Enter the city information below</p>
+        </div>
+      </div>
+
+      <form [formGroup]="cityForm" (ngSubmit)="onSubmit()">
+        <!-- Clinic -->
+        <p class="section-label">Clinic</p>
+        <div class="field-grid g1 mb-section">
+          <div class="pf-field">
+            <label>Clinic Name</label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-building"></i>
+              <input pInputText class="w-full" [value]="clinicData.clinicName" disabled />
+            </span>
+          </div>
+        </div>
+
+        <div class="field-grid g3 mb-section">
+          <div class="pf-field">
+            <label>City name <span class="req">*</span></label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-map-marker"></i>
+              <input id="cityName" type="text" pInputText formControlName="cityName" class="w-full" [disabled]="isView" />
+            </span>
+          </div>
+
+          <div class="pf-field">
+            <label>City code <span class="req">*</span></label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-hashtag"></i>
+              <input id="cityCode" type="text" pInputText formControlName="cityCode" class="w-full" [disabled]="isView" />
+            </span>
+          </div>
+
+          <div class="pf-field">
+            <label>State <span class="req">*</span></label>
+            <p-dropdown id="stateId" [options]="states" optionLabel="label" optionValue="value" formControlName="stateId" placeholder="Select state" styleClass="w-full" [disabled]="isView"></p-dropdown>
+          </div>
+
+          <div class="pf-field">
+            <label>Country <span class="req">*</span></label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-globe"></i>
+              <input id="country" type="text" pInputText formControlName="country" class="w-full" [disabled]="isView" />
+            </span>
+          </div>
+
+          <div class="pf-field">
+            <label>Status</label>
+            <p-dropdown id="status" [options]="statuses" optionLabel="label" optionValue="value" formControlName="status" placeholder="Select status" styleClass="w-full" [disabled]="isView"></p-dropdown>
+          </div>
+        </div>
+
+        <div class="field-grid g1 mb-section">
+          <div class="pf-field">
+            <label>Notes</label>
+            <textarea id="notes" pInputTextarea rows="4" formControlName="notes" class="w-full" [disabled]="isView"></textarea>
+          </div>
+        </div>
+
+        <small class="p-error" *ngIf="error">{{ error }}</small>
+        <small class="p-success" *ngIf="success">{{ success }}</small>
+
+        <div class="pf-divider"></div>
+        <div class="pf-btn-row">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            label="Cancel"
+            class="p-button-sm p-button-secondary"
+            (click)="onCancel()">
+          </button>
+          <button
+            *ngIf="!isView"
+            pButton
+            type="submit"
+            icon="pi pi-check"
+            [label]="isEdit ? 'Update City' : 'Save City'"
+            class="p-button-sm pf-btn-primary"
+            [loading]="loading"
+            [disabled]="cityForm.invalid || loading">
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

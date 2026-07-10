@@ -34,9 +34,55 @@ export class AppMenuComponent implements OnInit {
                         routerLink: ['/pages/staff-list']
                     }] : []),
                     { label: 'Doctor', icon: 'pi pi-fw pi-user', routerLink: ['/pages/doctor-list'], badge: 'NEW' },
-                    { label: 'Patient', icon: 'pi pi-fw pi-user', routerLink: ['/pages/patient-list'], badge: 'NEW' }
+                    { label: 'Patient', icon: 'pi pi-fw pi-user', routerLink: ['/pages/patient-list'], badge: 'NEW' },
+                    { label: 'Appointment', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/appointment-list'], badge: 'NEW' },
+                    
                 ]
-            }
+            },
+            {
+                label: 'Masters',
+                icon: 'pi pi-fw pi-briefcase',
+                items: [
+                    { label: 'Insurance', icon: 'pi pi-fw pi-shield', routerLink: ['/pages/insurance-list'], badge: 'NEW' },
+                    
+                    {
+                        label: 'Medical Conditions',
+                        icon: 'pi pi-fw pi-pencil',
+                        routerLink: ['/pages/crud']
+                    },
+                    {
+                        label: 'Country',
+                        icon: 'pi pi-fw pi-calendar',
+                        routerLink: ['/pages/timeline']
+                    },
+                    {
+                        label: 'State',
+                        icon: 'pi pi-fw pi-exclamation-circle',
+                        routerLink: ['/pages/state-list']
+                    },
+                    {
+                        label: 'City',
+                        icon: 'pi pi-fw pi-map-marker',
+                        routerLink: ['/pages/city-list']
+                    },
+                    {
+                        label: 'Dental Conditions',
+                        icon: 'pi pi-fw pi-circle-off',
+                        items: [
+                            {
+                                label: 'Conditions',
+                                icon: 'pi pi-fw pi-sign-in',
+                                routerLink: ['/auth/login']
+                            },
+                            {
+                                label: 'Treatments',
+                                icon: 'pi pi-fw pi-times-circle',
+                                routerLink: ['/auth/error']
+                            }
+                        ]
+                    },
+                ]
+            },
             /* {
                 label: 'UI Components',
                 items: [

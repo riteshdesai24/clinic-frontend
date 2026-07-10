@@ -23,6 +23,14 @@ import { RouterModule } from '@angular/router';
       { path: 'patient', loadChildren: () => import('./patient/patient.module').then(m => m.PatientModule) },
 
       { path: 'patient-list', loadChildren: () => import('./patient-list/patient-list.module').then(m => m.PatientListModule) },
+      { path: 'appointment', loadChildren: () => import('./appointment/appointment.module').then(m => m.AppointmentModule) },
+      { path: 'appointment-list', loadChildren: () => import('./appointment-list/appointment-list.module').then(m => m.AppointmentListModule) },
+      { path: 'insurance', loadChildren: () => import('./insurance/insurance.module').then(m => m.InsuranceModule) },
+      { path: 'insurance-list', loadChildren: () => import('./insurance-list/insurance-list.module').then(m => m.InsuranceListModule) },
+      { path: 'state', loadChildren: () => import('./state/state.module').then(m => m.StateModule) },
+      { path: 'state-list', loadChildren: () => import('./state-list/state-list.module').then(m => m.StateListModule) },
+      { path: 'city', loadChildren: () => import('./city/city.module').then(m => m.CityModule) },
+      { path: 'city-list', loadChildren: () => import('./city-list/city-list.module').then(m => m.CityListModule) },
       // FALLBACK
       { path: '**', redirectTo: '/notfound' }
 
