@@ -12,3 +12,69 @@ $gutter: 1rem; //for primeflex grid system
 @import "assets/demo/styles/flags/flags.css";
 @import "assets/demo/styles/badges.scss";
 @import "assets/demo/styles/code.scss";
+
+/* Clinic theme: teal primary, cool neutral surfaces, and coral accents. */
+:root {
+    --primary-color: #15998c;
+    --primary-color-text: #ffffff;
+    --primary-50: #edf9f7;
+    --primary-100: #d3f0ec;
+    --primary-200: #a8e0d8;
+    --primary-300: #78cec4;
+    --primary-400: #42b6aa;
+    --primary-500: #15998c;
+    --primary-600: #0f7d73;
+    --primary-700: #0b655e;
+    --primary-800: #084d48;
+    --primary-900: #053633;
+    --surface-ground: #f4f8f8;
+    --surface-section: #f4f8f8;
+    --surface-card: #ffffff;
+    --surface-border: #d8e5e3;
+    --highlight-bg: #e3f4f1;
+    --highlight-text-color: #084d48;
+    --focus-ring: 0 0 0 1px #15998c;
+    --red-500: #ef4444;
+    --red-600: #dc2626;
+}
+
+body {
+    background: var(--surface-ground);
+}
+
+/* Shared custom page controls retain the palette even where older page CSS used indigo values. */
+body .pf-icon,
+body .il-icon {
+    background: #e3f4f1 !important;
+    color: #0f7d73 !important;
+}
+
+body .pf-btn-primary,
+body .il-add-btn,
+body .p-button:not(.p-button-secondary):not(.p-button-success):not(.p-button-warning):not(.p-button-danger) {
+    background: #15998c !important;
+    border-color: #15998c !important;
+}
+
+body .pf-btn-primary:hover,
+body .il-add-btn:hover,
+body .p-button:not(.p-button-secondary):not(.p-button-success):not(.p-button-warning):not(.p-button-danger):hover {
+    background: #0f7d73 !important;
+    border-color: #0f7d73 !important;
+}
+
+body .action-edit,
+body .action-view {
+    background: #e3f4f1 !important;
+    color: #0f7d73 !important;
+}
+
+body .status-active {
+    background: #e3f4f1 !important;
+    color: #0b655e !important;
+}
+
+body .p-button-danger,
+body .action-delete {
+    color: #dc2626;
+}

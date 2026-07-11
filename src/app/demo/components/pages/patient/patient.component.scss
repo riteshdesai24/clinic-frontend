@@ -128,10 +128,12 @@
       color: var(--text-color);
     }
 
-    &.p-highlight {
-      color: #4f46e5;
-      border-bottom: 3px solid #4f46e5;
-    }
+  }
+
+  .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+    color: #15998c !important;
+    border-bottom: 3px solid #15998c !important;
+    margin-bottom: -2px;
   }
 }
 

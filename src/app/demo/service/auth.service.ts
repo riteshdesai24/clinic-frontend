@@ -101,8 +101,24 @@ export class AuthService {
 
   getTreatmentList(): Observable<any> {
     return this.http.get(
-      `${environment.apiUrl}/api/treatments`
+      `${environment.apiUrl}/api/treatmenttypes`
     );
+  }
+
+  createTreatment(data: any): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/treatmenttypes`, data);
+  }
+
+  getTreatmentDetails(id: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/treatmenttypes/${id}`);
+  }
+
+  updateTreatment(id: string, data: any): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/api/treatmenttypes/${id}`, data);
+  }
+
+  deleteTreatment(id: string): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}/api/treatmenttypes/${id}`);
   }
 
   getDoctorDetails(id: string): Observable<any> {
@@ -301,6 +317,29 @@ export class AuthService {
     return this.http.delete(
       `${environment.apiUrl}/api/insurances/${id}`
     );
+  }
+
+  // ================= CONDITIONS =================
+
+  createCondition(data: any): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/conditions`, data);
+  }
+
+  getConditionList(type?: 'MEDICAL' | 'DENTAL'): Observable<any> {
+    const params = type ? `?type=${type}` : '';
+    return this.http.get(`${environment.apiUrl}/api/conditions${params}`);
+  }
+
+  getConditionDetails(id: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/conditions/${id}`);
+  }
+
+  updateCondition(id: string, data: any): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/api/conditions/${id}`, data);
+  }
+
+  deleteCondition(id: string): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}/api/conditions/${id}`);
   }
 
 }

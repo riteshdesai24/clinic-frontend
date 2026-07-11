@@ -17,6 +17,7 @@ import { TabMenuModule } from 'primeng/tabmenu';
 import { TabViewModule } from 'primeng/tabview';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogModule } from 'primeng/dialog';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { AppointmentSharedModule } from '../appointment/shared/appointment-shared.module';
 
 @NgModule({
@@ -32,6 +33,7 @@ import { AppointmentSharedModule } from '../appointment/shared/appointment-share
     ReactiveFormsModule,
     MultiSelectModule,
     DialogModule,
+    AutoCompleteModule,
     AppointmentSharedModule,
 
     DropdownModule,

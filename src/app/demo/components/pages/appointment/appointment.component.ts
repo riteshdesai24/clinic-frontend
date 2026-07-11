@@ -29,6 +29,7 @@ export class AppointmentComponent implements OnInit {
   patients: any[] = [];
   filteredPatients: any[] = [];
   treatments: any[] = [];
+  filteredTreatments: any[] = [];
   clinicData: any = {};
   statuses = [
     { label: 'Scheduled', value: 'SCHEDULED' },
@@ -60,7 +61,7 @@ export class AppointmentComponent implements OnInit {
       patientId: [this.patientId || ''],
       doctorId: [null, Validators.required],
       date: ['', Validators.required],
-      time: [null, Validators.required],
+      time: [this.currentTime(), Validators.required],
       notes: [''],
       treatmentId: [''],
       status: ['PENDING', Validators.required]
@@ -98,7 +99,14 @@ export class AppointmentComponent implements OnInit {
   searchPatients(event: any): void {
     const query = (event.query || '').toLowerCase();
     this.filteredPatients = this.patients.filter(p =>
-      p.label.toLowerCase().includes(query)
+      p.label.toLowerCase().includes(query) || p.phone.includes(query)
+    );
+  }
+
+  searchTreatments(event: any): void {
+    const query = (event.query || '').toLowerCase();
+    this.filteredTreatments = this.treatments.filter(t =>
+      t.label.toLowerCase().includes(query)
     );
   }
 
@@ -107,6 +115,12 @@ export class AppointmentComponent implements OnInit {
     const hh = String(d.getHours()).padStart(2, '0');
     const mm = String(d.getMinutes()).padStart(2, '0');
     return `${hh}:${mm}`;
+  }
+
+  private currentTime(): Date {
+    const now = new Date();
+    now.setSeconds(0, 0);
+    return now;
   }
 
   private parseTime(t: string): Date | null {
@@ -138,7 +152,7 @@ export class AppointmentComponent implements OnInit {
       time: this.formatTime(raw.time),
       status: raw.status,
       notes: raw.notes,
-      treatmentId: raw.treatmentId || null
+      treatmentId: raw.treatmentId?.value || null
     };
 
     this.api.createAppointment(data).subscribe({
@@ -167,7 +181,7 @@ export class AppointmentComponent implements OnInit {
       time: this.formatTime(raw.time),
       status: raw.status,
       notes: raw.notes,
-      treatmentId: raw.treatmentId || null
+      treatmentId: raw.treatmentId?.value || null
     };
 
     this.api.updateAppointment(this.appointmentId, data).subscribe({
@@ -202,7 +216,8 @@ export class AppointmentComponent implements OnInit {
             date: appt.date ? new Date(appt.date) : null,
             time: this.parseTime(appt.time || appt.appointmentTime || ''),
             notes: appt.notes || appt.reason || '',
-            treatmentId: appt.treatmentId || '',
+            treatmentId: this.treatments.find(t => t.value === appt.treatmentId)
+              || (appt.treatmentId ? { label: appt.treatmentName || 'Treatment', value: appt.treatmentId } : null),
             status: appt.status || ''
           });
         }
@@ -243,7 +258,11 @@ export class AppointmentComponent implements OnInit {
       next: (res: any) => {
         const patients = res.data || res || [];
         this.patients = patients.map((p: any) => ({
-          label: `${p.firstName || p.name || ''} ${p.lastName || ''}`.trim() || 'Patient',
+          label: [
+            `${p.firstName || p.name || ''} ${p.lastName || ''}`.trim() || 'Patient',
+            p.phone
+          ].filter(Boolean).join(' - '),
+          phone: String(p.phone || ''),
           value: p._id || p.id || p.patientId || p.value || ''
         }));
         this.filteredPatients = [...this.patients];
@@ -263,6 +282,7 @@ export class AppointmentComponent implements OnInit {
           label: t.name || t.treatmentName || 'Treatment',
           value: t._id || t.id || t.value || ''
         }));
+        this.filteredTreatments = [...this.treatments];
       },
       error: () => {
         // keep empty state if API fails

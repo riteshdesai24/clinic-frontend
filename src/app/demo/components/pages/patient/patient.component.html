@@ -346,14 +346,17 @@
 
               <div class="pf-field">
                 <label>Company</label>
-                <p-dropdown
-                  [options]="insuranceCompanies"
-                  optionLabel="label"
-                  optionValue="value"
+                <p-autoComplete
                   formControlName="insuranceCompany"
-                  placeholder="Select Company"
-                  styleClass="w-full">
-                </p-dropdown>
+                  [suggestions]="filteredInsuranceCompanies"
+                  (completeMethod)="searchInsuranceCompanies($event)"
+                  (onSelect)="onInsuranceCompanySelect($event)"
+                  field="label"
+                  [dropdown]="true"
+                  placeholder="Search insurance company..."
+                  styleClass="w-full"
+                  inputStyleClass="w-full">
+                </p-autoComplete>
               </div>
 
               <div class="pf-field">

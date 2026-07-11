@@ -113,12 +113,8 @@ export class PatientComponent implements OnInit {
   ];
 
   // ---------- Insurance ----------
-  // NOTE [Guessing]: replace with your actual insurer master data.
-  insuranceCompanies = [
-    { label: 'Star Health', value: 'STAR_HEALTH' },
-    { label: 'ICICI Lombard', value: 'ICICI_LOMBARD' },
-    { label: 'HDFC Ergo', value: 'HDFC_ERGO' }
-  ];
+  insuranceCompanies: any[] = [];
+  filteredInsuranceCompanies: any[] = [];
 
   // ---------- Demographics ----------
   languages = [
@@ -251,6 +247,8 @@ export class PatientComponent implements OnInit {
       discProfile: ['']
     });
 
+    this.loadInsuranceCompanies();
+
     if (this.isEdit) this.loadPatient();
 
     if (this.isView) this.patientForm.disable();
@@ -270,6 +268,55 @@ export class PatientComponent implements OnInit {
   // ======================
   get f() {
     return this.patientForm.controls;
+  }
+
+  searchInsuranceCompanies(event: any): void {
+    const query = (event.query || '').toLowerCase();
+    this.filteredInsuranceCompanies = this.insuranceCompanies.filter(company =>
+      company.label.toLowerCase().includes(query)
+    );
+  }
+
+  onInsuranceCompanySelect(event: any): void {
+    const insurance = event.value;
+    this.patientForm.patchValue({
+      insuranceSubCompany: insurance.companyName || '',
+      insurancePolicy: insurance.policyNumber || ''
+    });
+  }
+
+  private loadInsuranceCompanies(): void {
+    if (!this.clinicId) {
+      return;
+    }
+
+    this.api.getInsuranceList(this.clinicId).subscribe({
+      next: (res: any) => {
+        const records = Array.isArray(res?.data) ? res.data
+          : Array.isArray(res?.data?.insurances) ? res.data.insurances
+          : Array.isArray(res) ? res
+          : [];
+        this.insuranceCompanies = records
+          .filter((insurance: any) => insurance.insuranceCompany || insurance.insurerName)
+          .filter((insurance: any, index: number, companies: any[]) => {
+            const name = insurance.insuranceCompany || insurance.insurerName;
+            return companies.findIndex(item =>
+              (item.insuranceCompany || item.insurerName) === name
+            ) === index;
+          })
+          .map((insurance: any) => ({
+            label: insurance.insuranceCompany || insurance.insurerName,
+            value: insurance.insuranceCompany || insurance.insurerName,
+            companyName: insurance.companyName || insurance.company || '',
+            policyNumber: insurance.policyNumber || ''
+          }));
+        this.filteredInsuranceCompanies = [...this.insuranceCompanies];
+      },
+      error: () => {
+        this.insuranceCompanies = [];
+        this.filteredInsuranceCompanies = [];
+      }
+    });
   }
 
   // ======================
@@ -322,10 +369,7 @@ export class PatientComponent implements OnInit {
     }
 
     this.loading = true;
-    const data = {
-      ...this.patientForm.value,
-      clinicId: this.clinicId
-    };
+    const data = this.toPatientPayload();
 
     this.api.createPatient(data).subscribe({
       next: (res: any) => {
@@ -356,10 +400,7 @@ export class PatientComponent implements OnInit {
   createPatient(): void {
     this.loading = true;
 
-    const data = {
-      ...this.patientForm.value,
-      clinicId: this.clinicId
-    };
+    const data = this.toPatientPayload();
 
     this.api.createPatient(data).subscribe({
       next: () => {
@@ -378,10 +419,7 @@ export class PatientComponent implements OnInit {
     if (!this.patientId) return;
     this.loading = true;
 
-    const data = {
-      ...this.patientForm.value,
-      clinicId: this.clinicId
-    };
+    const data = this.toPatientPayload();
 
     this.api.updatePatient(this.patientId, data).subscribe({
       next: () => {
@@ -444,7 +482,9 @@ export class PatientComponent implements OnInit {
             allergicTo:         p.allergicTo,
             habits:             p.habits,
 
-            insuranceCompany:    p.insuranceCompany,
+            insuranceCompany: this.insuranceCompanies.find(company =>
+              company.value === p.insuranceCompany || company.label === p.insuranceCompany
+            ) || (p.insuranceCompany ? { label: p.insuranceCompany, value: p.insuranceCompany } : null),
             insuranceSubCompany: p.insuranceSubCompany,
             insurancePolicy:     p.insurancePolicy,
             insuranceIdNumber:   p.insuranceIdNumber,
@@ -463,6 +503,15 @@ export class PatientComponent implements OnInit {
       },
       error: err => this.handleError(err)
     });
+  }
+
+  private toPatientPayload(): any {
+    const form = this.patientForm.getRawValue();
+    return {
+      ...form,
+      insuranceCompany: form.insuranceCompany?.value || form.insuranceCompany || '',
+      clinicId: this.clinicId
+    };
   }
 
   // Format ISO date → YYYY-MM-DD for date input

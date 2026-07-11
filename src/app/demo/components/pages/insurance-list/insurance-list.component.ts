@@ -42,7 +42,11 @@ export class InsuranceListComponent implements OnInit {
 
     this.api.getInsuranceList(this.clinicId).subscribe({
       next: (res: any) => {
-        this.insuranceList = res.data || [];
+        const records = Array.isArray(res?.data) ? res.data
+          : Array.isArray(res?.data?.insurances) ? res.data.insurances
+          : Array.isArray(res) ? res
+          : [];
+        this.insuranceList = records.map((i: any) => this.toInsuranceListItem(i));
         this.filteredInsuranceList = [...this.insuranceList];
         this.loading = false;
       },
@@ -67,6 +71,17 @@ export class InsuranceListComponent implements OnInit {
       i.policyNumber?.toLowerCase().includes(value) ||
       i.company?.toLowerCase().includes(value)
     );
+  }
+
+  private toInsuranceListItem(insurance: any): any {
+    return {
+      ...insurance,
+      insurerName: insurance.insuranceCompany || insurance.insurerName || '',
+      company: insurance.companyName || insurance.company || '',
+      policyType: insurance.coverageType || insurance.policyType || '',
+      contactNumber: insurance.contactPhone || insurance.contactNumber || '',
+      email: insurance.contactEmail || insurance.email || ''
+    };
   }
 
   createInsurance(): void {
@@ -127,13 +142,13 @@ export class InsuranceListComponent implements OnInit {
       const requests = rows.map(row => {
         const payload = {
           clinicId: this.clinicId,
-          insurerName: row['Insurer Name'] || row['insurerName'] || row['insurer'] || '',
-          company: row['Company'] || row['company'] || '',
+          insuranceCompany: row['Insurer Name'] || row['insuranceCompany'] || row['insurerName'] || row['insurer'] || '',
+          companyName: row['Company'] || row['companyName'] || row['company'] || '',
           policyNumber: row['Policy Number'] || row['policyNumber'] || '',
-          policyType: row['Policy Type'] || row['policyType'] || '',
+          coverageType: row['Policy Type'] || row['coverageType'] || row['policyType'] || '',
           coverageAmount: row['Coverage Amount'] || row['coverageAmount'] || '',
-          contactNumber: row['Contact Number'] || row['contactNumber'] || '',
-          email: row['Email'] || row['email'] || '',
+          contactPhone: row['Contact Number'] || row['contactPhone'] || row['contactNumber'] || '',
+          contactEmail: row['Email'] || row['contactEmail'] || row['email'] || '',
           status: row['Status'] || row['status'] || 'ACTIVE',
           startDate: row['Start Date'] || row['startDate'] || null,
           endDate: row['End Date'] || row['endDate'] || null,

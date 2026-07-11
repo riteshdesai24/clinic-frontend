@@ -1,0 +1,12 @@
+<div class="grid"><div class="col-12"><div class="treatment-list-card">
+  <div class="header"><div><h5>Treatments</h5><p>{{ filteredTreatments.length }} treatments found</p></div><button pButton icon="pi pi-plus" label="Add Treatment" (click)="addTreatment()"></button></div>
+  <span class="p-input-icon-left search"><i class="pi pi-search"></i><input pInputText placeholder="Search treatments..." (input)="search($event)" /></span>
+  <p-table [value]="filteredTreatments" [loading]="loading" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+    <ng-template pTemplate="header"><tr><th>Treatment</th><th>Description</th><th>Duration</th><th>Price</th><th>Status</th><th class="actions-heading">Actions</th></tr></ng-template>
+    <ng-template pTemplate="body" let-treatment><tr>
+      <td><strong>{{ treatment.name || treatment.treatmentName }}</strong></td><td>{{ treatment.description || '—' }}</td><td>{{ treatment.duration || '—' }}<span *ngIf="treatment.duration"> min</span></td><td>{{ treatment.price ?? '—' }}</td><td><span class="status">{{ treatment.status || 'ACTIVE' }}</span></td>
+      <td class="actions"><button pButton icon="pi pi-pencil" class="p-button-text" pTooltip="Edit" (click)="editTreatment(treatment)"></button><button pButton icon="pi pi-trash" class="p-button-text p-button-danger" pTooltip="Delete" (click)="deleteTreatment(treatment)"></button></td>
+    </tr></ng-template>
+    <ng-template pTemplate="emptymessage"><tr><td colspan="6" class="empty">No treatments found. Add your first treatment to get started.</td></tr></ng-template>
+  </p-table>
+</div></div></div>

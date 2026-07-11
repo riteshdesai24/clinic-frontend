@@ -1,7 +1,7 @@
 /* Page background */
 .auth-bg {
   min-height: 100vh;
-  background: #f3f4f6;
+  background: var(--surface-ground);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,7 +40,7 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #15998c, #0f7d73);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -51,7 +51,7 @@
 .brand-name {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1e1b4b;
+  color: #084d48;
 }
 
 .form-title {
@@ -94,10 +94,10 @@ label {
 }
 
 .full-input:focus {
-  border-color: #6366f1 !important;
+  border-color: #15998c !important;
   background: #fff !important;
   outline: none !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(21, 153, 140, 0.14) !important;
 }
 
 /* p-password override */
@@ -110,9 +110,9 @@ label {
   font-size: 0.875rem !important;
 }
 :host ::ng-deep .p-password input:focus {
-  border-color: #6366f1 !important;
+  border-color: #15998c !important;
   background: #fff !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(21, 153, 140, 0.14) !important;
 }
 
 .forgot-row {
@@ -127,7 +127,7 @@ label {
   border-radius: 10px;
   font-size: 0.9rem;
   font-weight: 600;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+  background: linear-gradient(135deg, #15998c, #0f7d73) !important;
   color: #fff !important;
   border: none !important;
   margin-bottom: 1.25rem;
@@ -163,7 +163,7 @@ label {
 
 /* Links */
 .link-btn {
-  color: #4f46e5;
+  color: #0f7d73;
   cursor: pointer;
   font-size: 0.82rem;
   font-weight: 500;
@@ -178,7 +178,7 @@ label {
 /* ── RIGHT PANEL ── */
 .auth-right {
   width: 55%;
-  background: linear-gradient(145deg, #4f46e5 0%, #7c3aed 60%, #a855f7 100%);
+  background: linear-gradient(145deg, #0b655e 0%, #15998c 60%, #2bb8a9 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;   // ← change from flex-end to center
@@ -243,7 +243,7 @@ label {
   margin-bottom: 10px;
 }
 
-.feature-list li i { color: #a5f3fc; font-size: 14px; }
+.feature-list li i { color: #ccfbf1; font-size: 14px; }
 
 .stats-row {
   display: flex;

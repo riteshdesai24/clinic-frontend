@@ -36,7 +36,7 @@
               (completeMethod)="searchPatients($event)"
               field="label"
               [dropdown]="true"
-              placeholder="Search patient..."
+              placeholder="Search patient or phone..."
               styleClass="w-full"
               inputStyleClass="w-full">
             </p-autoComplete>
@@ -58,14 +58,16 @@
 
           <div class="pf-field">
             <label>Treatment</label>
-            <p-dropdown
-              [options]="treatments"
-              optionLabel="label"
-              optionValue="value"
+            <p-autoComplete
               formControlName="treatmentId"
-              placeholder="Select Treatment"
-              styleClass="w-full">
-            </p-dropdown>
+              [suggestions]="filteredTreatments"
+              (completeMethod)="searchTreatments($event)"
+              field="label"
+              [dropdown]="true"
+              placeholder="Search treatment..."
+              styleClass="w-full"
+              inputStyleClass="w-full">
+            </p-autoComplete>
           </div>
 
           <div class="pf-field">

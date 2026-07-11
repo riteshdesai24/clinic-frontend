@@ -48,7 +48,7 @@ export class AppMenuComponent implements OnInit {
                     {
                         label: 'Medical Conditions',
                         icon: 'pi pi-fw pi-pencil',
-                        routerLink: ['/pages/crud']
+                        routerLink: ['/pages/medical-condition-list']
                     },
                     {
                         label: 'Country',
@@ -72,12 +72,12 @@ export class AppMenuComponent implements OnInit {
                             {
                                 label: 'Conditions',
                                 icon: 'pi pi-fw pi-sign-in',
-                                routerLink: ['/auth/login']
+                                routerLink: ['/pages/dental-condition-list']
                             },
                             {
                                 label: 'Treatments',
                                 icon: 'pi pi-fw pi-times-circle',
-                                routerLink: ['/auth/error']
+                                routerLink: ['/pages/treatment-list']
                             }
                         ]
                     },

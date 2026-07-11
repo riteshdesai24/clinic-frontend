@@ -99,10 +99,7 @@ export class InsuranceComponent implements OnInit {
   createInsurance(): void {
     this.loading = true;
 
-    const data = {
-      ...this.insuranceForm.value,
-      clinicId: this.clinicId
-    };
+    const data = this.toInsurancePayload();
 
     this.api.createInsurance(data).subscribe({
       next: () => {
@@ -121,10 +118,7 @@ export class InsuranceComponent implements OnInit {
 
     this.loading = true;
 
-    const data = {
-      ...this.insuranceForm.value,
-      clinicId: this.clinicId
-    };
+    const data = this.toInsurancePayload();
 
     this.api.updateInsurance(this.insuranceId, data).subscribe({
       next: () => {
@@ -145,18 +139,18 @@ export class InsuranceComponent implements OnInit {
 
     this.api.getInsuranceDetails(this.insuranceId).subscribe({
       next: (res: any) => {
-        const i = res.data?.insurance;
+        const i = res.data?.insurance || res.data || res;
         if (i) {
           this.insuranceForm.patchValue({
-            insurerName: i.insurerName,
-            company: i.company,
+            insurerName: i.insuranceCompany || i.insurerName,
+            company: i.companyName || i.company,
             policyNumber: i.policyNumber,
-            policyType: i.policyType,
+            policyType: i.coverageType || i.policyType,
             coverageAmount: i.coverageAmount,
             startDate: i.startDate ? new Date(i.startDate) : null,
             endDate: i.endDate ? new Date(i.endDate) : null,
-            contactNumber: i.contactNumber,
-            email: i.email,
+            contactNumber: i.contactPhone || i.contactNumber,
+            email: i.contactEmail || i.email,
             status: i.status,
             notes: i.notes
           });
@@ -165,6 +159,24 @@ export class InsuranceComponent implements OnInit {
       },
       error: err => this.handleError(err)
     });
+  }
+
+  private toInsurancePayload(): any {
+    const form = this.insuranceForm.getRawValue();
+    return {
+      clinicId: this.clinicId,
+      insuranceCompany: form.insurerName,
+      companyName: form.company,
+      policyNumber: form.policyNumber,
+      coverageType: form.policyType,
+      coverageAmount: form.coverageAmount,
+      startDate: form.startDate,
+      endDate: form.endDate,
+      contactPhone: form.contactNumber,
+      contactEmail: form.email,
+      status: form.status,
+      notes: form.notes
+    };
   }
 
   afterSave(): void {

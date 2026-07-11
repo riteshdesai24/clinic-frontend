@@ -1,0 +1,12 @@
+<div class="grid"><div class="col-12"><div class="pf-card">
+  <div class="pf-header"><div class="pf-icon"><i class="pi pi-heart"></i></div><div><h5 class="pf-title">{{ isEdit ? 'Edit ' : 'Create ' }}{{ title }}</h5><p class="pf-sub">Manage the condition available on patient records</p></div></div>
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <p class="section-label">Clinic</p><div class="field-grid g1 mb-section"><div class="pf-field"><label>Clinic Name</label><input pInputText class="w-full" [value]="clinicData.clinicName" disabled /></div></div>
+    <p class="section-label">{{ title }} Info</p><div class="field-grid g2 mb-section">
+      <div class="pf-field"><label>Condition Name <span class="req">*</span></label><input pInputText formControlName="name" class="w-full" placeholder="Condition name" /><small class="p-error" *ngIf="f['name'].touched && f['name'].errors?.['required']">Condition name is required.</small></div>
+      <div class="pf-field"><label>Status</label><p-dropdown [options]="statuses" optionLabel="label" optionValue="value" formControlName="status" styleClass="w-full"></p-dropdown></div>
+    </div>
+    <div class="field-grid g1 mb-section"><div class="pf-field"><label>Description</label><textarea pInputTextarea rows="4" formControlName="description" class="w-full"></textarea></div></div>
+    <small class="p-error" *ngIf="error">{{ error }}</small><div class="pf-divider"></div><div class="pf-btn-row"><button pButton type="button" icon="pi pi-times" label="Cancel" class="p-button-sm p-button-secondary" (click)="cancel()"></button><button pButton type="submit" icon="pi pi-check" [label]="isEdit ? 'Update' : 'Create'" class="p-button-sm pf-btn-primary" [loading]="loading" [disabled]="form.invalid || loading"></button></div>
+  </form>
+</div></div></div>
