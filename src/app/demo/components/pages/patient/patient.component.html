@@ -253,14 +253,7 @@
 
               <div class="pf-field">
                 <label>State</label>
-                <p-dropdown
-                  [options]="states"
-                  optionLabel="label"
-                  optionValue="value"
-                  formControlName="state"
-                  placeholder="Select State"
-                  styleClass="w-full">
-                </p-dropdown>
+                <input pInputText formControlName="state" class="w-full" />
               </div>
 
               <div class="pf-field">

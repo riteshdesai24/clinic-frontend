@@ -58,8 +58,7 @@ export class StaffListComponent implements OnInit {
         this.loading = false;
       },
 
-      error: err => {
-        console.error('Staff list error:', err);
+      error: () => {
         this.loading = false;
         this.messageService.add({
           severity: 'error',
@@ -153,8 +152,7 @@ export class StaffListComponent implements OnInit {
             });
             this.loadStaffList();
           },
-          error: err => {
-            console.error('Delete error:', err);
+          error: () => {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',

@@ -10,6 +10,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 
 import { ConfirmationService, MessageService } from 'primeng/api';
 
@@ -23,7 +25,9 @@ import { ConfirmationService, MessageService } from 'primeng/api';
     InputTextModule,
     TooltipModule,
     ConfirmDialogModule,
-    ToastModule
+    ToastModule,
+    DialogModule,
+    InputTextareaModule
   ],
   providers: [ConfirmationService, MessageService]
 })

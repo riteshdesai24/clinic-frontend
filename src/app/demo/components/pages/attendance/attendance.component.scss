@@ -1,0 +1,10 @@
+.attendance-card { background: var(--surface-card); border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px #0000000d; }
+.attendance-card header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.attendance-card h2 { margin: 0 0 .35rem; }
+.attendance-card header p { margin: 0; color: var(--text-color-secondary); }
+.attendance-icon { width: 3rem; height: 3rem; display: grid; place-items: center; border-radius: 50%; background: var(--primary-100); color: var(--primary-700); font-size: 1.25rem; }
+.today-panel { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem; margin-bottom: 1.5rem; border: 1px solid var(--surface-border); border-radius: 8px; }
+.today-panel > div:first-child { display: grid; gap: .35rem; }
+.today-label, .today-panel small, .role-message { color: var(--text-color-secondary); }
+.actions { display: flex; gap: .75rem; }
+@media (max-width: 640px) { .today-panel { align-items: flex-start; flex-direction: column; } .actions { flex-wrap: wrap; } }

@@ -46,7 +46,7 @@ export class AppTopBarComponent implements OnInit {
         }
         this.menuItems = [
             {
-                label: 'Profile', icon: 'pi pi-fw pi-user'
+                label: 'Profile', icon: 'pi pi-fw pi-user', command: () => this.router.navigate(['/pages/profile'])
             },
             {
                 separator: true

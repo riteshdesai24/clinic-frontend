@@ -14,7 +14,6 @@ export class TreatmentComponent implements OnInit {
   error = '';
   treatmentId: string | null = null;
   isEdit = false;
-  clinicId = '';
   clinicData: any = {};
   statuses = [
     { label: 'Active', value: 'ACTIVE' },
@@ -25,10 +24,6 @@ export class TreatmentComponent implements OnInit {
 
   ngOnInit(): void {
     this.clinicData = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
-    this.clinicId = localStorage.getItem('clinicid')
-      || sessionStorage.getItem('clinicid')
-      || this.clinicData._id
-      || '';
     this.treatmentId = this.route.snapshot.queryParamMap.get('id');
     this.isEdit = !!this.treatmentId;
     this.form = this.fb.group({
@@ -50,7 +45,7 @@ export class TreatmentComponent implements OnInit {
     }
     this.loading = true;
     this.error = '';
-    const payload = { ...this.form.value, clinicId: this.clinicId };
+    const payload = this.form.value;
     const request = this.isEdit && this.treatmentId
       ? this.api.updateTreatment(this.treatmentId, payload)
       : this.api.createTreatment(payload);

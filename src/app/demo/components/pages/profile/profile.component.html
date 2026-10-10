@@ -1,0 +1,51 @@
+<div class="grid">
+  <div class="col-12">
+    <div class="profile-card">
+      <div class="profile-heading">
+        <div class="profile-icon"><i class="pi pi-user"></i></div>
+        <div>
+          <h2>My profile</h2>
+          <p>Manage your account details.</p>
+        </div>
+      </div>
+
+      <p-progressSpinner *ngIf="loading" styleClass="profile-spinner"></p-progressSpinner>
+
+      <ng-container *ngIf="!loading && profileForm">
+        <div class="profile-meta">
+          <span><i class="pi pi-id-card"></i> {{ profile.role }}</span>
+          <span *ngIf="profile.clinicName"><i class="pi pi-building"></i> {{ profile.clinicName }}</span>
+        </div>
+
+        <form [formGroup]="profileForm" (ngSubmit)="save()">
+          <div class="field-grid">
+            <div class="field" *ngFor="let field of fields">
+              <label [for]="field">{{ label(field) }}</label>
+              <input pInputText [id]="field" [type]="field === 'email' ? 'email' : 'text'" [formControlName]="field" />
+              <small class="p-error" *ngIf="profileForm.get(field)?.touched && profileForm.get(field)?.invalid">
+                {{ field === 'email' && profileForm.get(field)?.hasError('email') ? 'Enter a valid email address.' : 'This field is required.' }}
+              </small>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button pButton type="button" label="Cancel" class="p-button-secondary" (click)="cancel()"></button>
+            <button pButton type="submit" label="Save changes" icon="pi pi-check" [loading]="saving" [disabled]="saving"></button>
+          </div>
+        </form>
+
+        <section class="password-section">
+          <h3>Change password</h3>
+          <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+            <div class="field-grid">
+              <div class="field"><label for="oldPassword">Current password</label><input pInputText id="oldPassword" type="password" formControlName="oldPassword" /></div>
+              <div class="field"><label for="newPassword">New password</label><input pInputText id="newPassword" type="password" formControlName="newPassword" /><small class="p-error" *ngIf="passwordForm.get('newPassword')?.touched && passwordForm.get('newPassword')?.invalid">Use 8+ characters with uppercase, lowercase, number and a special character.</small></div>
+              <div class="field"><label for="confirmPassword">Confirm new password</label><input pInputText id="confirmPassword" type="password" formControlName="confirmPassword" /><small class="p-error" *ngIf="passwordForm.get('confirmPassword')?.hasError('mismatch')">Passwords do not match.</small></div>
+            </div>
+            <div class="profile-actions"><button pButton type="submit" label="Change password" icon="pi pi-lock" [loading]="savingPassword" [disabled]="savingPassword"></button></div>
+          </form>
+        </section>
+      </ng-container>
+    </div>
+  </div>
+</div>

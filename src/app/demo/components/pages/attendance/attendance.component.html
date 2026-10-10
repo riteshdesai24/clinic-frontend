@@ -1,0 +1,59 @@
+<div class="grid">
+  <div class="col-12">
+    <section class="attendance-card">
+      <header>
+        <div class="attendance-icon"><i class="pi pi-clock"></i></div>
+        <div><h2>Attendance</h2><p>Clock in and review your recent attendance.</p></div>
+      </header>
+
+      <div *ngIf="role !== 'STAFF' && role !== 'DOCTOR'" class="role-message">
+        Attendance is available to clinic administrators, staff, and doctors.
+      </div>
+
+      <ng-container *ngIf="role === 'ADMIN'">
+        <h3>Staff summary</h3>
+        <p-table [value]="summary" responsiveLayout="scroll">
+          <ng-template pTemplate="header"><tr><th>Staff member</th><th>Role</th><th>Present</th><th>Absent</th><th>Late</th><th>Hours</th></tr></ng-template>
+          <ng-template pTemplate="body" let-item><tr><td>{{ item.staffname }}</td><td>{{ item.role }}</td><td>{{ item.present }}</td><td>{{ item.absent }}</td><td>{{ item.late }}</td><td>{{ item.totalHours }}</td></tr></ng-template>
+          <ng-template pTemplate="emptymessage"><tr><td colspan="6">No attendance summary available.</td></tr></ng-template>
+        </p-table>
+      </ng-container>
+
+      <ng-container *ngIf="role === 'STAFF' || role === 'DOCTOR'">
+        <div class="today-panel" *ngIf="!loading">
+          <div>
+            <span class="today-label">Today</span>
+            <strong>{{ today?.status || 'Not clocked in' }}</strong>
+            <small *ngIf="today?.clockIn">Clocked in {{ today.clockIn | date:'shortTime' }}</small>
+            <small *ngIf="today?.clockOut">Clocked out {{ today.clockOut | date:'shortTime' }}</small>
+          </div>
+          <div class="actions">
+            <button pButton type="button" label="Clock in" icon="pi pi-sign-in" (click)="punch('in')" [disabled]="working || !canClockIn"></button>
+            <button pButton type="button" label="Clock out" icon="pi pi-sign-out" class="p-button-secondary" (click)="punch('out')" [disabled]="working || !canClockOut"></button>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <ng-container *ngIf="role === 'ADMIN' || role === 'STAFF' || role === 'DOCTOR'">
+        <h3>{{ role === 'ADMIN' ? 'Recent staff attendance' : 'My recent attendance' }}</h3>
+        <p-table [value]="records" [loading]="loading" responsiveLayout="scroll" [paginator]="true" [rows]="10">
+          <ng-template pTemplate="header">
+            <tr><th *ngIf="role === 'ADMIN'">Staff member</th><th>Date</th><th>Status</th><th>Clock in</th><th>Clock out</th><th>Duration</th></tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-record>
+            <tr>
+              <td *ngIf="role === 'ADMIN'">{{ record.staffId?.staffname || 'Staff' }}</td>
+              <td>{{ record.date }}</td>
+              <td>{{ record.status }}</td>
+              <td>{{ record.clockIn ? (record.clockIn | date:'shortTime') : '—' }}</td>
+              <td>{{ record.clockOut ? (record.clockOut | date:'shortTime') : '—' }}</td>
+              <td>{{ record.durationMinutes == null ? '—' : (record.durationMinutes + ' min') }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage"><tr><td [attr.colspan]="role === 'ADMIN' ? 6 : 5">No attendance records yet.</td></tr></ng-template>
+        </p-table>
+      </ng-container>
+    </section>
+  </div>
+</div>

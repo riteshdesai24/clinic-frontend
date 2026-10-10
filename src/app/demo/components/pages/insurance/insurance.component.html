@@ -7,7 +7,7 @@
                     <i class="pi pi-shield"></i>
                 </div>
                 <div>
-                    <h5 class="pf-title">{{ isEdit ? 'Edit Insurance' : 'Add Insurance' }}</h5>
+                        <h5 class="pf-title">{{ isView ? 'Insurance Details' : (isEdit ? 'Edit Insurance' : 'Add Insurance') }}</h5>
                     <p class="pf-sub">Enter the insurance details below</p>
                 </div>
             </div>
@@ -31,23 +31,23 @@
                 <div class="field-grid g3 mb-section">
 
                     <div class="pf-field">
-                        <label>Insurer Name <span class="req">*</span></label>
+                        <label>Insurance Company <span class="req">*</span></label>
                         <span class="p-input-icon-left w-full">
                             <i class="pi pi-user"></i>
-                            <input pInputText formControlName="insurerName" class="w-full" />
+                            <input pInputText formControlName="insuranceCompany" class="w-full" />
                         </span>
                     </div>
 
                     <div class="pf-field">
-                        <label>Company <span class="req">*</span></label>
+                        <label>Subcompany</label>
                         <span class="p-input-icon-left w-full">
                             <i class="pi pi-briefcase"></i>
-                            <input pInputText formControlName="company" class="w-full" />
+                            <input pInputText formControlName="insuranceSubCompany" class="w-full" />
                         </span>
                     </div>
 
                     <div class="pf-field">
-                        <label>Policy Number <span class="req">*</span></label>
+                        <label>Policy Number</label>
                         <span class="p-input-icon-left w-full">
                             <i class="pi pi-hashtag"></i>
                             <input pInputText formControlName="policyNumber" class="w-full" />
@@ -55,33 +55,33 @@
                     </div>
 
                     <div class="pf-field">
-                        <label>Policy Type</label>
+                        <label>Coverage Type</label>
                         <p-dropdown [options]="policyTypes" optionLabel="label" optionValue="value"
-                            formControlName="policyType" placeholder="Select Type" styleClass="w-full">
+                            formControlName="coverageType" placeholder="Select Type" styleClass="w-full">
                         </p-dropdown>
+                    </div>
+
+                    <div class="pf-field">
+                        <label>Insurance Company Name</label>
+                        <span class="p-input-icon-left w-full">
+                            <i class="pi pi-dollar"></i>
+                            <input pInputText formControlName="companyName" class="w-full" />
+                        </span>
                     </div>
 
                     <div class="pf-field">
                         <label>Coverage Amount</label>
                         <span class="p-input-icon-left w-full">
-                            <i class="pi pi-dollar"></i>
-                            <input pInputText formControlName="coverageAmount" class="w-full" />
-                        </span>
-                    </div>
-
-                    <div class="pf-field">
-                        <label>Contact Number</label>
-                        <span class="p-input-icon-left w-full">
                             <i class="pi pi-phone"></i>
-                            <input pInputText formControlName="contactNumber" class="w-full" />
+                            <input pInputText type="number" min="0" formControlName="coverageAmount" class="w-full" />
                         </span>
                     </div>
 
                     <div class="pf-field">
-                        <label>Email</label>
+                        <label>Premium Amount</label>
                         <span class="p-input-icon-left w-full">
                             <i class="pi pi-envelope"></i>
-                            <input pInputText formControlName="email" class="w-full" />
+                            <input pInputText type="number" min="0" formControlName="premiumAmount" class="w-full" />
                         </span>
                     </div>
 
@@ -108,9 +108,38 @@
                         </p-calendar>
                     </div>
 
+                    <div class="pf-field">
+                        <label>Plan Type</label>
+                        <p-dropdown [options]="planTypes" formControlName="planType" placeholder="Select Plan" styleClass="w-full"></p-dropdown>
+                    </div>
+                    <div class="pf-field">
+                        <label>Holder Name</label>
+                        <input pInputText formControlName="holderName" class="w-full" />
+                    </div>
+                    <div class="pf-field">
+                        <label>Insurance Policy Reference</label>
+                        <input pInputText formControlName="insurancePolicy" class="w-full" />
+                    </div>
+                    <div class="pf-field">
+                        <label>Insurance ID Number</label>
+                        <input pInputText formControlName="insuranceIdNumber" class="w-full" />
+                    </div>
+                    <div class="pf-field">
+                        <label>Contact Number</label>
+                        <input pInputText formControlName="contactNumber" class="w-full" />
+                    </div>
+                    <div class="pf-field">
+                        <label>Email</label>
+                        <input pInputText type="email" formControlName="email" class="w-full" />
+                    </div>
+
                 </div>
 
                 <div class="field-grid g1 mb-section">
+                    <div class="pf-field">
+                        <label>Address</label>
+                        <textarea pInputTextarea rows="2" formControlName="address" class="w-full"></textarea>
+                    </div>
                     <div class="pf-field">
                         <label>Notes</label>
                         <textarea pInputTextarea rows="4" formControlName="notes" class="w-full"></textarea>

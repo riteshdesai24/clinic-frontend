@@ -1,5 +1,4 @@
-import { OnInit } from '@angular/core';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { LayoutService } from './service/app.layout.service';
 
 @Component({
@@ -17,8 +16,6 @@ export class AppMenuComponent implements OnInit {
     ngOnInit() {
         this.user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')!) : {};
         this.clinicPlan = this.user.plan || '';
-        console.log('User:', this.user);
-        console.log('Clinic Plan:', this.clinicPlan);
         this.buildMenu();
     }
 
@@ -36,6 +33,7 @@ export class AppMenuComponent implements OnInit {
                     { label: 'Doctor', icon: 'pi pi-fw pi-user', routerLink: ['/pages/doctor-list'], badge: 'NEW' },
                     { label: 'Patient', icon: 'pi pi-fw pi-user', routerLink: ['/pages/patient-list'], badge: 'NEW' },
                     { label: 'Appointment', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/appointment-list'], badge: 'NEW' },
+                    ...(this.user.role === 'ADMIN' || this.user.role === 'STAFF' || this.user.role === 'DOCTOR' ? [{ label: 'Attendance', icon: 'pi pi-fw pi-clock', routerLink: ['/pages/attendance'] }] : []),
                     
                 ]
             },
@@ -49,21 +47,6 @@ export class AppMenuComponent implements OnInit {
                         label: 'Medical Conditions',
                         icon: 'pi pi-fw pi-pencil',
                         routerLink: ['/pages/medical-condition-list']
-                    },
-                    {
-                        label: 'Country',
-                        icon: 'pi pi-fw pi-calendar',
-                        routerLink: ['/pages/timeline']
-                    },
-                    {
-                        label: 'State',
-                        icon: 'pi pi-fw pi-exclamation-circle',
-                        routerLink: ['/pages/state-list']
-                    },
-                    {
-                        label: 'City',
-                        icon: 'pi pi-fw pi-map-marker',
-                        routerLink: ['/pages/city-list']
                     },
                     {
                         label: 'Dental Conditions',

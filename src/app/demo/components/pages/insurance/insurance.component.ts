@@ -16,7 +16,6 @@ export class InsuranceComponent implements OnInit {
   error: string | null = null;
   success: string | null = null;
 
-  clinicId = '';
   clinicData: any = {};
   insuranceId: string | null = null;
   isEdit = false;
@@ -30,9 +29,12 @@ export class InsuranceComponent implements OnInit {
     { label: 'Travel', value: 'TRAVEL' }
   ];
 
+  planTypes = ['HMO', 'PPO', 'EPO', 'POS', 'OTHER'];
+
   statuses = [
     { label: 'Active', value: 'ACTIVE' },
     { label: 'Pending', value: 'PENDING' },
+    { label: 'Inactive', value: 'INACTIVE' },
     { label: 'Expired', value: 'EXPIRED' }
   ];
 
@@ -58,16 +60,21 @@ export class InsuranceComponent implements OnInit {
       localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}'
     );
 
-    this.clinicId = this.clinicData._id || '';
-
     this.insuranceForm = this.fb.group({
-      insurerName: ['', Validators.required],
-      company: ['', Validators.required],
-      policyNumber: ['', Validators.required],
-      policyType: ['HEALTH'],
-      coverageAmount: [''],
+      insuranceCompany: ['', Validators.required],
+      insuranceSubCompany: [''],
+      insurancePolicy: [''],
+      insuranceIdNumber: [''],
+      companyName: [''],
+      policyNumber: [''],
+      coverageType: ['HEALTH'],
+      coverageAmount: ['', Validators.min(0)],
+      planType: [''],
+      premiumAmount: ['', Validators.min(0)],
       startDate: [''],
       endDate: [''],
+      holderName: [''],
+      address: [''],
       contactNumber: [''],
       email: ['', Validators.email],
       status: ['ACTIVE'],
@@ -142,13 +149,20 @@ export class InsuranceComponent implements OnInit {
         const i = res.data?.insurance || res.data || res;
         if (i) {
           this.insuranceForm.patchValue({
-            insurerName: i.insuranceCompany || i.insurerName,
-            company: i.companyName || i.company,
+            insuranceCompany: i.insuranceCompany || i.insurerName,
+            insuranceSubCompany: i.insuranceSubCompany,
+            insurancePolicy: i.insurancePolicy,
+            insuranceIdNumber: i.insuranceIdNumber,
+            companyName: i.companyName || i.company,
             policyNumber: i.policyNumber,
-            policyType: i.coverageType || i.policyType,
+            coverageType: i.coverageType || i.policyType,
             coverageAmount: i.coverageAmount,
+            planType: i.planType,
+            premiumAmount: i.premiumAmount,
             startDate: i.startDate ? new Date(i.startDate) : null,
             endDate: i.endDate ? new Date(i.endDate) : null,
+            holderName: i.holderName,
+            address: i.address,
             contactNumber: i.contactPhone || i.contactNumber,
             email: i.contactEmail || i.email,
             status: i.status,
@@ -161,17 +175,23 @@ export class InsuranceComponent implements OnInit {
     });
   }
 
-  private toInsurancePayload(): any {
+  private toInsurancePayload(): Record<string, unknown> {
     const form = this.insuranceForm.getRawValue();
     return {
-      clinicId: this.clinicId,
-      insuranceCompany: form.insurerName,
-      companyName: form.company,
+      insuranceCompany: form.insuranceCompany,
+      insuranceSubCompany: form.insuranceSubCompany,
+      insurancePolicy: form.insurancePolicy,
+      insuranceIdNumber: form.insuranceIdNumber,
+      companyName: form.companyName,
       policyNumber: form.policyNumber,
-      coverageType: form.policyType,
-      coverageAmount: form.coverageAmount,
+      coverageType: form.coverageType,
+      coverageAmount: form.coverageAmount === '' ? undefined : Number(form.coverageAmount),
+      planType: form.planType,
+      premiumAmount: form.premiumAmount === '' ? undefined : Number(form.premiumAmount),
       startDate: form.startDate,
       endDate: form.endDate,
+      holderName: form.holderName,
+      address: form.address,
       contactPhone: form.contactNumber,
       contactEmail: form.email,
       status: form.status,

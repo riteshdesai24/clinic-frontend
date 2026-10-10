@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -17,16 +17,10 @@ export class AuthService {
     );
   }
 
-  register(
-    name: string,
-    email: string,
-    phone: string,
-    password: string,
-    clinicName: string
-  ): Observable<any> {
+  register(email: string, phone: string, password: string, clinicName: string): Observable<any> {
     return this.http.post(
       `${environment.apiUrl}/api/auth/register`,
-      { name, email, phone, password, clinicName }
+      { email, phone, password, clinicName }
     );
   }
 
@@ -37,11 +31,23 @@ export class AuthService {
     );
   }
 
-  resetPassword(data: any): Observable<any> {
-    return this.http.post(
-      `${environment.apiUrl}/api/auth/reset-password`,
-      data
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.put(
+      `${environment.apiUrl}/api/auth/reset-password/${encodeURIComponent(token)}`,
+      { newPassword }
     );
+  }
+
+  changePassword(oldPassword: string, newPassword: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/auth/change-password`, { oldPassword, newPassword });
+  }
+
+  getCurrentProfile(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/profile`);
+  }
+
+  updateCurrentProfile(data: Record<string, string>): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/api/profile`, data);
   }
 
   // ================= STAFF =================
@@ -54,12 +60,16 @@ export class AuthService {
   }
 
   getStaffList(cursor?: string, limit?: number): Observable<any> {
-    let params = `?role=STAFF`;
-    if (cursor) params += `&cursor=${cursor}`;
-    if (limit)  params += `&limit=${limit}`;
+    let params = new HttpParams().set('role', 'STAFF');
+    if (cursor) params = params.set('cursor', cursor);
+    if (limit) params = params.set('limit', String(limit));
     return this.http.get(
-      `${environment.apiUrl}/api/staff${params}`
+      `${environment.apiUrl}/api/staff`, { params }
     );
+  }
+
+  getStaffAutocomplete(query = ''): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/staff/autocomplete`, { params: { search: query } });
   }
 
   getStaffDetails(id: string): Observable<any> {
@@ -85,58 +95,60 @@ export class AuthService {
 
   createDoctor(data: any): Observable<any> {
     return this.http.post(
-      `${environment.apiUrl}/api/staff`,
+      `${environment.apiUrl}/api/doctors`,
       data
     );
   }
 
   getDoctorList(cursor?: string, limit?: number): Observable<any> {
-    let params = `?role=DOCTOR`;
-    if (cursor) params += `&cursor=${cursor}`;
-    if (limit)  params += `&limit=${limit}`;
+    let params = new HttpParams().set('limit', String(limit || 10));
+    if (cursor) params = params.set('cursor', cursor);
     return this.http.get(
-      `${environment.apiUrl}/api/staff${params}`
+      `${environment.apiUrl}/api/doctors`,
+      { params }
     );
   }
 
-  getTreatmentList(): Observable<any> {
-    return this.http.get(
-      `${environment.apiUrl}/api/treatmenttypes`
-    );
+  getDoctorAutocomplete(query = ''): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/doctors/autocomplete`, { params: { search: query } });
+  }
+
+  getTreatmentList(params: Record<string, string | number> = {}): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/treatmentmaster`, { params });
   }
 
   createTreatment(data: any): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/api/treatmenttypes`, data);
+    return this.http.post(`${environment.apiUrl}/api/treatmentmaster`, data);
   }
 
   getTreatmentDetails(id: string): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/api/treatmenttypes/${id}`);
+    return this.http.get(`${environment.apiUrl}/api/treatmentmaster/${id}`);
   }
 
   updateTreatment(id: string, data: any): Observable<any> {
-    return this.http.put(`${environment.apiUrl}/api/treatmenttypes/${id}`, data);
+    return this.http.put(`${environment.apiUrl}/api/treatmentmaster/${id}`, data);
   }
 
   deleteTreatment(id: string): Observable<any> {
-    return this.http.delete(`${environment.apiUrl}/api/treatmenttypes/${id}`);
+    return this.http.delete(`${environment.apiUrl}/api/treatmentmaster/${id}`);
   }
 
   getDoctorDetails(id: string): Observable<any> {
     return this.http.get(
-      `${environment.apiUrl}/api/staff/${id}`
+      `${environment.apiUrl}/api/doctors/${id}`
     );
   }
 
   updateDoctor(id: string, data: any): Observable<any> {
     return this.http.put(
-      `${environment.apiUrl}/api/staff/${id}`,
+      `${environment.apiUrl}/api/doctors/${id}`,
       data
     );
   }
 
   deleteDoctor(id: string): Observable<any> {
     return this.http.delete(
-      `${environment.apiUrl}/api/staff/${id}`
+      `${environment.apiUrl}/api/doctors/${id}`
     );
   }
 
@@ -149,10 +161,14 @@ export class AuthService {
     );
   }
 
-  getPatientList(clinicId: string): Observable<any> {
+  getPatientList(): Observable<any> {
     return this.http.get(
-      `${environment.apiUrl}/api/patients?clinicId=${clinicId}`
+      `${environment.apiUrl}/api/patients`
     );
+  }
+
+  getPatientAutocomplete(query = ''): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/patients/autocomplete`, { params: { search: query } });
   }
 
   getPatientDetails(id: string): Observable<any> {
@@ -183,10 +199,36 @@ export class AuthService {
     );
   }
 
-  getAppointmentList(clinicId: string): Observable<any> {
-    return this.http.get(
-      `${environment.apiUrl}/api/appointments?clinicId=${clinicId}`
-    );
+  getAppointmentList(params: Record<string, string | number> = {}): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/appointments`, { params });
+  }
+
+  getAppointmentCalendar(params: Record<string, string | number>): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/appointments/calendar`, { params });
+  }
+
+  getDashboardAppointmentCounts(period: 'today' | 'week' | 'month' | 'all', doctorId?: string): Observable<any> {
+    const params: Record<string, string> = { period };
+    if (doctorId) params['doctorId'] = doctorId;
+    return this.http.get(`${environment.apiUrl}/api/dashboard/appointments`, { params });
+  }
+
+  getDashboardInvoiceSummary(period: 'week' | 'month', doctorId?: string): Observable<any> {
+    const params: Record<string, string> = { period };
+    if (doctorId) params['doctorId'] = doctorId;
+    return this.http.get(`${environment.apiUrl}/api/invoices/dashboard/summary`, { params });
+  }
+
+  createInvoice(data: Record<string, unknown>): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/invoices`, data);
+  }
+
+  getInvoices(params: Record<string, string | number> = {}): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/invoices`, { params });
+  }
+
+  recordInvoicePayment(invoiceId: string, data: { amount: number; method: string; reference?: string }): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/invoices/${invoiceId}/payments`, data);
   }
 
   getAppointmentDetails(id: string): Observable<any> {
@@ -202,88 +244,91 @@ export class AuthService {
     );
   }
 
-  deleteAppointment(id: string): Observable<any> {
+  deleteAppointment(id: string, reason: string): Observable<any> {
     return this.http.delete(
-      `${environment.apiUrl}/api/appointments/${id}`
+      `${environment.apiUrl}/api/appointments/${id}`,
+      { body: { reason } }
     );
   }
 
-  // ================= STATE =================
-
-  createState(data: any): Observable<any> {
-    return this.http.post(
-      `${environment.apiUrl}/api/states`,
-      data
-    );
+  uploadAppointmentAttachments(appointmentId: string, files: File[]): Observable<any> {
+    const body = new FormData();
+    files.forEach(file => body.append('files', file));
+    return this.http.post(`${environment.apiUrl}/api/appointments/${appointmentId}/attachments`, body);
+  }
+  getAppointmentAttachments(appointmentId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/appointments/${appointmentId}/attachments`);
+  }
+  downloadAppointmentAttachment(appointmentId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/api/appointments/${appointmentId}/attachments/${attachmentId}`, { responseType: 'blob' });
+  }
+  deleteAppointmentAttachment(appointmentId: string, attachmentId: string): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}/api/appointments/${appointmentId}/attachments/${attachmentId}`);
   }
 
-  getStateList(clinicId?: string): Observable<any> {
-    const params = clinicId ? `?clinicId=${clinicId}` : '';
-    return this.http.get(
-      `${environment.apiUrl}/api/states${params}`
-    );
+  // ================= ATTENDANCE =================
+
+  clockIn(): Observable<any> { return this.http.post(`${environment.apiUrl}/api/attendance/clock-in`, {}); }
+  clockOut(): Observable<any> { return this.http.post(`${environment.apiUrl}/api/attendance/clock-out`, {}); }
+  getTodayAttendance(): Observable<any> { return this.http.get(`${environment.apiUrl}/api/attendance/me/today`); }
+  getMyAttendance(params: Record<string, string | number> = {}): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/attendance/me`, { params });
+  }
+  getAttendanceList(params: Record<string, string | number> = {}): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/attendance`, { params });
+  }
+  getAttendanceSummary(params: Record<string, string | number> = {}): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/attendance/summary`, { params });
+  }
+  markAttendance(data: Record<string, unknown>): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/attendance/mark`, data);
+  }
+  deleteAttendance(id: string): Observable<any> { return this.http.delete(`${environment.apiUrl}/api/attendance/${id}`); }
+
+  // ================= TREATMENT RECORDS =================
+
+  createTreatmentRecord(data: Record<string, unknown>): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/treatments`, data);
+  }
+  getTreatmentRecords(params: Record<string, string | number> = {}): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/treatments`, { params });
+  }
+  getTreatmentRecord(id: string): Observable<any> { return this.http.get(`${environment.apiUrl}/api/treatments/${id}`); }
+  updateTreatmentRecord(id: string, data: Record<string, unknown>): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/api/treatments/${id}`, data);
+  }
+  deleteTreatmentRecord(id: string): Observable<any> { return this.http.delete(`${environment.apiUrl}/api/treatments/${id}`); }
+  uploadTreatmentAttachments(treatmentId: string, files: File[]): Observable<any> {
+    const body = new FormData();
+    files.forEach(file => body.append('files', file));
+    return this.http.post(`${environment.apiUrl}/api/treatments/${treatmentId}/attachments`, body);
+  }
+  getTreatmentAttachments(treatmentId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/treatments/${treatmentId}/attachments`);
+  }
+  downloadTreatmentAttachment(treatmentId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/api/treatments/${treatmentId}/attachments/${attachmentId}`, { responseType: 'blob' });
+  }
+  deleteTreatmentAttachment(treatmentId: string, attachmentId: string): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}/api/treatments/${treatmentId}/attachments/${attachmentId}`);
   }
 
-  getStateDetails(id: string): Observable<any> {
-    return this.http.get(
-      `${environment.apiUrl}/api/states/${id}`
-    );
-  }
+  // ================= PLANS AND PAYMENTS =================
 
-  updateState(id: string, data: any): Observable<any> {
-    return this.http.put(
-      `${environment.apiUrl}/api/states/${id}`,
-      data
-    );
+  getPlans(): Observable<any> { return this.http.get(`${environment.apiUrl}/api/plans`); }
+  getPlan(id: string): Observable<any> { return this.http.get(`${environment.apiUrl}/api/plans/${id}`); }
+  createPlan(data: Record<string, unknown>): Observable<any> { return this.http.post(`${environment.apiUrl}/api/plans`, data); }
+  updatePlan(id: string, data: Record<string, unknown>): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/api/plans/${id}`, data);
   }
-
-  deleteState(id: string): Observable<any> {
-    return this.http.delete(
-      `${environment.apiUrl}/api/states/${id}`
-    );
+  deletePlan(id: string): Observable<any> { return this.http.delete(`${environment.apiUrl}/api/plans/${id}`); }
+  createPaymentOrder(amount: number): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/payments/create-order`, { amount });
   }
-
-  // ================= CITY =================
-
-  createCity(data: any): Observable<any> {
-    return this.http.post(
-      `${environment.apiUrl}/api/cities`,
-      data
-    );
+  verifyPayment(data: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/payments/verify`, data);
   }
-
-  getCityList(clinicId?: string): Observable<any> {
-    const params = clinicId ? `?clinicId=${clinicId}` : '';
-    return this.http.get(
-      `${environment.apiUrl}/api/cities${params}`
-    );
-  }
-
-  getCityDetails(id: string): Observable<any> {
-    return this.http.get(
-      `${environment.apiUrl}/api/cities/${id}`
-    );
-  }
-
-  updateCity(id: string, data: any): Observable<any> {
-    return this.http.put(
-      `${environment.apiUrl}/api/cities/${id}`,
-      data
-    );
-  }
-
-  deleteCity(id: string): Observable<any> {
-    return this.http.delete(
-      `${environment.apiUrl}/api/cities/${id}`
-    );
-  }
-
-  bulkCreateCities(data: any[]): Observable<any> {
-    return this.http.post(
-      `${environment.apiUrl}/api/cities/bulk`,
-      data
-    );
-  }
+  getPaymentHistory(): Observable<any> { return this.http.get(`${environment.apiUrl}/api/payments/history`); }
 
   // ================= INSURANCE =================
 
@@ -294,10 +339,16 @@ export class AuthService {
     );
   }
 
-  getInsuranceList(clinicId: string): Observable<any> {
+  getInsuranceList(): Observable<any> {
     return this.http.get(
-      `${environment.apiUrl}/api/insurances?clinicId=${clinicId}`
+      `${environment.apiUrl}/api/insurances`
     );
+  }
+
+  importInsurances(file: File): Observable<any> {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.post(`${environment.apiUrl}/api/insurances/import`, body);
   }
 
   getInsuranceDetails(id: string): Observable<any> {

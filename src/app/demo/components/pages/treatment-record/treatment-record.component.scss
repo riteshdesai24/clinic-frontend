@@ -1,0 +1,19 @@
+.record-card { background: var(--surface-card); border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px #0000000d; }
+.record-card header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+.record-card h2 { margin: 0 0 .35rem; }
+.record-card header p { margin: 0; color: var(--text-color-secondary); }
+.record-icon { width: 3rem; height: 3rem; display: grid; place-items: center; border-radius: 50%; background: var(--primary-100); color: var(--primary-700); font-size: 1.25rem; }
+.field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.25rem; }
+.field { display: flex; flex-direction: column; gap: .5rem; }
+.field input, .notes-field textarea { width: 100%; }
+.field-hint { color: var(--text-color-secondary); line-height: 1.4; }
+.required { color: var(--red-500); }
+.medicine-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 2rem 0 1rem; }
+.medicine-heading h3 { margin: 0; }
+.medicine-list { display: grid; gap: .75rem; }
+.medicine-row { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)) auto; gap: .75rem; }
+.notes-field { margin-top: 1.5rem; }
+.actions { display: flex; justify-content: flex-end; gap: .75rem; margin-top: 2rem; }
+.invoice-progress { margin: 1rem 0 0; color: var(--text-color-secondary); }
+.invoice-retry { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; padding: 1rem; border-radius: 9px; color: var(--orange-800); background: var(--orange-50); }
+@media (max-width: 750px) { .medicine-row { grid-template-columns: 1fr 1fr; } }

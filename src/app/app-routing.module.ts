@@ -24,6 +24,7 @@ import { AuthGuard } from './guards/auth.guard';
 
             // ✅ PUBLIC ROUTES (NO GUARD)
             { path: 'auth', loadChildren: () => import('./demo/components/auth/auth.module').then(m => m.AuthModule) },
+            { path: 'reset-password', loadChildren: () => import('./demo/components/auth/reset-password/reset-password.module').then(m => m.ResetPasswordModule) },
 
             { path: 'landing', loadChildren: () => import('./demo/components/landing/landing.module').then(m => m.LandingModule) },
             { path: 'notfound', component: NotfoundComponent },

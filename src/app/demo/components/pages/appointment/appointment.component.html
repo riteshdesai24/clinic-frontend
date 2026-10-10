@@ -7,8 +7,8 @@
           <i class="pi pi-calendar-plus"></i>
         </div>
         <div>
-          <h5 class="pf-title">{{ isEdit ? 'Edit Appointment' : (dialogMode ? 'Book Appointment' : 'Create Appointment') }}</h5>
-          <p class="pf-sub">Enter appointment details below</p>
+          <h5 class="pf-title">{{ isView ? 'Appointment Details' : (isEdit ? 'Edit Appointment' : (dialogMode ? 'Book Appointment' : 'Create Appointment')) }}</h5>
+          <p class="pf-sub">{{ isView ? 'Review appointment details' : 'Enter appointment details below' }}</p>
         </div>
       </div>
 
@@ -51,20 +51,6 @@
               field="label"
               [dropdown]="true"
               placeholder="Search doctor..."
-              styleClass="w-full"
-              inputStyleClass="w-full">
-            </p-autoComplete>
-          </div>
-
-          <div class="pf-field">
-            <label>Treatment</label>
-            <p-autoComplete
-              formControlName="treatmentId"
-              [suggestions]="filteredTreatments"
-              (completeMethod)="searchTreatments($event)"
-              field="label"
-              [dropdown]="true"
-              placeholder="Search treatment..."
               styleClass="w-full"
               inputStyleClass="w-full">
             </p-autoComplete>
@@ -133,7 +119,7 @@
             (click)="onCancel()">
           </button>
           <button
-            *ngIf="!dialogMode"
+            *ngIf="!dialogMode && !isView"
             pButton
             type="submit"
             icon="pi pi-check"
@@ -143,7 +129,7 @@
             [disabled]="appointmentForm.invalid || loading">
           </button>
           <button
-            *ngIf="dialogMode"
+            *ngIf="dialogMode && !isView"
             pButton
             type="button"
             icon="pi pi-check"

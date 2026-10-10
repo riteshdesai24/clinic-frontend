@@ -85,6 +85,23 @@
                 </button>
                 <button
                   pButton
+                  *ngIf="!item.treatmentId && item.status !== 'CANCELLED'"
+                  icon="pi pi-file-edit"
+                  class="action-btn action-edit"
+                  pTooltip="Record treatment"
+                  (click)="addTreatment(item)">
+                </button>
+                <button
+                  pButton
+                  *ngIf="item.treatmentId"
+                  icon="pi pi-receipt"
+                  class="action-btn action-edit"
+                  pTooltip="Issue or open invoice"
+                  (click)="issueInvoice(item)">
+                </button>
+                <button
+                  pButton
+                  *ngIf="item.status !== 'CANCELLED' && !item.treatmentId"
                   icon="pi pi-pencil"
                   class="action-btn action-edit"
                   pTooltip="Edit"
@@ -92,9 +109,10 @@
                 </button>
                 <button
                   pButton
-                  icon="pi pi-trash"
+                  *ngIf="isAdmin && item.status !== 'CANCELLED' && item.status !== 'COMPLETED' && !item.treatmentId"
+                  icon="pi pi-ban"
                   class="action-btn action-delete"
-                  pTooltip="Delete"
+                  pTooltip="Cancel appointment"
                   (click)="deleteAppointment(item)">
                 </button>
               </div>
@@ -117,3 +135,12 @@
     </div>
   </div>
 </div>
+
+<p-dialog header="Cancellation reason" [(visible)]="showCancellationDialog" [modal]="true" [closable]="!cancelling" [style]="{ width: 'min(32rem, 92vw)' }" (onHide)="closeCancellation()">
+  <p>Please provide a reason for cancelling this appointment.</p>
+  <textarea pInputTextarea rows="4" class="w-full" maxlength="500" [value]="cancellationReason" (input)="cancellationReason = $any($event.target).value"></textarea>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Keep appointment" class="p-button-text" (click)="closeCancellation()" [disabled]="cancelling"></button>
+    <button pButton type="button" label="Confirm cancellation" icon="pi pi-ban" class="p-button-danger" (click)="confirmCancellation()" [loading]="cancelling" [disabled]="!cancellationReason.trim() || cancelling"></button>
+  </ng-template>
+</p-dialog>

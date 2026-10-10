@@ -20,21 +20,17 @@ export class AppointmentComponent implements OnInit {
   loading = false;
   error: string | null = null;
   success: string | null = null;
-  clinicId = '';
   appointmentId: string | null = null;
   isEdit = false;
+  isView = false;
 
   doctors: any[] = [];
   filteredDoctors: any[] = [];
   patients: any[] = [];
   filteredPatients: any[] = [];
-  treatments: any[] = [];
-  filteredTreatments: any[] = [];
   clinicData: any = {};
   statuses = [
-    { label: 'Scheduled', value: 'SCHEDULED' },
-    { label: 'Completed', value: 'COMPLETED' },
-    { label: 'Cancelled', value: 'CANCELLED' },
+    { label: 'Confirmed', value: 'CONFIRMED' },
     { label: 'Pending', value: 'PENDING' }
   ];
 
@@ -51,10 +47,8 @@ export class AppointmentComponent implements OnInit {
       localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}'
     );
 
-    this.clinicId = this.clinicData._id || '';
     this.appointmentId = this.route.snapshot.queryParamMap.get('id');
-
-    this.loadTreatments();
+    this.isView = this.route.snapshot.queryParamMap.get('view') === 'true';
 
     this.appointmentForm = this.fb.group({
       patientName: [{ value: null, disabled: !!this.patientName }, Validators.required],
@@ -63,7 +57,6 @@ export class AppointmentComponent implements OnInit {
       date: ['', Validators.required],
       time: [this.currentTime(), Validators.required],
       notes: [''],
-      treatmentId: [''],
       status: ['PENDING', Validators.required]
     });
 
@@ -78,7 +71,7 @@ export class AppointmentComponent implements OnInit {
 
       this.loadDoctors(() => {
         if (this.appointmentId) {
-          this.isEdit = true;
+          this.isEdit = !this.isView;
           this.loadAppointment();
         }
       });
@@ -100,13 +93,6 @@ export class AppointmentComponent implements OnInit {
     const query = (event.query || '').toLowerCase();
     this.filteredPatients = this.patients.filter(p =>
       p.label.toLowerCase().includes(query) || p.phone.includes(query)
-    );
-  }
-
-  searchTreatments(event: any): void {
-    const query = (event.query || '').toLowerCase();
-    this.filteredTreatments = this.treatments.filter(t =>
-      t.label.toLowerCase().includes(query)
     );
   }
 
@@ -145,14 +131,12 @@ export class AppointmentComponent implements OnInit {
 
     const raw = this.appointmentForm.getRawValue();
     const data: any = {
-      clinicId: this.clinicId,
       doctorId: raw.doctorId?.value || '',
       patientId: this.patientId || raw.patientName?.value || raw.patientId,
       date: raw.date,
       time: this.formatTime(raw.time),
       status: raw.status,
-      notes: raw.notes,
-      treatmentId: raw.treatmentId?.value || null
+      notes: raw.notes
     };
 
     this.api.createAppointment(data).subscribe({
@@ -174,14 +158,12 @@ export class AppointmentComponent implements OnInit {
 
     const raw = this.appointmentForm.getRawValue();
     const data: any = {
-      clinicId: this.clinicId,
       doctorId: raw.doctorId?.value || '',
       patientId: raw.patientName?.value || raw.patientId,
       date: raw.date,
       time: this.formatTime(raw.time),
       status: raw.status,
-      notes: raw.notes,
-      treatmentId: raw.treatmentId?.value || null
+      notes: raw.notes
     };
 
     this.api.updateAppointment(this.appointmentId, data).subscribe({
@@ -203,24 +185,30 @@ export class AppointmentComponent implements OnInit {
 
     this.api.getAppointmentDetails(this.appointmentId).subscribe({
       next: (res: any) => {
-        const appt = res.data?.appointment;
+        const appt = res.data?.appointment || res.data;
         if (appt) {
-          const doctorIdValue = appt.doctorId || appt.doctor || '';
-          const patientIdValue = appt.patientId || appt.patient || '';
+          this.statuses = [
+            { label: 'Confirmed', value: 'CONFIRMED' },
+            { label: 'Completed', value: 'COMPLETED' },
+            { label: 'Pending', value: 'PENDING' }
+          ];
+          const doctorIdValue = appt.doctorId?._id || appt.doctorId || appt.doctor || '';
+          const patientIdValue = appt.patientId?._id || appt.patientId || appt.patient || '';
+          const patient = appt.patientId && typeof appt.patientId === 'object' ? appt.patientId : null;
+          const patientName = patient?.name || [patient?.firstName, patient?.lastName].filter(Boolean).join(' ') || appt.patientName;
 
           this.appointmentForm.patchValue({
             patientName: this.patients.find(p => p.value === patientIdValue)
-              || (appt.patientName ? { label: appt.patientName, value: patientIdValue } : null),
+              || (patientName ? { label: patientName, value: patientIdValue } : null),
             patientId: patientIdValue,
             doctorId: this.doctors.find(d => d.value === doctorIdValue) || null,
             date: appt.date ? new Date(appt.date) : null,
             time: this.parseTime(appt.time || appt.appointmentTime || ''),
             notes: appt.notes || appt.reason || '',
-            treatmentId: this.treatments.find(t => t.value === appt.treatmentId)
-              || (appt.treatmentId ? { label: appt.treatmentName || 'Treatment', value: appt.treatmentId } : null),
             status: appt.status || ''
           });
         }
+        if (this.isView) this.appointmentForm.disable();
         this.loading = false;
       },
       error: err => this.handleError(err)
@@ -254,7 +242,7 @@ export class AppointmentComponent implements OnInit {
   }
 
   loadPatients(onLoaded?: () => void): void {
-    this.api.getPatientList(this.clinicId).subscribe({
+    this.api.getPatientList().subscribe({
       next: (res: any) => {
         const patients = res.data || res || [];
         this.patients = patients.map((p: any) => ({
@@ -270,22 +258,6 @@ export class AppointmentComponent implements OnInit {
       },
       error: () => {
         onLoaded?.();
-      }
-    });
-  }
-
-  loadTreatments(): void {
-    this.api.getTreatmentList().subscribe({
-      next: (res: any) => {
-        const treatments = res.data || res || [];
-        this.treatments = treatments.map((t: any) => ({
-          label: t.name || t.treatmentName || 'Treatment',
-          value: t._id || t.id || t.value || ''
-        }));
-        this.filteredTreatments = [...this.treatments];
-      },
-      error: () => {
-        // keep empty state if API fails
       }
     });
   }

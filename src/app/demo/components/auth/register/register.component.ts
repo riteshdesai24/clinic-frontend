@@ -25,10 +25,9 @@ export class RegisterComponent implements OnInit {
 
     ngOnInit() {
         this.registerForm = this.fb.group({
-            name: ['', [Validators.required, Validators.minLength(3)]],
             email: ['', [Validators.required, Validators.email]],
             phone: ['', [Validators.required]],
-            password: ['', [Validators.required, Validators.minLength(6)]],
+            password: ['', [Validators.required, Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/)]],
             confirmPassword: ['', [Validators.required]],
             clinicName: ['', [Validators.required, Validators.minLength(3)]]
         }, { validators: this.passwordMatchValidator });
@@ -54,9 +53,9 @@ export class RegisterComponent implements OnInit {
         this.error = null;
         this.success = null;
 
-        const { name, email, phone, password, clinicName } = this.registerForm.value;
+        const { email, phone, password, clinicName } = this.registerForm.value;
 
-        this.authService.register(name, email, phone, password, clinicName).subscribe({
+        this.authService.register(email, phone, password, clinicName).subscribe({
             next: (res) => {
                 if (res?.token) {
                     localStorage.setItem('token', res.token);

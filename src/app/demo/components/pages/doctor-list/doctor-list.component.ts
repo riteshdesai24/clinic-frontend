@@ -56,8 +56,7 @@ export class DoctorListComponent implements OnInit {
         this.loading = false;
       },
 
-      error: err => {
-        console.error(err);
+      error: () => {
         this.loading = false;
         this.messageService.add({
           severity: 'error',
@@ -149,8 +148,7 @@ export class DoctorListComponent implements OnInit {
             });
             this.loadDoctorList();
           },
-          error: err => {
-            console.error(err);
+          error: () => {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',

@@ -3,10 +3,8 @@ import { CommonModule } from '@angular/common';
 
 import { ResetPasswordRoutingModule } from './reset-password-routing.module';
 import { ResetPasswordComponent } from './reset-password.component';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { CheckboxModule } from 'primeng/checkbox';
-import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 
 
@@ -19,10 +17,6 @@ import { PasswordModule } from 'primeng/password';
     ResetPasswordRoutingModule,
     ReactiveFormsModule,
     ButtonModule,
-    CheckboxModule,
-    InputTextModule,
-    FormsModule,
-    ReactiveFormsModule,
     PasswordModule
   ]
 })

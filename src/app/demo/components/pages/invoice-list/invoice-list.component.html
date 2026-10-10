@@ -1,0 +1,44 @@
+<main class="invoice-page">
+  <header class="invoice-heading">
+    <div class="invoice-mark"><i class="pi pi-receipt" aria-hidden="true"></i></div>
+    <div><span class="eyebrow">Billing</span><h1>Invoices</h1><p>Review issued invoices and record collected payments.</p></div>
+    <button type="button" class="refresh-button" (click)="loadInvoices()" [disabled]="loading"><i class="pi pi-refresh"></i> Refresh</button>
+  </header>
+
+  <div class="message error" *ngIf="error"><i class="pi pi-exclamation-circle"></i><span>{{ error }}</span><button type="button" (click)="loadInvoices()">Retry</button></div>
+  <div class="loading" *ngIf="loading"><i class="pi pi-spin pi-spinner"></i> Loading invoices…</div>
+
+  <section class="invoice-card" *ngIf="!loading && !error">
+    <div class="empty-state" *ngIf="invoices.length === 0"><i class="pi pi-file"></i><h2>No invoices yet</h2><p>Complete a treatment record to issue its invoice.</p></div>
+    <div class="table-wrap" *ngIf="invoices.length">
+      <table>
+        <thead><tr><th>Invoice</th><th>Patient</th><th>Doctor</th><th>Issued</th><th>Status</th><th>Total</th><th>Paid</th><th>Balance</th><th></th></tr></thead>
+        <tbody>
+          <ng-container *ngFor="let invoice of invoices">
+            <tr>
+              <td><strong>{{ invoice.invoiceNumber }}</strong><small>{{ invoice.treatmentName || 'Appointment treatment' }}</small></td>
+              <td>{{ invoice.patientId?.name || 'Patient' }}<small>{{ invoice.patientId?.phone || '' }}</small></td>
+              <td>{{ invoice.doctorId?.staffname || 'Doctor' }}</td>
+              <td>{{ invoice.issuedAt | date:'dd MMM yyyy' }}</td>
+              <td><span class="status" [ngClass]="'status-' + invoice.status?.toLowerCase()">{{ invoice.status }}</span></td>
+              <td>{{ invoice.totalAmount | currency:'INR':'symbol':'1.2-2' }}</td>
+              <td>{{ invoice.amountPaid | currency:'INR':'symbol':'1.2-2' }}</td>
+              <td>{{ balance(invoice) | currency:'INR':'symbol':'1.2-2' }}</td>
+              <td><button type="button" class="record-button" *ngIf="invoice.status !== 'VOID' && balance(invoice) > 0" (click)="startPayment(invoice)">Record payment</button></td>
+            </tr>
+            <tr *ngIf="selectedInvoiceId === invoice._id" class="payment-row">
+              <td colspan="9">
+                <form class="payment-form" (ngSubmit)="savePayment()">
+                  <label>Amount<input type="number" name="amount" min="0.01" step="0.01" [max]="balance(invoice)" [(ngModel)]="paymentDraft.amount" required /></label>
+                  <label>Method<select name="method" [(ngModel)]="paymentDraft.method"><option *ngFor="let method of paymentMethods" [value]="method">{{ method.replace('_', ' ') }}</option></select></label>
+                  <label>Reference (optional)<input type="text" name="reference" maxlength="120" [(ngModel)]="paymentDraft.reference" /></label>
+                  <div class="payment-actions"><button type="button" class="cancel-button" (click)="cancelPayment()" [disabled]="savingPayment">Cancel</button><button type="submit" class="record-button primary" [disabled]="savingPayment">{{ savingPayment ? 'Saving…' : 'Save payment' }}</button></div>
+                </form>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>

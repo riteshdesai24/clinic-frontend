@@ -68,7 +68,6 @@ export class LoginComponent implements OnInit {
 
         this.authService.login(email, password).subscribe({
             next: (res) => {
-                console.log('Login successful:', res);
                 // ✅ Store token safely
                 if (res?.token) {
                     localStorage.setItem('token', res.token);

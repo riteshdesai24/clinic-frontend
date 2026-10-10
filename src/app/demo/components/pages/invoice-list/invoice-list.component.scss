@@ -1,0 +1,36 @@
+.invoice-page { max-width: 1400px; margin: 0 auto; color: var(--text-color); }
+.invoice-heading { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.invoice-mark { display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 11px; color: var(--primary-700); background: var(--primary-100); font-size: 1.3rem; }
+.eyebrow { color: var(--text-color-secondary); font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.invoice-heading h1 { margin: .2rem 0; font-size: 1.6rem; }
+.invoice-heading p { margin: 0; color: var(--text-color-secondary); }
+.refresh-button { margin-left: auto; padding: .65rem .9rem; border: 1px solid var(--surface-border); border-radius: 8px; color: var(--text-color); background: var(--surface-card); cursor: pointer; }
+.invoice-card { overflow: hidden; border: 1px solid var(--surface-border); border-radius: 12px; background: var(--surface-card); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; min-width: 1000px; border-collapse: collapse; text-align: left; }
+th { padding: .85rem .8rem; border-bottom: 1px solid var(--surface-border); color: var(--text-color-secondary); font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+td { padding: .85rem .8rem; border-bottom: 1px solid var(--surface-border); font-size: .86rem; white-space: nowrap; }
+td strong, td small { display: block; }
+td small { margin-top: .25rem; color: var(--text-color-secondary); }
+.status { display: inline-block; padding: .3rem .55rem; border-radius: 20px; background: var(--surface-100); font-size: .73rem; font-weight: 600; }
+.status-issued { color: #92400e; background: #fef3c7; }
+.status-partially_paid { color: #1d4ed8; background: #dbeafe; }
+.status-paid { color: #15803d; background: #dcfce7; }
+.status-void { color: #b91c1c; background: #fee2e2; }
+.record-button { padding: .5rem .7rem; border: 0; border-radius: 7px; color: var(--primary-700); background: var(--primary-100); font-size: .8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.record-button.primary { color: #fff; background: var(--primary-600); }
+.payment-row td { padding: 1rem; background: var(--surface-50); }
+.payment-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .8rem; }
+.payment-form label { display: grid; gap: .35rem; color: var(--text-color-secondary); font-size: .78rem; }
+.payment-form input, .payment-form select { min-width: 150px; padding: .55rem .65rem; border: 1px solid var(--surface-border); border-radius: 7px; color: var(--text-color); background: var(--surface-card); }
+.payment-actions { display: flex; gap: .5rem; margin-left: auto; }
+.cancel-button { padding: .5rem .7rem; border: 1px solid var(--surface-border); border-radius: 7px; color: var(--text-color); background: var(--surface-card); cursor: pointer; }
+.empty-state { display: grid; justify-items: center; padding: 3.5rem 1rem; color: var(--text-color-secondary); text-align: center; }
+.empty-state i { color: var(--primary-500); font-size: 2rem; }
+.empty-state h2 { margin: .75rem 0 .25rem; color: var(--text-color); font-size: 1.1rem; }
+.empty-state p { margin: 0; }
+.loading, .message { display: flex; align-items: center; gap: .65rem; padding: 1rem; border-radius: 9px; }
+.loading { color: var(--text-color-secondary); background: var(--surface-card); }
+.message.error { margin-bottom: 1rem; color: var(--red-700); background: var(--red-50); }
+.message button { margin-left: auto; border: 0; color: inherit; background: transparent; font-weight: 600; cursor: pointer; }
+@media(max-width: 650px) { .invoice-heading { align-items: flex-start; flex-wrap: wrap; } .refresh-button { margin-left: 0; } .payment-actions { width: 100%; margin-left: 0; } }

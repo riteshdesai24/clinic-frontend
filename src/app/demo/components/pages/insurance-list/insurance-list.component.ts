@@ -1,7 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import * as XLSX from 'xlsx';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { AuthService } from 'src/app/demo/service/auth.service';
 
@@ -15,7 +13,6 @@ export class InsuranceListComponent implements OnInit {
   insuranceList: any[] = [];
   filteredInsuranceList: any[] = [];
   loading = false;
-  clinicId = '';
 
   constructor(
     private router: Router,
@@ -25,22 +22,13 @@ export class InsuranceListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const clinicData = JSON.parse(
-      localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}'
-    );
-
-    this.clinicId = clinicData._id || '';
     this.loadInsurances();
   }
 
   loadInsurances(): void {
-    if (!this.clinicId) {
-      return;
-    }
-
     this.loading = true;
 
-    this.api.getInsuranceList(this.clinicId).subscribe({
+    this.api.getInsuranceList().subscribe({
       next: (res: any) => {
         const records = Array.isArray(res?.data) ? res.data
           : Array.isArray(res?.data?.insurances) ? res.data.insurances
@@ -50,8 +38,7 @@ export class InsuranceListComponent implements OnInit {
         this.filteredInsuranceList = [...this.insuranceList];
         this.loading = false;
       },
-      error: err => {
-        console.error(err);
+      error: () => {
         this.loading = false;
         this.msg.add({ severity: 'error', summary: 'Error', detail: 'Failed to load insurances' });
       }
@@ -111,8 +98,7 @@ export class InsuranceListComponent implements OnInit {
             this.msg.add({ severity: 'success', summary: 'Deleted', detail: 'Insurance deleted' });
             this.loadInsurances();
           },
-          error: err => {
-            console.error(err);
+          error: () => {
             this.msg.add({ severity: 'error', summary: 'Error', detail: 'Delete failed' });
           }
         });
@@ -126,53 +112,22 @@ export class InsuranceListComponent implements OnInit {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const arrayBuffer = e.target.result;
-      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const rows: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-
-      if (!rows.length) {
-        this.msg.add({ severity: 'warn', summary: 'No data', detail: 'Excel file contains no rows' });
-        return;
+    this.loading = true;
+    this.api.importInsurances(file).subscribe({
+      next: (response: any) => {
+        this.loading = false;
+        const results = response?.data || {};
+        this.msg.add({
+          severity: results.errors?.length ? 'warn' : 'success',
+          summary: results.errors?.length ? 'Import completed with issues' : 'Imported',
+          detail: `${results.created || 0} created, ${results.updated || 0} updated, ${results.skipped || 0} skipped.`
+        });
+        this.loadInsurances();
+      },
+      error: (error: any) => {
+        this.loading = false;
+        this.msg.add({ severity: 'error', summary: 'Import failed', detail: error?.error?.message || 'Unable to import this file.' });
       }
-
-      const requests = rows.map(row => {
-        const payload = {
-          clinicId: this.clinicId,
-          insuranceCompany: row['Insurer Name'] || row['insuranceCompany'] || row['insurerName'] || row['insurer'] || '',
-          companyName: row['Company'] || row['companyName'] || row['company'] || '',
-          policyNumber: row['Policy Number'] || row['policyNumber'] || '',
-          coverageType: row['Policy Type'] || row['coverageType'] || row['policyType'] || '',
-          coverageAmount: row['Coverage Amount'] || row['coverageAmount'] || '',
-          contactPhone: row['Contact Number'] || row['contactPhone'] || row['contactNumber'] || '',
-          contactEmail: row['Email'] || row['contactEmail'] || row['email'] || '',
-          status: row['Status'] || row['status'] || 'ACTIVE',
-          startDate: row['Start Date'] || row['startDate'] || null,
-          endDate: row['End Date'] || row['endDate'] || null,
-          notes: row['Notes'] || row['notes'] || ''
-        };
-        return this.api.createInsurance(payload);
-      });
-
-      this.loading = true;
-      forkJoin(requests).subscribe({
-        next: () => {
-          this.loading = false;
-          this.msg.add({ severity: 'success', summary: 'Imported', detail: 'Insurance data uploaded successfully' });
-          this.loadInsurances();
-        },
-        error: err => {
-          this.loading = false;
-          console.error(err);
-          this.msg.add({ severity: 'error', summary: 'Error', detail: 'Failed to upload insurance Excel' });
-          this.loadInsurances();
-        }
-      });
-    };
-
-    reader.readAsArrayBuffer(file);
+    });
   }
 }

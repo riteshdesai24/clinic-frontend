@@ -17,7 +17,6 @@ export class PatientComponent implements OnInit {
   error: string | null = null;
   success: string | null = null;
 
-  clinicId = '';
 
   isEdit = false;
   isView = false;
@@ -35,7 +34,6 @@ export class PatientComponent implements OnInit {
     { label: 'Master', value: 'MASTER' }
   ];
 
-  // NOTE [Guessing]: reference screen shows Male / Female / Transgender / Unknown as radio options.
   genders = [
     { label: 'Male', value: 'MALE' },
     { label: 'Female', value: 'FEMALE' },
@@ -51,14 +49,6 @@ export class PatientComponent implements OnInit {
   ];
 
   // ---------- Address / Contact ----------
-  // NOTE [Guessing]: trimmed sample list — replace with your actual state master data.
-  states = [
-    { label: 'Maharashtra', value: 'MH' },
-    { label: 'Delhi', value: 'DL' },
-    { label: 'Karnataka', value: 'KA' },
-    { label: 'Tamil Nadu', value: 'TN' }
-  ];
-
   countries = [
     { label: 'India', value: 'IN' },
     { label: 'United States', value: 'US' },
@@ -66,51 +56,10 @@ export class PatientComponent implements OnInit {
   ];
 
   // ---------- Medical ----------
-  // NOTE [Guessing]: option labels copied verbatim from your screenshot chips.
-  medicalConditionOptions = [
-    { label: 'Heart Diseases', value: 'HEART_DISEASES' },
-    { label: 'High/Low Blood Pressure', value: 'BLOOD_PRESSURE' },
-    { label: 'Asthma', value: 'ASTHMA' },
-    { label: 'Tuberculosis', value: 'TUBERCULOSIS' },
-    { label: 'Peptic Ulcer / Acidity', value: 'PEPTIC_ULCER' },
-    { label: 'Diabetes', value: 'DIABETES' },
-    { label: 'Anaemia', value: 'ANAEMIA' },
-    { label: 'Thalassaemia', value: 'THALASSAEMIA' },
-    { label: 'Kidney Diseases', value: 'KIDNEY_DISEASES' },
-    { label: 'Hemophilia', value: 'HEMOPHILIA' },
-    { label: 'Convulsions / Epilepsy', value: 'CONVULSIONS_EPILEPSY' },
-    { label: 'Psychiatric Problem', value: 'PSYCHIATRIC_PROBLEM' },
-    { label: 'AIDS / HIV', value: 'AIDS_HIV' },
-    { label: 'Jaundice / Hepatitis', value: 'JAUNDICE_HEPATITIS' },
-    { label: 'Rheumatic Fever', value: 'RHEUMATIC_FEVER' },
-    { label: 'Pregnancy', value: 'PREGNANCY' },
-    { label: 'Breast-feeding', value: 'BREAST_FEEDING' }
-  ];
-
-  dentalConditionOptions = [
-    { label: 'Bad Breath', value: 'BAD_BREATH' },
-    { label: 'Bleeding gums', value: 'BLEEDING_GUMS' },
-    { label: 'Sensitivity', value: 'SENSITIVITY' },
-    { label: 'Discoloured teeth', value: 'DISCOLOURED_TEETH' },
-    { label: 'Stained teeth', value: 'STAINED_TEETH' },
-    { label: 'Fractured teeth', value: 'FRACTURED_TEETH' },
-    { label: 'Missing teeth', value: 'MISSING_TEETH' },
-    { label: 'Cracked teeth', value: 'CRACKED_TEETH' },
-    { label: 'Dry Mouth', value: 'DRY_MOUTH' },
-    { label: 'Pus', value: 'PUS' },
-    { label: 'Tooth Wear', value: 'TOOTH_WEAR' },
-    { label: 'Loose Teeth', value: 'LOOSE_TEETH' },
-    { label: 'Loose Gums', value: 'LOOSE_GUMS' },
-    { label: 'Infection', value: 'INFECTION' },
-    { label: 'Extra Teeth', value: 'EXTRA_TEETH' },
-    { label: 'Crooked Bite', value: 'CROOKED_BITE' },
-    { label: 'Oral Thrush', value: 'ORAL_THRUSH' },
-    { label: 'Teeth Grinding', value: 'TEETH_GRINDING' },
-    { label: 'Jaw Joint Problems (TMJ)', value: 'JAW_JOINT_TMJ' },
-    { label: 'Oral Cancer (Early Signs)', value: 'ORAL_CANCER_EARLY' },
-    { label: 'Receding Gums', value: 'RECEDING_GUMS' },
-    { label: 'Mouth Sores', value: 'MOUTH_SORES' }
-  ];
+  medicalConditionOptions: { label: string; value: string }[] = [];
+  dentalConditionOptions: { label: string; value: string }[] = [];
+  private savedMedicalConditions: string[] = [];
+  private savedDentalConditions: string[] = [];
 
   // ---------- Insurance ----------
   insuranceCompanies: any[] = [];
@@ -185,7 +134,6 @@ export class PatientComponent implements OnInit {
 
     this.clinicData = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
 
-    this.clinicId = this.clinicData._id || '';
 
     this.patientForm = this.fb.group({
       // Personal Info
@@ -247,6 +195,9 @@ export class PatientComponent implements OnInit {
       discProfile: ['']
     });
 
+    this.loadConditionOptions('MEDICAL');
+    this.loadConditionOptions('DENTAL');
+
     this.loadInsuranceCompanies();
 
     if (this.isEdit) this.loadPatient();
@@ -285,12 +236,40 @@ export class PatientComponent implements OnInit {
     });
   }
 
-  private loadInsuranceCompanies(): void {
-    if (!this.clinicId) {
-      return;
-    }
+  private loadConditionOptions(type: 'MEDICAL' | 'DENTAL'): void {
+    this.api.getConditionList(type).subscribe({
+      next: (response: any) => {
+        const options = (response?.data || [])
+          .filter((condition: any) => condition.status === 'ACTIVE')
+          .map((condition: any) => ({ label: condition.name, value: condition.name }));
+        if (type === 'MEDICAL') {
+          this.medicalConditionOptions = options;
+          this.includeExistingConditions(type, this.savedMedicalConditions);
+        } else {
+          this.dentalConditionOptions = options;
+          this.includeExistingConditions(type, this.savedDentalConditions);
+        }
+      },
+      error: () => {
+        if (type === 'MEDICAL') this.medicalConditionOptions = [];
+        else this.dentalConditionOptions = [];
+      }
+    });
+  }
 
-    this.api.getInsuranceList(this.clinicId).subscribe({
+  private includeExistingConditions(type: 'MEDICAL' | 'DENTAL', values: string[] = []): void {
+    if (type === 'MEDICAL') this.savedMedicalConditions = values;
+    else this.savedDentalConditions = values;
+    const options = type === 'MEDICAL' ? this.medicalConditionOptions : this.dentalConditionOptions;
+    const extras = values
+      .filter(value => !options.some(option => option.value === value))
+      .map(value => ({ label: value.replace(/_/g, ' '), value }));
+    if (type === 'MEDICAL') this.medicalConditionOptions = [...options, ...extras];
+    else this.dentalConditionOptions = [...options, ...extras];
+  }
+
+  private loadInsuranceCompanies(): void {
+    this.api.getInsuranceList().subscribe({
       next: (res: any) => {
         const records = Array.isArray(res?.data) ? res.data
           : Array.isArray(res?.data?.insurances) ? res.data.insurances
@@ -442,6 +421,8 @@ export class PatientComponent implements OnInit {
         const p = res.data.patient;
 
         if (p) {
+          this.includeExistingConditions('MEDICAL', p.medicalConditions || []);
+          this.includeExistingConditions('DENTAL', p.dentalConditions || []);
           this.patientForm.patchValue({
             title:              p.title,
             firstName:          p.firstName,
@@ -510,7 +491,6 @@ export class PatientComponent implements OnInit {
     return {
       ...form,
       insuranceCompany: form.insuranceCompany?.value || form.insuranceCompany || '',
-      clinicId: this.clinicId
     };
   }
 

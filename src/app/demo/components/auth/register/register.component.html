@@ -18,16 +18,6 @@
         <div class="form-grid">
 
           <div class="field">
-            <label for="name">Full Name</label>
-            <input id="name" pInputText formControlName="name"
-              placeholder="Full name" class="full-input" />
-            <div class="error-text" *ngIf="f['name'].touched && f['name'].invalid">
-              <span *ngIf="f['name'].errors?.required">Full name is required.</span>
-              <span *ngIf="f['name'].errors?.minlength">Min {{ f['name'].errors?.minlength.requiredLength }} characters.</span>
-            </div>
-          </div>
-
-          <div class="field">
             <label for="clinicName">Clinic Name</label>
             <input id="clinicName" pInputText formControlName="clinicName"
               placeholder="Clinic name" class="full-input" />
@@ -64,7 +54,7 @@
             </p-password>
             <div class="error-text" *ngIf="f['password'].touched && f['password'].invalid">
               <span *ngIf="f['password'].errors?.required">Password is required.</span>
-              <span *ngIf="f['password'].errors?.minlength">Min {{ f['password'].errors?.minlength.requiredLength }} characters.</span>
+              <span *ngIf="f['password'].errors?.pattern">Use 8+ characters with uppercase, lowercase, number and a special character.</span>
             </div>
           </div>
 

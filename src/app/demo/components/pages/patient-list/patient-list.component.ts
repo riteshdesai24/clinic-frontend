@@ -14,7 +14,6 @@ export class PatientListComponent implements OnInit {
   filteredPatientList: any[] = [];
 
   loading = false;
-  clinicId = '';
 
   constructor(
     private router: Router,
@@ -25,11 +24,7 @@ export class PatientListComponent implements OnInit {
 
   ngOnInit(): void {
 
-    const clinicData = JSON.parse(
-    localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}'
-  );
-  this.clinicId = clinicData._id || '';
-  this.loadPatients();
+    this.loadPatients();
   }
 
   // ====================
@@ -37,11 +32,9 @@ export class PatientListComponent implements OnInit {
   // ====================
   loadPatients(): void {
 
-    if (!this.clinicId) return;
-
     this.loading = true;
 
-    this.api.getPatientList(this.clinicId)
+    this.api.getPatientList()
       .subscribe({
 
         next: (res: any) => {
@@ -53,9 +46,7 @@ export class PatientListComponent implements OnInit {
           this.loading = false;
         },
 
-        error: err => {
-
-          console.error(err);
+        error: () => {
 
           this.loading = false;
 
@@ -142,9 +133,7 @@ export class PatientListComponent implements OnInit {
               this.loadPatients();
             },
 
-            error: err => {
-
-              console.error(err);
+            error: () => {
 
               this.msg.add({
                 severity: 'error',
