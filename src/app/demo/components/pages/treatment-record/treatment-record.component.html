@@ -14,16 +14,34 @@
             <input pInputText id="diagnosis" formControlName="diagnosis" />
           </div>
           <div class="field">
-            <label for="treatmentMaster">Billable treatment <span class="required">*</span></label>
-            <p-dropdown inputId="treatmentMaster" [options]="treatmentMasters" formControlName="treatmentMasterId" optionLabel="label" optionValue="_id" placeholder="Select a priced treatment" styleClass="w-full"></p-dropdown>
+            <label for="treatmentMasters">Billable treatments <span class="required">*</span></label>
+            <p-multiSelect inputId="treatmentMasters" [options]="treatmentMasters" formControlName="treatmentMasterIds" optionLabel="label" optionValue="_id" placeholder="Select one or more treatments" display="chip" [showClear]="true" styleClass="w-full"></p-multiSelect>
             <small class="field-hint" *ngIf="treatmentMastersLoading">Loading available treatments…</small>
             <small class="field-hint" *ngIf="!treatmentMastersLoading && !treatmentMasters.length">Add an active treatment with a price before issuing an invoice.</small>
+            <small class="p-error" *ngIf="form.get('treatmentMasterIds')?.touched && !selectedTreatments.length">Select at least one treatment.</small>
           </div>
           <div class="field">
             <label for="followUpDate">Follow-up date</label>
             <p-calendar inputId="followUpDate" formControlName="followUpDate" [showIcon]="true" dateFormat="dd/mm/yy" styleClass="w-full" inputStyleClass="w-full"></p-calendar>
           </div>
         </div>
+
+        <section class="invoice-adjustments" aria-labelledby="invoice-adjustments-title">
+          <div class="invoice-adjustments-heading"><div><h3 id="invoice-adjustments-title">Invoice adjustments</h3><p>GST is applied after the discount.</p></div></div>
+          <div class="adjustment-fields">
+            <div class="field"><label for="invoice-gst">GST rate</label><div class="input-suffix"><input pInputText id="invoice-gst" type="number" [value]="gstRate" readonly /><span>%</span></div><small class="field-hint">Fixed at 18%</small></div>
+            <div class="field"><label for="invoice-discount">Discount amount</label><div class="input-suffix"><span>₹</span><input pInputText id="invoice-discount" type="number" min="0" step="0.01" [max]="selectedTreatmentPrice" formControlName="discountAmount" /></div><small class="field-hint" *ngIf="!discountExceedsSubtotal">Discount is deducted before GST.</small><small class="p-error" *ngIf="discountExceedsSubtotal">Discount cannot exceed the treatment price.</small></div>
+          </div>
+          <ul class="invoice-treatment-items" *ngIf="selectedTreatments.length">
+            <li *ngFor="let treatment of selectedTreatments"><span>{{ treatment.name }}</span><span>{{ treatment.price | currency:'INR':'symbol':'1.2-2' }}</span></li>
+          </ul>
+          <dl class="invoice-totals">
+            <div><dt>Subtotal</dt><dd>{{ selectedTreatmentPrice | currency:'INR':'symbol':'1.2-2' }}</dd></div>
+            <div><dt>Discount</dt><dd>−{{ discountAmount | currency:'INR':'symbol':'1.2-2' }}</dd></div>
+            <div><dt>GST ({{ gstRate }}%)</dt><dd>{{ gstAmount | currency:'INR':'symbol':'1.2-2' }}</dd></div>
+            <div class="invoice-grand-total"><dt>Total</dt><dd>{{ invoiceTotal | currency:'INR':'symbol':'1.2-2' }}</dd></div>
+          </dl>
+        </section>
 
         <div class="medicine-heading"><h3>Medicines</h3><button pButton type="button" label="Add medicine" icon="pi pi-plus" class="p-button-outlined" (click)="addMedicine()"></button></div>
         <div formArrayName="medicines" class="medicine-list">
@@ -41,10 +59,10 @@
           <span>{{ invoiceError }}</span>
           <button pButton type="button" label="Retry invoice" icon="pi pi-refresh" (click)="issueInvoice()" [loading]="savingInvoice"></button>
         </div>
-        <p class="invoice-progress" *ngIf="savingInvoice"><i class="pi pi-spin pi-spinner"></i> Issuing invoice from the treatment price…</p>
+        <p class="invoice-progress" *ngIf="savingInvoice"><i class="pi pi-spin pi-spinner"></i> Issuing invoice for {{ selectedTreatments.length }} treatment{{ selectedTreatments.length === 1 ? '' : 's' }}…</p>
         <div class="actions">
           <button pButton type="button" label="Cancel" class="p-button-secondary" (click)="cancel()" [disabled]="saving || savingInvoice"></button>
-          <button pButton *ngIf="!treatmentSaved" type="submit" label="Save treatment and issue invoice" icon="pi pi-check" [loading]="saving" [disabled]="saving || loading || treatmentMastersLoading || !treatmentMasters.length"></button>
+          <button pButton *ngIf="!treatmentSaved" type="submit" label="Save treatment and issue invoice" icon="pi pi-check" [loading]="saving" [disabled]="saving || loading || treatmentMastersLoading || !treatmentMasters.length || discountExceedsSubtotal"></button>
         </div>
       </form>
     </section>

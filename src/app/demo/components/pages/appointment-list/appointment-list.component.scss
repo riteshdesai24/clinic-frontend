@@ -55,11 +55,37 @@
 }
 
 .pl-search-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
   margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.doctor-filter {
+  display: grid;
+  flex: 0 0 230px;
+  gap: 0.35rem;
+  color: var(--text-color-secondary);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.doctor-filter select {
+  width: 100%;
+  height: 38px;
+  padding: 0 0.7rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  color: var(--text-color);
+  background: var(--surface-card);
+  font: inherit;
+  font-weight: 400;
 }
 
 .pl-search {
-  width: 100%;
+  display: block;
+  flex: 1 1 280px;
   max-width: 380px;
 
   input {
@@ -75,6 +101,14 @@
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
     }
   }
+}
+
+@media (max-width: 640px) {
+  .pl-card { padding: 1.1rem; }
+  .pl-header { align-items: flex-start; gap: 1rem; }
+  .pl-search-wrap { align-items: stretch; flex-direction: column; gap: 0.75rem; }
+  .doctor-filter { flex-basis: auto; }
+  .pl-search { flex-basis: auto; max-width: none; }
 }
 
 ::ng-deep .pl-table {
@@ -170,6 +204,13 @@
 .status-scheduled { background: #eff6ff; color: #1d4ed8; }
 .status-completed { background: #dcfce7; color: #166534; }
 .status-cancelled { background: #fee2e2; color: #991b1b; }
+.invoice-dialog-copy { margin: 0 0 1rem; color: var(--text-color-secondary); }
+.invoice-dialog-fields { display: grid; gap: .5rem; }
+.invoice-dialog-fields label { margin-top: .4rem; color: var(--text-color); font-size: .875rem; font-weight: 600; }
+.invoice-dialog-fields small { color: var(--text-color-secondary); }
+.invoice-input-suffix { display: flex; align-items: center; overflow: hidden; min-height: 2.5rem; border: 1px solid var(--surface-border); border-radius: 8px; background: var(--surface-card); }
+.invoice-input-suffix span { padding: 0 .75rem; color: var(--text-color-secondary); }
+.invoice-input-suffix input { width: 100%; min-width: 0; border: 0 !important; box-shadow: none !important; }
 
 .action-row {
   display: flex;

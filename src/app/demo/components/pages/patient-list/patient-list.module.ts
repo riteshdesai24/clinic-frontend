@@ -1,3 +1,4 @@
+import { ListPaginationComponent } from 'src/app/shared/list-pagination.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -23,6 +24,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 
   imports: [
     CommonModule,
+    ListPaginationComponent,
     PatientListRoutingModule,
 
     // PrimeNG Modules

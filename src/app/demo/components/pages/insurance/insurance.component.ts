@@ -146,7 +146,7 @@ export class InsuranceComponent implements OnInit {
 
     this.api.getInsuranceDetails(this.insuranceId).subscribe({
       next: (res: any) => {
-        const i = res.data?.insurance || res.data || res;
+        const i = res?.data?.insurance || res?.data?.data?.insurance || res?.data?.data || res?.data || res?.insurance || res;
         if (i) {
           this.insuranceForm.patchValue({
             insuranceCompany: i.insuranceCompany || i.insurerName,

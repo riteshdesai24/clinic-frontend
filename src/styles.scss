@@ -63,10 +63,25 @@ body .p-button:not(.p-button-secondary):not(.p-button-success):not(.p-button-war
     border-color: #0f7d73 !important;
 }
 
-body .action-edit,
-body .action-view {
+body .pl-card .action-edit,
+body .pl-card .action-view,
+body .il-card .action-edit,
+body .il-card .action-view,
+body .condition-list-card .action-edit,
+body .treatment-list-card .action-edit {
     background: #e3f4f1 !important;
     color: #0f7d73 !important;
+}
+
+body .pl-card .action-btn.action-view,
+body .pl-card .action-btn.action-edit,
+body .il-card .action-btn.action-view,
+body .il-card .action-btn.action-edit,
+body .condition-list-card .action-btn.action-edit,
+body .treatment-list-card .action-btn.action-edit {
+    border: 1px solid var(--primary-100) !important;
+    background: var(--primary-50) !important;
+    color: var(--primary-700) !important;
 }
 
 body .status-active {
@@ -75,6 +90,280 @@ body .status-active {
 }
 
 body .p-button-danger,
-body .action-delete {
+body .pl-card .action-delete,
+body .il-card .action-delete,
+body .condition-list-card .action-delete,
+body .treatment-list-card .action-delete {
     color: #dc2626;
+}
+
+body .pl-card .action-btn.action-delete,
+body .il-card .action-btn.action-delete,
+body .condition-list-card .action-btn.action-delete,
+body .treatment-list-card .action-btn.action-delete {
+    border: 1px solid #fecaca !important;
+    background: #fff5f5 !important;
+    color: #b91c1c !important;
+}
+
+/* Keep the clinic's custom CRUD screens on the same card, control and table rhythm. */
+body .pl-card,
+body .il-card,
+body .pf-card,
+body .condition-list-card,
+body .treatment-list-card,
+body .attendance-card,
+body .profile-card,
+body .record-card,
+body .invoice-card {
+    border: 1px solid var(--surface-border) !important;
+    border-radius: 12px !important;
+    background: var(--surface-card) !important;
+    box-shadow: 0 2px 12px rgb(15 61 57 / 5%) !important;
+}
+
+body .pl-card,
+body .il-card,
+body .pf-card,
+body .condition-list-card,
+body .treatment-list-card {
+    padding: 1.5rem !important;
+}
+
+body .pf-card .pf-icon {
+    color: var(--primary-700) !important;
+    background: var(--primary-100) !important;
+}
+
+body .pf-card .pf-btn-primary {
+    min-height: 2.5rem;
+    border-radius: 8px !important;
+    background: var(--primary-600) !important;
+    border-color: var(--primary-600) !important;
+}
+
+body .pf-card .field-grid {
+    min-width: 0;
+}
+
+body .pf-card .field-grid.g3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+body .pf-card .field-grid.g2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+body .pf-card .pf-field,
+body .pf-card .pf-field > *,
+body .pf-card .pf-field .p-inputtext,
+body .pf-card .pf-field .p-dropdown,
+body .pf-card .pf-field .p-calendar,
+body .pf-card .pf-field .p-autocomplete {
+    min-width: 0;
+    max-width: 100%;
+}
+
+body .record-card,
+body .attendance-card,
+body .profile-card {
+    padding: 1.5rem !important;
+}
+
+body .pl-card .pl-icon,
+body .il-card .il-icon,
+body .pl-card .patient-avatar,
+body .pl-card .spec-badge {
+    color: var(--primary-700) !important;
+    background: var(--primary-100) !important;
+}
+
+body .pl-card .pl-icon i,
+body .il-card .il-icon i,
+body .invoice-heading .invoice-mark i {
+    display: inline-block;
+    font-family: "primeicons" !important;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+body .pl-card .action-btn,
+body .il-card .action-btn,
+body .condition-list-card .action-btn,
+body .treatment-list-card .action-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    flex: 0 0 2.25rem;
+    padding: 0 !important;
+}
+
+body .pl-card .action-btn .p-button-icon,
+body .il-card .action-btn .p-button-icon,
+body .condition-list-card .action-btn .p-button-icon,
+body .treatment-list-card .action-btn .p-button-icon {
+    display: inline-block;
+    margin: 0 !important;
+    font-family: "primeicons" !important;
+    font-size: .95rem !important;
+    line-height: 1;
+}
+
+body .pl-card .pl-add-btn,
+body .il-card .il-add-btn,
+body .p-button:not(.p-button-secondary):not(.p-button-success):not(.p-button-warning):not(.p-button-danger) {
+    min-height: 2.5rem;
+    border-radius: 8px !important;
+    background: var(--primary-600) !important;
+    border-color: var(--primary-600) !important;
+    box-shadow: none !important;
+}
+
+body .pl-card .pl-search input,
+body .il-card .il-search input,
+body .doctor-filter select,
+body .invoice-filter select,
+body .payment-form input,
+body .payment-form select {
+    min-height: 2.5rem;
+    border: 1px solid var(--surface-border) !important;
+    border-radius: 8px !important;
+    background: var(--surface-card) !important;
+    color: var(--text-color) !important;
+}
+
+body .pl-card .pl-search input:focus,
+body .il-card .il-search input:focus,
+body .doctor-filter select:focus,
+body .invoice-filter select:focus,
+body .payment-form input:focus,
+body .payment-form select:focus {
+    border-color: var(--primary-400) !important;
+    box-shadow: 0 0 0 3px rgb(21 153 140 / 12%) !important;
+    outline: 0;
+}
+
+body .pl-card .pl-table .p-datatable-thead > tr > th,
+body .il-card .il-table .p-datatable-thead > tr > th {
+    background: var(--surface-ground) !important;
+    color: var(--text-color-secondary) !important;
+}
+
+body .pl-card .pl-table .p-paginator,
+body .il-card .il-table .p-paginator {
+    flex-wrap: wrap;
+    gap: .25rem;
+}
+
+body .status-scheduled,
+body .status-active,
+body .status-paid,
+body .gender-other {
+    border-radius: 999px;
+}
+
+@media (max-width: 700px) {
+    body .pl-card,
+    body .il-card,
+    body .pf-card,
+    body .condition-list-card,
+    body .treatment-list-card,
+    body .attendance-card,
+    body .profile-card {
+        padding: 1rem !important;
+    }
+
+    body .pf-card .field-grid.g3,
+    body .pf-card .field-grid.g2 {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    body .pf-card .pf-btn-row {
+        justify-content: stretch;
+        flex-wrap: wrap;
+    }
+
+    body .pf-card .pf-btn-row > button {
+        flex: 1 1 9rem;
+    }
+
+    body .record-card header,
+    body .attendance-card header {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    body .pl-header,
+    body .il-header,
+    body .condition-list-card .header,
+    body .treatment-list-card .header {
+        align-items: flex-start !important;
+        flex-wrap: wrap !important;
+        gap: .85rem;
+    }
+
+    body .pl-header > button,
+    body .il-header-right {
+        max-width: 100%;
+    }
+
+    .layout-main-container {
+        padding: 0 1rem 1rem !important;
+    }
+}
+
+@media (min-width: 701px) and (max-width: 960px) {
+    body .pf-card .field-grid.g3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+/* Keep list action icons visible on light, low emphasis controls. */
+body .pl-card .action-row > .p-button.action-btn.action-view,
+body .pl-card .action-row > .p-button.action-btn.action-edit,
+body .il-card .action-row > .p-button.action-btn.action-view,
+body .il-card .action-row > .p-button.action-btn.action-edit,
+body .condition-list-card .actions > .p-button.action-btn.action-edit,
+body .treatment-list-card .actions > .p-button.action-btn.action-edit {
+    background: #e8f5f3 !important;
+    border: 1px solid #c5e6e1 !important;
+    color: #14796f !important;
+    box-shadow: none !important;
+}
+body .pl-card .action-row > .p-button.action-btn.action-delete,
+body .il-card .action-row > .p-button.action-btn.action-delete,
+body .condition-list-card .actions > .p-button.action-btn.action-delete,
+body .treatment-list-card .actions > .p-button.action-btn.action-delete {
+    background: #fff1f1 !important;
+    border: 1px solid #f7d0d0 !important;
+    color: #c24141 !important;
+    box-shadow: none !important;
+}
+
+/* Action controls keep the same appearance on hover; other buttons retain theme feedback. */
+body .pl-card .action-row > .p-button.action-btn.action-view:hover,
+body .pl-card .action-row > .p-button.action-btn.action-edit:hover,
+body .il-card .action-row > .p-button.action-btn.action-view:hover,
+body .il-card .action-row > .p-button.action-btn.action-edit:hover,
+body .condition-list-card .actions > .p-button.action-btn.action-edit:hover,
+body .treatment-list-card .actions > .p-button.action-btn.action-edit:hover {
+    background: #e8f5f3 !important;
+    border-color: #c5e6e1 !important;
+    color: #14796f !important;
+    box-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
+}
+body .pl-card .action-row > .p-button.action-btn.action-delete:hover,
+body .il-card .action-row > .p-button.action-btn.action-delete:hover,
+body .condition-list-card .actions > .p-button.action-btn.action-delete:hover,
+body .treatment-list-card .actions > .p-button.action-btn.action-delete:hover {
+    background: #fff1f1 !important;
+    border-color: #f7d0d0 !important;
+    color: #c24141 !important;
+    box-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
 }

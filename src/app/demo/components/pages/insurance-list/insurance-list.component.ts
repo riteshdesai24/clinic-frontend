@@ -13,6 +13,15 @@ export class InsuranceListComponent implements OnInit {
   insuranceList: any[] = [];
   filteredInsuranceList: any[] = [];
   loading = false;
+  page = 1;
+  readonly pageSize = 10;
+
+  get visibleInsuranceList(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredInsuranceList.slice(start, start + this.pageSize);
+  }
+
+  changePage(page: number): void { this.page = page; }
 
   constructor(
     private router: Router,
@@ -46,6 +55,7 @@ export class InsuranceListComponent implements OnInit {
   }
 
   onSearch(e: any): void {
+    this.page = 1;
     const value = e.target.value.toLowerCase();
 
     if (!value) {

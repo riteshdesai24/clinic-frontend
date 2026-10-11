@@ -1,3 +1,4 @@
+import { ListPaginationComponent } from 'src/app/shared/list-pagination.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -18,6 +19,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
   declarations: [InsuranceListComponent],
   imports: [
     CommonModule,
+    ListPaginationComponent,
     InsuranceListRoutingModule,
     TableModule,
     ButtonModule,

@@ -15,12 +15,28 @@ export class StaffListComponent implements OnInit {
   filteredStaffList: any[] = [];
 
   loading = false;
+  isSearchActive = false;
 
   // Pagination
   count = 0;
   hasNextPage = false;
   nextCursor: string | null = null;
   pageSize = 20;
+  page = 1;
+  readonly listPageSize = 10;
+
+  get visibleStaffList(): any[] {
+    const start = (this.page - 1) * this.listPageSize;
+    return this.filteredStaffList.slice(start, start + this.listPageSize);
+  }
+
+  changePage(page: number): void {
+    this.page = page;
+    const requiredRecords = page * this.listPageSize;
+    if (requiredRecords > this.filteredStaffList.length && this.hasNextPage && this.nextCursor && !this.loading) {
+      this.loadStaffList(this.nextCursor, true);
+    }
+  }
 
   constructor(
     private router: Router,
@@ -79,6 +95,8 @@ export class StaffListComponent implements OnInit {
   // SEARCH
   // ======================
   onStaffSearch(event: any): void {
+    this.isSearchActive = !!(event.target as HTMLInputElement).value.trim();
+    this.page = 1;
     const value = (event.target as HTMLInputElement).value.toLowerCase();
 
     if (!value) {

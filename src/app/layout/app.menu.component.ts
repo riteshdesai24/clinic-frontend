@@ -20,6 +20,30 @@ export class AppMenuComponent implements OnInit {
     }
 
     buildMenu() {
+        const role = String(this.user.role || '').toUpperCase();
+        if (role === 'DOCTOR') {
+            this.model = [{
+                label: 'Menus',
+                items: [
+                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
+                    { label: 'Appointment', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/appointment-list'] }
+                ]
+            }];
+            return;
+        }
+
+        if (role === 'STAFF') {
+            this.model = [{
+                label: 'Menus',
+                items: [
+                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
+                    { label: 'Patient', icon: 'pi pi-fw pi-user', routerLink: ['/pages/patient-list'] },
+                    { label: 'Appointment', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/appointment-list'] }
+                ]
+            }];
+            return;
+        }
+
         this.model = [
             {
                 label: 'Menus',
@@ -30,9 +54,10 @@ export class AppMenuComponent implements OnInit {
                         icon: 'pi pi-fw pi-users',
                         routerLink: ['/pages/staff-list']
                     }] : []),
-                    { label: 'Doctor', icon: 'pi pi-fw pi-user', routerLink: ['/pages/doctor-list'], badge: 'NEW' },
-                    { label: 'Patient', icon: 'pi pi-fw pi-user', routerLink: ['/pages/patient-list'], badge: 'NEW' },
-                    { label: 'Appointment', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/appointment-list'], badge: 'NEW' },
+                    { label: 'Doctor', icon: 'pi pi-fw pi-user', routerLink: ['/pages/doctor-list'] },
+                    { label: 'Patient', icon: 'pi pi-fw pi-user', routerLink: ['/pages/patient-list'] },
+                    { label: 'Appointment', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/appointment-list'] },
+                    { label: 'Invoice', icon: 'pi pi-fw pi-file-pdf', routerLink: ['/pages/invoice-list'] },
                     ...(this.user.role === 'ADMIN' || this.user.role === 'STAFF' || this.user.role === 'DOCTOR' ? [{ label: 'Attendance', icon: 'pi pi-fw pi-clock', routerLink: ['/pages/attendance'] }] : []),
                     
                 ]
@@ -41,7 +66,7 @@ export class AppMenuComponent implements OnInit {
                 label: 'Masters',
                 icon: 'pi pi-fw pi-briefcase',
                 items: [
-                    { label: 'Insurance', icon: 'pi pi-fw pi-shield', routerLink: ['/pages/insurance-list'], badge: 'NEW' },
+                    { label: 'Insurance', icon: 'pi pi-fw pi-shield', routerLink: ['/pages/insurance-list'] },
                     
                     {
                         label: 'Medical Conditions',

@@ -203,11 +203,11 @@ export class StaffComponent implements OnInit {
     this.loading = true;
     this.authService.getStaffDetails(id).subscribe({
       next: res => {
-        const s = res.data;   // ← API returns res.data directly
+        const s = this.unwrapRecord(res);
         this.staffForm.patchValue({
-          staffname: s.staffname,
-          email:     s.email,
-          phone:     s.phone
+          staffname: s.staffname ?? s.name ?? s.fullName ?? '',
+          email:     s.email ?? '',
+          phone:     s.phone ?? s.mobile ?? ''
         });
         this.togglePasswordValidation();
         this.loading = false;
@@ -220,18 +220,31 @@ export class StaffComponent implements OnInit {
     this.loading = true;
     this.authService.getDoctorDetails(id).subscribe({
       next: res => {
-        const d = res.data;   // ← API returns res.data directly
+        const d = this.unwrapRecord(res);
         this.staffForm.patchValue({
-          staffname:      d.staffname,
-          email:          d.email,
-          phone:          d.phone,
-          specialization: d.specialization
+          staffname:      d.staffname ?? d.name ?? d.fullName ?? '',
+          email:          d.email ?? '',
+          phone:          d.phone ?? d.mobile ?? '',
+          specialization: d.specialization ?? d.speciality ?? ''
         });
         this.togglePasswordValidation();
         this.loading = false;
       },
       error: err => this.handleError(err)
     });
+  }
+
+  private unwrapRecord(response: any): any {
+    let record = response;
+    // APIs may wrap a record as data, doctor, staff, or user. Unwrap those
+    // containers while preserving the actual document fields.
+    for (let depth = 0; depth < 4; depth++) {
+      if (!record || typeof record !== 'object' || Array.isArray(record)) break;
+      const nested = record.data ?? record.doctor ?? record.staff ?? record.user;
+      if (!nested || nested === record) break;
+      record = nested;
+    }
+    return Array.isArray(record) ? (record[0] || {}) : (record || {});
   }
 
   afterSave(): void {

@@ -8,6 +8,21 @@
 .field input, .notes-field textarea { width: 100%; }
 .field-hint { color: var(--text-color-secondary); line-height: 1.4; }
 .required { color: var(--red-500); }
+.invoice-adjustments { margin-top: 1.5rem; padding: 1.25rem; border: 1px solid var(--surface-border); border-radius: 12px; background: var(--surface-ground); }
+.invoice-adjustments-heading h3 { margin: 0 0 .25rem; color: var(--text-color); font-size: 1rem; }
+.invoice-adjustments-heading p { margin: 0; color: var(--text-color-secondary); font-size: .85rem; }
+.adjustment-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; max-width: 40rem; margin-top: 1rem; }
+.input-suffix { display: flex; align-items: center; overflow: hidden; min-height: 2.5rem; border: 1px solid var(--surface-border); border-radius: 8px; background: var(--surface-card); color: var(--text-color-secondary); }
+.input-suffix > span { padding: 0 .75rem; }
+.input-suffix input { width: 100%; min-width: 0; border: 0 !important; box-shadow: none !important; }
+.invoice-treatment-items { display: grid; gap: .4rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+.invoice-treatment-items li { display: flex; justify-content: space-between; gap: 1rem; color: var(--text-color-secondary); font-size: .875rem; }
+.invoice-totals { display: grid; gap: .55rem; max-width: 25rem; margin: 1.25rem 0 0 auto; }
+.invoice-totals > div { display: flex; justify-content: space-between; gap: 1rem; color: var(--text-color-secondary); }
+.invoice-totals dt, .invoice-totals dd { margin: 0; }
+.invoice-totals dd { color: var(--text-color); font-variant-numeric: tabular-nums; }
+.invoice-totals .invoice-grand-total { padding-top: .7rem; border-top: 1px solid var(--surface-border); color: var(--primary-800); font-weight: 700; }
+.invoice-totals .invoice-grand-total dd { color: var(--primary-800); font-size: 1.1rem; }
 .medicine-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 2rem 0 1rem; }
 .medicine-heading h3 { margin: 0; }
 .medicine-list { display: grid; gap: .75rem; }
@@ -16,4 +31,4 @@
 .actions { display: flex; justify-content: flex-end; gap: .75rem; margin-top: 2rem; }
 .invoice-progress { margin: 1rem 0 0; color: var(--text-color-secondary); }
 .invoice-retry { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; padding: 1rem; border-radius: 9px; color: var(--orange-800); background: var(--orange-50); }
-@media (max-width: 750px) { .medicine-row { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 750px) { .medicine-row { grid-template-columns: 1fr 1fr; } .adjustment-fields { grid-template-columns: 1fr; } .invoice-totals { margin-left: 0; } }

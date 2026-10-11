@@ -9,7 +9,7 @@
         </div>
         <div>
           <h5 class="pf-title">{{ isEdit ? 'Edit Patient' : 'Create Patient' }}</h5>
-          <p class="pf-sub">Fill in the patient details below</p>
+          <p class="pf-sub">Create the patient record now. Booking an appointment is optional.</p>
         </div>
       </div>
 
@@ -465,11 +465,11 @@
             (click)="onCancel()">
           </button>
           <button
-            *ngIf="!isView"
+            *ngIf="!isView && !isEdit"
             pButton
             type="button"
             icon="pi pi-calendar-plus"
-            label="Create Patient and Book appointment"
+            label="Create patient, then book appointment"
             class="p-button-sm p-button-help"
             (click)="bookAppointment()"
             [loading]="loading">

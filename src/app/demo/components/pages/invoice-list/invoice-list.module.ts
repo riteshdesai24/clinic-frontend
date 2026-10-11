@@ -1,3 +1,4 @@
+import { ListPaginationComponent } from 'src/app/shared/list-pagination.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +7,6 @@ import { InvoiceListRoutingModule } from './invoice-list-routing.module';
 
 @NgModule({
   declarations: [InvoiceListComponent],
-  imports: [CommonModule, FormsModule, InvoiceListRoutingModule]
+  imports: [CommonModule, FormsModule, ListPaginationComponent, InvoiceListRoutingModule]
 })
 export class InvoiceListModule {}

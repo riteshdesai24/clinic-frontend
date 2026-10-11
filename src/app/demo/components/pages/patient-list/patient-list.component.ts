@@ -14,6 +14,15 @@ export class PatientListComponent implements OnInit {
   filteredPatientList: any[] = [];
 
   loading = false;
+  page = 1;
+  readonly pageSize = 10;
+
+  get visiblePatientList(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredPatientList.slice(start, start + this.pageSize);
+  }
+
+  changePage(page: number): void { this.page = page; }
 
   constructor(
     private router: Router,
@@ -63,6 +72,7 @@ export class PatientListComponent implements OnInit {
   // SEARCH
   // ====================
   onSearch(e: any): void {
+    this.page = 1;
 
     const value = e.target.value.toLowerCase();
 

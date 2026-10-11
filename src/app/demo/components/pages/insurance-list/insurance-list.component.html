@@ -46,11 +46,10 @@
       </div>
 
       <p-table
-        [value]="filteredInsuranceList"
+        [value]="visibleInsuranceList"
         [loading]="loading"
         responsiveLayout="scroll"
-        [paginator]="true"
-        [rows]="10"
+        [paginator]="false"
         styleClass="il-table">
 
         <ng-template pTemplate="header">
@@ -127,6 +126,7 @@
           </tr>
         </ng-template>
       </p-table>
+      <app-list-pagination [totalRecords]="filteredInsuranceList.length" [currentPage]="page" [rows]="pageSize" [showPagination]="!loading" (pageChange)="changePage($event)"></app-list-pagination>
     </div>
   </div>
 </div>

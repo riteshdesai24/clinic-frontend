@@ -36,11 +36,10 @@
 
       <!-- Table -->
       <p-table
-        [value]="filteredPatientList"
+        [value]="visiblePatientList"
         [loading]="loading"
         responsiveLayout="scroll"
-        [paginator]="true"
-        [rows]="10"
+        [paginator]="false"
         styleClass="pl-table">
 
         <!-- Header -->
@@ -123,6 +122,7 @@
         </ng-template>
 
       </p-table>
+      <app-list-pagination [totalRecords]="filteredPatientList.length" [currentPage]="page" [rows]="pageSize" [showPagination]="!loading" (pageChange)="changePage($event)"></app-list-pagination>
     </div>
   </div>
 </div>

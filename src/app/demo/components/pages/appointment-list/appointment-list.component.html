@@ -13,6 +13,7 @@
           </div>
         </div>
         <button
+          *ngIf="!isDoctor"
           pButton
           icon="pi pi-plus"
           label="Add Appointment"
@@ -22,6 +23,24 @@
       </div>
 
       <div class="pl-search-wrap">
+        <label class="doctor-filter" *ngIf="isAdmin">Filter by doctor
+          <select [value]="selectedDoctorId" (change)="onDoctorFilterChange($event)">
+            <option value="">All doctors</option>
+            <option *ngFor="let doctor of doctorOptions" [value]="doctor.value">{{ doctor.label }}</option>
+          </select>
+        </label>
+        <label class="doctor-filter status-filter">Filter by status
+          <select [value]="selectedStatus" (change)="onStatusFilterChange($event)">
+            <option value="ALL">All statuses</option>
+            <option *ngFor="let status of appointmentStatuses" [value]="status">{{ status | titlecase }}</option>
+          </select>
+        </label>
+        <label class="doctor-filter status-filter">Filter by period
+          <select [value]="selectedPeriod" (change)="onPeriodFilterChange($event)">
+            <option value="week">This week</option>
+            <option value="month">This month</option>
+          </select>
+        </label>
         <span class="p-input-icon-left pl-search">
           <i class="pi pi-search"></i>
           <input
@@ -33,11 +52,10 @@
       </div>
 
       <p-table
-        [value]="filteredAppointmentList"
+        [value]="visibleAppointmentList"
         [loading]="loading"
         responsiveLayout="scroll"
-        [paginator]="true"
-        [rows]="10"
+        [paginator]="false"
         styleClass="pl-table">
 
         <ng-template pTemplate="header">
@@ -45,6 +63,7 @@
             <th>Patient</th>
             <th>Doctor</th>
             <th>Date</th>
+            <th>Time</th>
             <th>Status</th>
             <th class="text-right">Actions</th>
           </tr>
@@ -70,6 +89,9 @@
               <span class="cell-text">{{ item.appointmentDate | date:'dd MMM yyyy' }}</span>
             </td>
             <td>
+              <span class="cell-text">{{ formatTime12(item.appointmentTime) }}</span>
+            </td>
+            <td>
               <span class="status-badge" [ngClass]="'status-' + item.status?.toLowerCase()">
                 {{ item.status }}
               </span>
@@ -85,7 +107,7 @@
                 </button>
                 <button
                   pButton
-                  *ngIf="!item.treatmentId && item.status !== 'CANCELLED'"
+                  *ngIf="!isDoctor && !item.treatmentId && item.status !== 'CANCELLED'"
                   icon="pi pi-file-edit"
                   class="action-btn action-edit"
                   pTooltip="Record treatment"
@@ -93,15 +115,15 @@
                 </button>
                 <button
                   pButton
-                  *ngIf="item.treatmentId"
-                  icon="pi pi-receipt"
+                  *ngIf="!isDoctor && item.treatmentId"
+                  icon="pi pi-file-pdf"
                   class="action-btn action-edit"
                   pTooltip="Issue or open invoice"
                   (click)="issueInvoice(item)">
                 </button>
                 <button
                   pButton
-                  *ngIf="item.status !== 'CANCELLED' && !item.treatmentId"
+                  *ngIf="!isDoctor && item.status !== 'CANCELLED' && !item.treatmentId"
                   icon="pi pi-pencil"
                   class="action-btn action-edit"
                   pTooltip="Edit"
@@ -122,7 +144,7 @@
 
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td colspan="5">
+            <td colspan="6">
               <div class="empty-state">
                 <i class="pi pi-calendar"></i>
                 <p>No appointments found</p>
@@ -132,6 +154,7 @@
           </tr>
         </ng-template>
       </p-table>
+      <app-list-pagination [totalRecords]="filteredAppointmentList.length" [currentPage]="page" [rows]="pageSize" [showPagination]="!loading" (pageChange)="changePage($event)"></app-list-pagination>
     </div>
   </div>
 </div>
@@ -142,5 +165,20 @@
   <ng-template pTemplate="footer">
     <button pButton type="button" label="Keep appointment" class="p-button-text" (click)="closeCancellation()" [disabled]="cancelling"></button>
     <button pButton type="button" label="Confirm cancellation" icon="pi pi-ban" class="p-button-danger" (click)="confirmCancellation()" [loading]="cancelling" [disabled]="!cancellationReason.trim() || cancelling"></button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog header="Invoice adjustments" [(visible)]="showInvoiceDialog" [modal]="true" [closable]="!issuingInvoice" [style]="{ width: 'min(32rem, 92vw)' }" (onHide)="closeInvoiceDialog()">
+  <p class="invoice-dialog-copy">Set the GST and discount for {{ appointmentToInvoice?.patientName || 'this appointment' }}.</p>
+  <div class="invoice-dialog-fields">
+    <label for="appointment-invoice-gst">GST rate</label>
+    <div class="invoice-input-suffix"><input pInputText id="appointment-invoice-gst" type="number" [value]="invoiceGstRate" readonly /><span>%</span></div>
+    <small>GST is fixed at 18% and is calculated after discount.</small>
+    <label for="appointment-invoice-discount">Discount amount</label>
+    <div class="invoice-input-suffix"><span>₹</span><input pInputText id="appointment-invoice-discount" type="number" min="0" step="0.01" [value]="invoiceDiscountAmount" (input)="invoiceDiscountAmount = +$any($event.target).value" /></div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancel" class="p-button-text" (click)="closeInvoiceDialog()" [disabled]="issuingInvoice"></button>
+    <button pButton type="button" label="Issue invoice" icon="pi pi-file-pdf" (click)="confirmIssueInvoice()" [loading]="issuingInvoice" [disabled]="invoiceDiscountAmount < 0 || issuingInvoice"></button>
   </ng-template>
 </p-dialog>

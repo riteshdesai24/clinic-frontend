@@ -33,7 +33,7 @@ export class ConditionComponent implements OnInit {
     this.loading = true;
     this.error = '';
     const request = this.isEdit && this.conditionId
-      ? this.api.updateCondition(this.conditionId, this.form.value)
+      ? this.api.updateCondition(this.conditionId, { ...this.form.value, type: this.type })
       : this.api.createCondition({ ...this.form.value, type: this.type });
     request.subscribe({ next: () => this.cancel(), error: err => { this.loading = false; this.error = err?.error?.message || 'Unable to save condition.'; } });
   }
@@ -41,7 +41,11 @@ export class ConditionComponent implements OnInit {
   private loadCondition(): void {
     this.loading = true;
     this.api.getConditionDetails(this.conditionId!).subscribe({
-      next: (res: any) => { this.form.patchValue(res?.data || res); this.loading = false; },
+      next: (res: any) => {
+        const record = res?.data?.condition || res?.data?.data?.condition || res?.data?.data || res?.data || res;
+        this.form.patchValue({ name: record?.name ?? '', description: record?.description ?? '', status: record?.status ?? 'ACTIVE' });
+        this.loading = false;
+      },
       error: err => { this.loading = false; this.error = err?.error?.message || 'Unable to load condition.'; }
     });
   }

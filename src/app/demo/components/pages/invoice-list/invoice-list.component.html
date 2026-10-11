@@ -1,6 +1,6 @@
 <main class="invoice-page">
   <header class="invoice-heading">
-    <div class="invoice-mark"><i class="pi pi-receipt" aria-hidden="true"></i></div>
+    <div class="invoice-mark"><i class="pi pi-file-pdf" aria-hidden="true"></i></div>
     <div><span class="eyebrow">Billing</span><h1>Invoices</h1><p>Review issued invoices and record collected payments.</p></div>
     <button type="button" class="refresh-button" (click)="loadInvoices()" [disabled]="loading"><i class="pi pi-refresh"></i> Refresh</button>
   </header>
@@ -9,22 +9,23 @@
   <div class="loading" *ngIf="loading"><i class="pi pi-spin pi-spinner"></i> Loading invoices…</div>
 
   <section class="invoice-card" *ngIf="!loading && !error">
-    <div class="empty-state" *ngIf="invoices.length === 0"><i class="pi pi-file"></i><h2>No invoices yet</h2><p>Complete a treatment record to issue its invoice.</p></div>
-    <div class="table-wrap" *ngIf="invoices.length">
+    <div class="invoice-filters"><div class="invoice-filter" *ngIf="isAdmin"><label for="invoice-doctor-filter">Filter by doctor</label><select id="invoice-doctor-filter" [value]="selectedDoctorId" (change)="onDoctorFilterChange($event)"><option value="">All doctors</option><option *ngFor="let doctor of doctorOptions" [value]="doctor.value">{{ doctor.label }}</option></select></div><div class="invoice-filter"><label for="invoice-status-filter">Filter by status</label><select id="invoice-status-filter" [value]="selectedStatus" (change)="onStatusFilterChange($event)"><option value="ALL">All statuses</option><option *ngFor="let status of invoiceStatuses" [value]="status">{{ status.replace('_', ' ') }}</option></select></div><div class="invoice-filter"><label for="invoice-period-filter">Filter by period</label><select id="invoice-period-filter" [value]="selectedPeriod" (change)="onPeriodFilterChange($event)"><option value="week">This week</option><option value="month">This month</option></select></div></div>
+    <div class="empty-state" *ngIf="filteredInvoices.length === 0"><i class="pi pi-file"></i><h2>{{ invoices.length ? 'No invoices for this doctor' : 'No invoices yet' }}</h2><p *ngIf="!invoices.length">Complete a treatment record to issue its invoice.</p></div>
+    <div class="table-wrap" *ngIf="filteredInvoices.length">
       <table>
         <thead><tr><th>Invoice</th><th>Patient</th><th>Doctor</th><th>Issued</th><th>Status</th><th>Total</th><th>Paid</th><th>Balance</th><th></th></tr></thead>
         <tbody>
-          <ng-container *ngFor="let invoice of invoices">
+          <ng-container *ngFor="let invoice of visibleInvoices">
             <tr>
               <td><strong>{{ invoice.invoiceNumber }}</strong><small>{{ invoice.treatmentName || 'Appointment treatment' }}</small></td>
-              <td>{{ invoice.patientId?.name || 'Patient' }}<small>{{ invoice.patientId?.phone || '' }}</small></td>
-              <td>{{ invoice.doctorId?.staffname || 'Doctor' }}</td>
+              <td>{{ invoice.patientDisplayName }}<small>{{ invoice.patientDisplayPhone }}</small></td>
+              <td>{{ invoice.doctorDisplayName }}</td>
               <td>{{ invoice.issuedAt | date:'dd MMM yyyy' }}</td>
               <td><span class="status" [ngClass]="'status-' + invoice.status?.toLowerCase()">{{ invoice.status }}</span></td>
               <td>{{ invoice.totalAmount | currency:'INR':'symbol':'1.2-2' }}</td>
               <td>{{ invoice.amountPaid | currency:'INR':'symbol':'1.2-2' }}</td>
               <td>{{ balance(invoice) | currency:'INR':'symbol':'1.2-2' }}</td>
-              <td><button type="button" class="record-button" *ngIf="invoice.status !== 'VOID' && balance(invoice) > 0" (click)="startPayment(invoice)">Record payment</button></td>
+              <td class="row-actions"><button type="button" class="record-button" (click)="viewPdf(invoice)" [disabled]="pdfLoadingId === invoice._id"><i [class]="pdfLoadingId === invoice._id ? 'pi pi-spin pi-spinner' : 'pi pi-file-pdf'"></i> {{ pdfLoadingId === invoice._id ? 'Loading…' : 'View PDF' }}</button><button type="button" class="record-button" *ngIf="invoice.status !== 'VOID' && balance(invoice) > 0" (click)="startPayment(invoice)">Record payment</button></td>
             </tr>
             <tr *ngIf="selectedInvoiceId === invoice._id" class="payment-row">
               <td colspan="9">
@@ -32,7 +33,7 @@
                   <label>Amount<input type="number" name="amount" min="0.01" step="0.01" [max]="balance(invoice)" [(ngModel)]="paymentDraft.amount" required /></label>
                   <label>Method<select name="method" [(ngModel)]="paymentDraft.method"><option *ngFor="let method of paymentMethods" [value]="method">{{ method.replace('_', ' ') }}</option></select></label>
                   <label>Reference (optional)<input type="text" name="reference" maxlength="120" [(ngModel)]="paymentDraft.reference" /></label>
-                  <div class="payment-actions"><button type="button" class="cancel-button" (click)="cancelPayment()" [disabled]="savingPayment">Cancel</button><button type="submit" class="record-button primary" [disabled]="savingPayment">{{ savingPayment ? 'Saving…' : 'Save payment' }}</button></div>
+                  <div class="payment-actions"><button type="button" class="cancel-button" (click)="cancelPayment()" [disabled]="savingPayment">Cancel</button><button type="submit" class="record-button primary" [disabled]="savingPayment"><i *ngIf="savingPayment" class="pi pi-spin pi-spinner" aria-hidden="true"></i> {{ savingPayment ? "Saving…" : "Save payment" }}</button></div>
                 </form>
               </td>
             </tr>
@@ -40,5 +41,14 @@
         </tbody>
       </table>
     </div>
+    <app-list-pagination [totalRecords]="filteredInvoices.length" [currentPage]="invoicePage" [rows]="invoicePageSize" [showPagination]="true" (pageChange)="onInvoicePageChange($event)"></app-list-pagination>
   </section>
 </main>
+
+<div class="pdf-backdrop" *ngIf="pdfUrl" (click)="closePdf()">
+  <section class="pdf-dialog" role="dialog" aria-modal="true" [attr.aria-label]="pdfInvoiceNumber + ' PDF'" (click)="$event.stopPropagation()">
+    <header class="pdf-toolbar"><strong>{{ pdfInvoiceNumber }}</strong><a class="record-button" [href]="pdfUrl" [download]="pdfInvoiceNumber + '.pdf'"><i class="pi pi-download"></i> Download</a><button type="button" class="close-button" (click)="closePdf()" aria-label="Close PDF viewer"><i class="pi pi-times"></i></button></header>
+    <iframe [src]="safePdfUrl" [title]="pdfInvoiceNumber + ' PDF'" class="pdf-frame"></iframe>
+  </section>
+</div>
+<div class="pdf-error" *ngIf="pdfError" role="alert"><span>{{ pdfError }}</span><button type="button" (click)="pdfError = ''" aria-label="Dismiss">×</button></div>

@@ -23,6 +23,7 @@ export class AppointmentComponent implements OnInit {
   appointmentId: string | null = null;
   isEdit = false;
   isView = false;
+  isDoctor = false;
 
   doctors: any[] = [];
   filteredDoctors: any[] = [];
@@ -43,12 +44,22 @@ export class AppointmentComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
+      this.isDoctor = String(user.role || '').toUpperCase() === 'DOCTOR';
+    } catch {
+      this.isDoctor = false;
+    }
     this.clinicData = JSON.parse(
       localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}'
     );
 
     this.appointmentId = this.route.snapshot.queryParamMap.get('id');
-    this.isView = this.route.snapshot.queryParamMap.get('view') === 'true';
+    this.isView = this.isDoctor || this.route.snapshot.queryParamMap.get('view') === 'true';
+    if (this.isDoctor && !this.appointmentId) {
+      this.router.navigate(['/pages/appointment-list']);
+      return;
+    }
 
     this.appointmentForm = this.fb.group({
       patientName: [{ value: null, disabled: !!this.patientName }, Validators.required],
@@ -119,6 +130,7 @@ export class AppointmentComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.isDoctor) return;
     if (this.appointmentForm.invalid) {
       this.appointmentForm.markAllAsTouched();
       return;
@@ -127,6 +139,7 @@ export class AppointmentComponent implements OnInit {
   }
 
   createAppointment(): void {
+    if (this.isDoctor) return;
     this.loading = true;
 
     const raw = this.appointmentForm.getRawValue();
@@ -150,6 +163,7 @@ export class AppointmentComponent implements OnInit {
   }
 
   updateAppointment(): void {
+    if (this.isDoctor) return;
     if (!this.appointmentId) {
       return;
     }

@@ -13,6 +13,15 @@ export class AttendanceComponent implements OnInit {
   records: any[] = [];
   summary: any[] = [];
   loading = true;
+  page = 1;
+  readonly pageSize = 10;
+
+  get visibleRecords(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.records.slice(start, start + this.pageSize);
+  }
+
+  changePage(page: number): void { this.page = page; }
   working = false;
 
   constructor(private api: AuthService, private messages: MessageService) {}
@@ -42,7 +51,7 @@ export class AttendanceComponent implements OnInit {
       }
     });
     this.api.getMyAttendance({ limit: 30 }).subscribe({
-      next: (response: any) => this.records = response?.data || [],
+      next: (response: any) => { this.records = response?.data || []; this.page = 1; },
       error: () => this.records = []
     });
   }
@@ -52,6 +61,7 @@ export class AttendanceComponent implements OnInit {
     this.api.getAttendanceList({ limit: 50 }).subscribe({
       next: (response: any) => {
         this.records = response?.data || [];
+        this.page = 1;
         this.loading = false;
       },
       error: (error: any) => {

@@ -36,10 +36,10 @@
 
       <!-- Table -->
       <p-table
-        [value]="filteredStaffList"
+        [value]="visibleStaffList"
         [loading]="loading"
         responsiveLayout="scroll"
-        [paginator]="true"
+        [paginator]="false"
         [rows]="10"
         styleClass="pl-table">
 
@@ -123,6 +123,7 @@
         </ng-template>
 
       </p-table>
+      <app-list-pagination [totalRecords]="!isSearchActive && filteredStaffList.length < count && !loading ? count : filteredStaffList.length" [currentPage]="page" [rows]="listPageSize" [showPagination]="!loading" (pageChange)="changePage($event)"></app-list-pagination>
     </div>
   </div>
 

@@ -14,11 +14,27 @@ export class DoctorListComponent implements OnInit {
   filteredDoctorList: any[] = [];
 
   loading = false;
+  isSearchActive = false;
 
   count = 0;
   hasNextPage = false;
   nextCursor: string | null = null;
   pageSize = 20;
+  page = 1;
+  readonly listPageSize = 10;
+
+  get visibleDoctorList(): any[] {
+    const start = (this.page - 1) * this.listPageSize;
+    return this.filteredDoctorList.slice(start, start + this.listPageSize);
+  }
+
+  changePage(page: number): void {
+    this.page = page;
+    const requiredRecords = page * this.listPageSize;
+    if (requiredRecords > this.filteredDoctorList.length && this.hasNextPage && this.nextCursor && !this.loading) {
+      this.loadDoctorList(this.nextCursor, true);
+    }
+  }
 
   constructor(
     private router: Router,
@@ -48,6 +64,7 @@ export class DoctorListComponent implements OnInit {
           : data;
 
         this.filteredDoctorList = [...this.doctorList];
+        if (!append) this.page = 1;
 
         this.count       = res.count || this.doctorList.length;
         this.hasNextPage = !!res.hasNextPage;
@@ -77,6 +94,8 @@ export class DoctorListComponent implements OnInit {
   // SEARCH
   // ======================
   onDoctorSearch(event: any): void {
+    this.isSearchActive = !!(event.target as HTMLInputElement).value.trim();
+    this.page = 1;
     const value = (event.target as HTMLInputElement).value.toLowerCase();
 
     if (!value) {

@@ -377,8 +377,13 @@ export class PatientComponent implements OnInit {
   // CREATE
   // ======================
   createPatient(): void {
+    if (this.patientForm.invalid) {
+      this.patientForm.markAllAsTouched();
+      return;
+    }
     this.loading = true;
 
+    // Patient records are independent; appointment booking is a separate optional flow.
     const data = this.toPatientPayload();
 
     this.api.createPatient(data).subscribe({
@@ -418,11 +423,13 @@ export class PatientComponent implements OnInit {
 
     this.api.getPatientDetails(this.patientId!).subscribe({
       next: (res: any) => {
-        const p = res.data.patient;
+        const p = this.unwrapPatientRecord(res);
 
         if (p) {
-          this.includeExistingConditions('MEDICAL', p.medicalConditions || []);
-          this.includeExistingConditions('DENTAL', p.dentalConditions || []);
+          const medicalConditions = this.conditionValues(p.medicalConditions);
+          const dentalConditions = this.conditionValues(p.dentalConditions);
+          this.includeExistingConditions('MEDICAL', medicalConditions);
+          this.includeExistingConditions('DENTAL', dentalConditions);
           this.patientForm.patchValue({
             title:              p.title,
             firstName:          p.firstName,
@@ -457,8 +464,8 @@ export class PatientComponent implements OnInit {
             pincode:          p.pincode,
 
             medicalAllergies:   p.medicalAllergies,
-            medicalConditions:  p.medicalConditions,
-            dentalConditions:   p.dentalConditions,
+            medicalConditions,
+            dentalConditions,
             currentMedications: p.currentMedications,
             allergicTo:         p.allergicTo,
             habits:             p.habits,
@@ -484,6 +491,23 @@ export class PatientComponent implements OnInit {
       },
       error: err => this.handleError(err)
     });
+  }
+
+  private unwrapPatientRecord(response: any): any {
+    let record = response;
+    for (let depth = 0; depth < 4; depth++) {
+      if (!record || typeof record !== 'object' || Array.isArray(record)) break;
+      const nested = record.patient ?? record.data;
+      if (!nested || nested === record) break;
+      record = nested;
+    }
+    return record && !Array.isArray(record) ? record : null;
+  }
+
+  private conditionValues(values: any): string[] {
+    if (!Array.isArray(values)) return [];
+    return values.map(value => typeof value === 'string' ? value : value?.name || value?.value || '')
+      .filter((value: string) => !!value);
   }
 
   private toPatientPayload(): any {

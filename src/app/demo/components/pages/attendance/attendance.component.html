@@ -37,7 +37,7 @@
 
       <ng-container *ngIf="role === 'ADMIN' || role === 'STAFF' || role === 'DOCTOR'">
         <h3>{{ role === 'ADMIN' ? 'Recent staff attendance' : 'My recent attendance' }}</h3>
-        <p-table [value]="records" [loading]="loading" responsiveLayout="scroll" [paginator]="true" [rows]="10">
+        <p-table [value]="visibleRecords" [loading]="loading" responsiveLayout="scroll" [paginator]="false">
           <ng-template pTemplate="header">
             <tr><th *ngIf="role === 'ADMIN'">Staff member</th><th>Date</th><th>Status</th><th>Clock in</th><th>Clock out</th><th>Duration</th></tr>
           </ng-template>
@@ -53,6 +53,7 @@
           </ng-template>
           <ng-template pTemplate="emptymessage"><tr><td [attr.colspan]="role === 'ADMIN' ? 6 : 5">No attendance records yet.</td></tr></ng-template>
         </p-table>
+        <app-list-pagination [totalRecords]="records.length" [currentPage]="page" [rows]="pageSize" [showPagination]="!loading" (pageChange)="changePage($event)"></app-list-pagination>
       </ng-container>
     </section>
   </div>

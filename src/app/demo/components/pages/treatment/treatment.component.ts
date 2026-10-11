@@ -58,7 +58,17 @@ export class TreatmentComponent implements OnInit {
   private loadTreatment(): void {
     this.loading = true;
     this.api.getTreatmentDetails(this.treatmentId!).subscribe({
-      next: (res: any) => { this.form.patchValue(res?.data?.treatment || res?.data || res); this.loading = false; },
+      next: (res: any) => {
+        const record = res?.data?.treatment || res?.data?.data?.treatment || res?.data?.data || res?.data || res;
+        this.form.patchValue({
+          name: record?.name ?? record?.treatmentName ?? '',
+          description: record?.description ?? '',
+          duration: record?.duration ?? null,
+          price: record?.price ?? null,
+          status: record?.status ?? 'ACTIVE'
+        });
+        this.loading = false;
+      },
       error: (err) => { this.error = err?.error?.message || 'Unable to load treatment.'; this.loading = false; }
     });
   }

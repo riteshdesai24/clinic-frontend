@@ -13,6 +13,7 @@
 .doctor-filter { display: flex; align-items: center; gap: .55rem; color: var(--text-color-secondary); font-size: .85rem; }
 .doctor-filter select { min-width: 175px; padding: .6rem .7rem; border: 1px solid var(--surface-border); border-radius: 8px; color: var(--text-color); background: var(--surface-card); }
 .metrics-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1rem; }
+.summary-period-filter { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 .75rem; color: var(--text-color-secondary); font-size: .9rem; font-weight: 600; }
 .metric-card, .panel { border: 1px solid var(--surface-border); border-radius: 13px; background: var(--surface-card); box-shadow: 0 3px 15px #00000008; }
 .metric-card { position: relative; display: grid; gap: .4rem; min-height: 150px; padding: 1rem 1.1rem; }
 .metric-icon, .panel-icon { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 9px; color: var(--primary-700); background: var(--primary-100); }
@@ -24,16 +25,31 @@
 .metric-card.completed .metric-icon { color: #15803d; background: #dcfce7; }
 .metric-card.cancelled .metric-icon { color: #b91c1c; background: #fee2e2; }
 .performance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 1rem; margin-top: 1rem; }
+.dashboard-lists-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(330px, .85fr); align-items: stretch; gap: 1rem; margin-top: 1rem; }
+.dashboard-lists-grid .pending-panel { margin-top: 0; }
+.dashboard-lists-grid .earnings-panel { min-width: 0; }
+.invoice-summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
+.invoice-summary-card { min-width: 0; }
+.invoice-summary-card .clinic-total { font-size: clamp(1.5rem, 2.5vw, 2rem); }
+.invoice-card-loading { display: flex; align-items: center; gap: .5rem; min-height: 3rem; margin-top: 1rem; color: var(--text-color-secondary); }
 .panel { min-height: 205px; padding: 1.25rem; }
 .pending-panel { min-height: 0; margin-top: 1rem; }
+.appointment-panel { min-height: 430px; }
 .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .panel-kicker { color: var(--text-color-secondary); }
 .panel-icon { color: var(--primary-700); background: var(--primary-100); }
 .pending-total { display: inline-grid; place-items: center; min-width: 1.7rem; height: 1.7rem; margin-left: .3rem; border-radius: 99px; color: #a16207; background: #fef3c7; font-size: .8rem; vertical-align: 2px; }
+.appointment-tabs { display: inline-flex; flex: none; gap: .2rem; padding: .22rem; border: 1px solid var(--surface-border); border-radius: 9px; background: var(--surface-ground); }
+.appointment-tabs button { padding: .45rem .75rem; border: 0; border-radius: 6px; color: var(--text-color-secondary); background: transparent; font: inherit; cursor: pointer; }
+.appointment-tabs button.active { color: var(--primary-700); background: var(--surface-card); box-shadow: 0 1px 4px #00000012; font-weight: 600; }
+.appointment-searches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; margin-top: 1rem; }
+.appointment-searches label { display: grid; gap: .35rem; color: var(--text-color-secondary); font-size: .78rem; }
+.appointment-searches input { width: 100%; min-height: 38px; padding: .5rem .7rem; border: 1px solid var(--surface-border); border-radius: 8px; color: var(--text-color); background: var(--surface-ground); font: inherit; }
 .text-link, .open-appointment { color: var(--primary-700); font-weight: 600; text-decoration: none; white-space: nowrap; }
 .text-link { font-size: .85rem; }
 .text-link i { margin-left: .2rem; }
 .pending-table-wrap { overflow-x: auto; margin-top: 1rem; }
+.appointment-panel .pending-table-wrap { min-height: 315px; }
 .pending-table { width: 100%; border-collapse: collapse; text-align: left; }
 .pending-table th { padding: .7rem .75rem; border-bottom: 1px solid var(--surface-border); color: var(--text-color-secondary); font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
 .pending-table td { padding: .85rem .75rem; border-bottom: 1px solid var(--surface-border); font-size: .88rem; }
@@ -51,10 +67,32 @@
 .earnings-person { display: grid; gap: .25rem; min-width: 0; }
 .earnings-person small { color: var(--text-color-secondary); }
 .earnings-amount { color: var(--green-700); white-space: nowrap; }
+.dashboard-invoice-list { margin-top: .85rem; }
+.dashboard-invoice-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .72rem 0; border-top: 1px solid var(--surface-border); }
+.dashboard-invoice-main, .dashboard-invoice-amount { display: grid; gap: .25rem; min-width: 0; }
+.dashboard-invoice-main small, .dashboard-invoice-amount small { color: var(--text-color-secondary); }
+.dashboard-invoice-main small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dashboard-invoice-amount { flex: none; text-align: right; }
+.dashboard-invoice-amount strong { color: var(--primary-700); }
+.dashboard-invoice-amount .invoice-balance { color: var(--text-color); font-weight: 600; }
 .clinic-total { margin-top: 1.25rem; font-size: 2rem; font-weight: 700; }
 .clinic-total-caption { margin: .3rem 0 1.2rem; color: var(--text-color-secondary); }
+.invoice-summary-meta { display: grid; gap: .45rem; margin-top: .65rem; padding-top: .7rem; border-top: 1px solid var(--surface-border); color: var(--text-color-secondary); font-size: .84rem; }
+.invoice-summary-meta span { display: flex; justify-content: space-between; gap: .5rem; }
+.invoice-summary-meta strong { color: var(--text-color); font-variant-numeric: tabular-nums; }
 .clinic-total-meta { display: flex; flex-wrap: wrap; gap: 1rem 2rem; padding-top: .85rem; border-top: 1px solid var(--surface-border); color: var(--text-color-secondary); font-size: .85rem; }
 .clinic-total-meta strong { margin-left: .3rem; color: var(--text-color); }
+.monthly-income-panel { margin-top: 1rem; }
+.income-chart { height: 320px; margin-top: 1rem; }
+.income-year-filter { display: flex; align-items: center; gap: .5rem; color: var(--text-color-secondary); font-size: .85rem; }
+.income-year-filter label { white-space: nowrap; }
+.all-years-button { padding: .48rem .65rem; border: 1px solid var(--surface-border); border-radius: 7px; color: var(--text-color-secondary); background: var(--surface-card); font: inherit; cursor: pointer; }
+.all-years-button.active { border-color: var(--primary-300); color: var(--primary-700); background: var(--primary-50); font-weight: 600; }
+:host ::ng-deep .income-year-picker .p-inputtext { width: 5.5rem; padding: .48rem .55rem; border-color: var(--surface-border); }
+:host ::ng-deep .income-year-picker .p-datepicker-trigger { color: var(--primary-700); background: var(--primary-50); border-color: var(--surface-border); }
+:host ::ng-deep .income-year-picker .p-datepicker { width: 18rem; min-width: 18rem; padding: .5rem; }
+:host ::ng-deep .income-year-picker .p-yearpicker { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .25rem; }
+:host ::ng-deep .income-year-picker .p-yearpicker .p-yearpicker-year { display: flex; align-items: center; justify-content: center; min-height: 2.5rem; padding: .4rem; }
 .quick-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
 .action-card { display: flex; align-items: center; gap: .85rem; min-height: 84px; padding: 1rem; border: 1px solid var(--surface-border); border-radius: 12px; color: var(--text-color); background: var(--surface-card); text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
 .action-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px #00000012; }
@@ -69,5 +107,7 @@
 .error-banner { color: var(--red-700); background: var(--red-50); }
 .error-banner button { margin-left: auto; border: 0; color: inherit; background: transparent; font-weight: 600; cursor: pointer; }
 @media (max-width: 1000px) { .metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 700px) { .welcome-card { align-items: flex-start; flex-direction: column; padding: 1.35rem; } .dashboard-toolbar { align-items: flex-start; flex-direction: column; } .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .performance-grid, .quick-actions { grid-template-columns: 1fr; } }
+@media (max-width: 1050px) { .dashboard-lists-grid { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .welcome-card { align-items: flex-start; flex-direction: column; padding: 1.35rem; } .dashboard-toolbar { align-items: flex-start; flex-direction: column; } .summary-period-filter { align-items: flex-start; flex-direction: column; } .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .performance-grid, .quick-actions { grid-template-columns: 1fr; } .panel-heading { align-items: flex-start; flex-direction: column; } .appointment-panel { min-height: 430px; } .appointment-searches { grid-template-columns: 1fr; } .income-chart { height: 260px; } .income-year-filter { flex-wrap: wrap; } }
+@media (max-width: 700px) { .invoice-summary-grid { grid-template-columns: 1fr; } }
 @media (max-width: 380px) { .metrics-grid { grid-template-columns: 1fr; } }

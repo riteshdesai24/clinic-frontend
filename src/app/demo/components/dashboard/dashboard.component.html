@@ -5,7 +5,7 @@
       <h1>{{ userName ? 'Welcome, ' + userName : 'Clinic dashboard' }}</h1>
       <p>Appointment activity and clinic performance at a glance.</p>
     </div>
-    <a class="primary-action" routerLink="/pages/appointment">
+    <a class="primary-action" routerLink="/pages/appointment" *ngIf="role !== 'DOCTOR'">
       <i class="pi pi-plus" aria-hidden="true"></i> New appointment
     </a>
   </section>
@@ -13,11 +13,7 @@
   <section class="dashboard-toolbar">
     <div>
       <h2>Appointments</h2>
-      <p>{{ role === 'DOCTOR' ? 'Your appointments' : 'Clinic appointments' }} · {{ periodLabel }}</p>
-    </div>
-    <div class="period-switch" role="group" aria-label="Appointment date range">
-      <button type="button" [class.active]="period === 'week'" (click)="setPeriod('week')">Week</button>
-      <button type="button" [class.active]="period === 'month'" (click)="setPeriod('month')">Month</button>
+      <p>{{ role === 'DOCTOR' ? 'Your appointments' : 'Clinic appointments' }} · Today, this week, and this month</p>
     </div>
     <label class="doctor-filter" *ngIf="role !== 'DOCTOR'">
       <span>Doctor</span>
@@ -36,64 +32,90 @@
 
   <div class="loading-state" *ngIf="loading"><i class="pi pi-spin pi-spinner"></i> Loading appointment activity…</div>
 
-  <section class="metrics-grid" *ngIf="!loading" aria-label="Appointment counts">
-    <article class="metric-card total">
-      <span class="metric-icon"><i class="pi pi-calendar"></i></span>
-      <span class="metric-label">Total appointments</span>
-      <strong>{{ summary.all }}</strong>
-      <small>{{ periodLabel }}</small>
-    </article>
-    <article class="metric-card pending">
-      <span class="metric-icon"><i class="pi pi-clock"></i></span>
-      <span class="metric-label">Pending</span>
-      <strong>{{ summary.pending }}</strong>
-      <small>Awaiting confirmation</small>
-    </article>
-    <article class="metric-card confirmed">
-      <span class="metric-icon"><i class="pi pi-check-circle"></i></span>
-      <span class="metric-label">Confirmed</span>
-      <strong>{{ summary.confirmed }}</strong>
-      <small>Scheduled visits</small>
-    </article>
-    <article class="metric-card completed">
-      <span class="metric-icon"><i class="pi pi-verified"></i></span>
-      <span class="metric-label">Completed</span>
-      <strong>{{ summary.completed }}</strong>
-      <small>Finished visits</small>
-    </article>
-    <article class="metric-card cancelled">
-      <span class="metric-icon"><i class="pi pi-times-circle"></i></span>
-      <span class="metric-label">Cancelled</span>
-      <strong>{{ summary.cancelled }}</strong>
-      <small>Cancelled visits</small>
-    </article>
+  <section *ngIf="!loading" aria-label="Appointment counts">
+    <div class="summary-period-filter">
+      <span>Appointment counts</span>
+      <div class="period-switch" role="group" aria-label="Appointment count period">
+        <button type="button" [class.active]="summaryPeriod === 'today'" (click)="setSummaryPeriod('today')">Today</button>
+        <button type="button" [class.active]="summaryPeriod === 'week'" (click)="setSummaryPeriod('week')">Week</button>
+        <button type="button" [class.active]="summaryPeriod === 'month'" (click)="setSummaryPeriod('month')">Month</button>
+      </div>
+    </div>
+    <section class="metrics-grid" aria-label="Appointment totals">
+      <article class="metric-card total">
+        <span class="metric-icon"><i class="pi pi-calendar"></i></span>
+        <span class="metric-label">Total appointments</span>
+        <strong>{{ activeAppointmentSummary.all }}</strong>
+        <small>{{ summaryPeriod === 'today' ? 'Today' : summaryPeriod === 'week' ? 'This week' : 'This month' }}</small>
+      </article>
+      <article class="metric-card pending">
+        <span class="metric-icon"><i class="pi pi-clock"></i></span>
+        <span class="metric-label">Pending</span>
+        <strong>{{ activeAppointmentSummary.pending }}</strong>
+        <small>Awaiting confirmation</small>
+      </article>
+      <article class="metric-card confirmed">
+        <span class="metric-icon"><i class="pi pi-check-circle"></i></span>
+        <span class="metric-label">Confirmed</span>
+        <strong>{{ activeAppointmentSummary.confirmed }}</strong>
+        <small>Scheduled visits</small>
+      </article>
+      <article class="metric-card completed">
+        <span class="metric-icon"><i class="pi pi-verified"></i></span>
+        <span class="metric-label">Completed</span>
+        <strong>{{ activeAppointmentSummary.completed }}</strong>
+        <small>Finished visits</small>
+      </article>
+      <article class="metric-card cancelled">
+        <span class="metric-icon"><i class="pi pi-times-circle"></i></span>
+        <span class="metric-label">Cancelled</span>
+        <strong>{{ activeAppointmentSummary.cancelled }}</strong>
+        <small>Cancelled visits</small>
+      </article>
+    </section>
   </section>
 
-  <section class="pending-panel panel">
+  <section class="dashboard-lists-grid">
+  <section class="pending-panel panel appointment-panel">
     <div class="panel-heading">
       <div>
         <span class="panel-kicker">Needs attention</span>
-        <h2>Pending appointments <span class="pending-total">{{ pendingCount }}</span></h2>
+        <h2>{{ appointmentStatusLabel }} appointments <span class="pending-total">{{ visibleAppointmentCount }}</span></h2>
       </div>
-      <a class="text-link" routerLink="/pages/appointment-list">View all appointments <i class="pi pi-arrow-right"></i></a>
+      <div class="period-switch appointment-period-switch" role="group" aria-label="Appointment date range">
+        <button type="button" [class.active]="period === 'week'" (click)="setPeriod('week')">Week</button>
+        <button type="button" [class.active]="period === 'month'" (click)="setPeriod('month')">Month</button>
+      </div>
+      <div class="appointment-tabs" role="tablist" aria-label="Appointment status">
+        <button type="button" role="tab" [attr.aria-selected]="appointmentStatus === 'ALL'" [class.active]="appointmentStatus === 'ALL'" (click)="setAppointmentStatus('ALL')">All</button>
+        <button type="button" role="tab" [attr.aria-selected]="appointmentStatus === 'PENDING'" [class.active]="appointmentStatus === 'PENDING'" (click)="setAppointmentStatus('PENDING')">Pending</button>
+        <button type="button" role="tab" [attr.aria-selected]="appointmentStatus === 'COMPLETED'" [class.active]="appointmentStatus === 'COMPLETED'" (click)="setAppointmentStatus('COMPLETED')">Completed</button>
+        <button type="button" role="tab" [attr.aria-selected]="appointmentStatus === 'CANCELLED'" [class.active]="appointmentStatus === 'CANCELLED'" (click)="setAppointmentStatus('CANCELLED')">Cancelled</button>
+      </div>
     </div>
 
-    <div class="pending-loading" *ngIf="pendingLoading"><i class="pi pi-spin pi-spinner"></i> Loading pending appointments…</div>
-    <div class="pending-error" *ngIf="!pendingLoading && pendingError">
-      <span>{{ pendingError }}</span>
-      <button type="button" (click)="loadPendingAppointments()">Retry</button>
-    </div>
-    <div class="pending-empty" *ngIf="!pendingLoading && !pendingError && pendingAppointments.length === 0">
-      <i class="pi pi-check-circle"></i><span>No pending appointments.</span>
+    <div class="appointment-searches">
+      <label>Patient name<input type="search" [value]="patientSearch" (input)="onPatientSearch($event)" placeholder="Search patient name" /></label>
+      <label>Treatment type<input type="search" [value]="treatmentSearch" (input)="onTreatmentSearch($event)" placeholder="e.g. Cleaning" /></label>
     </div>
 
-    <div class="pending-table-wrap" *ngIf="!pendingLoading && !pendingError && pendingAppointments.length">
+    <div class="pending-loading" *ngIf="visibleAppointmentLoading"><i class="pi pi-spin pi-spinner"></i> Loading appointments…</div>
+    <div class="pending-error" *ngIf="!visibleAppointmentLoading && visibleAppointmentError">
+      <span>{{ visibleAppointmentError }}</span>
+      <button type="button" (click)="retryVisibleAppointments()">Retry</button>
+    </div>
+    <div class="pending-empty" *ngIf="!visibleAppointmentLoading && !visibleAppointmentError && visibleAppointments.length === 0">
+      <i class="pi pi-check-circle"></i><span>No {{ appointmentStatusLabel.toLowerCase() }} appointments.</span>
+    </div>
+
+    <div class="pending-table-wrap" *ngIf="!visibleAppointmentLoading && !visibleAppointmentError && visibleAppointments.length">
       <table class="pending-table">
-        <thead><tr><th>Patient</th><th *ngIf="role !== 'DOCTOR'">Doctor</th><th>Date and time</th><th>Notes</th><th></th></tr></thead>
+        <thead><tr><th>Patient</th><th *ngIf="role !== 'DOCTOR'">Doctor</th><th>Treatment</th><th>Date and time</th><th>Notes</th><th></th></tr></thead>
         <tbody>
-          <tr *ngFor="let appointment of pendingAppointments">
-            <td><strong>{{ appointment.patientName }}</strong><small>{{ appointment.patientId?.phone || 'Patient' }}</small></td>
+          <tr *ngFor="let appointment of visibleAppointmentPage">
+            <td><strong>{{ appointment.patientName }}</strong><small>{{ appointment.patientPhone || 'Patient' }}</small></td>
             <td *ngIf="role !== 'DOCTOR'">{{ appointment.doctorName }}</td>
+            <td>{{ appointment.treatmentName }}</td>
             <td>{{ appointment.date | date:'EEE, d MMM yyyy' }}<small>{{ appointment.time }}</small></td>
             <td class="notes-cell">{{ appointment.notes || '—' }}</td>
             <td><a class="open-appointment" [routerLink]="['/pages/appointment']" [queryParams]="{ id: appointment._id, view: true }">Open</a></td>
@@ -101,40 +123,102 @@
         </tbody>
       </table>
     </div>
+    <app-list-pagination
+      [totalRecords]="visibleAppointments.length"
+      [currentPage]="activeAppointmentPage"
+      [rows]="appointmentPageSize"
+      [showPagination]="!visibleAppointmentLoading && !visibleAppointmentError"
+      (pageChange)="setAppointmentPage($event)">
+    </app-list-pagination>
   </section>
 
-  <section class="performance-grid">
     <article class="panel earnings-panel" *ngIf="canViewInvoiceData">
       <div class="panel-heading">
-        <div><span class="panel-kicker">Invoices · {{ periodLabel }}</span><h2>Doctor earnings</h2></div>
-        <span class="panel-icon"><i class="pi pi-wallet"></i></span>
+        <div><span class="panel-kicker">Invoices · {{ invoicePeriodLabel }}</span><h2>{{ invoicePeriod === 'week' ? 'Weekly' : 'Monthly' }} invoice listing</h2></div>
+        <div class="period-switch" role="group" aria-label="Invoice period">
+          <button type="button" [class.active]="invoicePeriod === 'week'" (click)="setInvoicePeriod('week')">Week</button>
+          <button type="button" [class.active]="invoicePeriod === 'month'" (click)="setInvoicePeriod('month')">Month</button>
+        </div>
+        <span class="panel-icon"><i class="pi pi-file-pdf"></i></span>
       </div>
-      <div class="pending-loading" *ngIf="invoiceLoading"><i class="pi pi-spin pi-spinner"></i> Loading invoice totals…</div>
-      <div class="pending-error" *ngIf="!invoiceLoading && invoiceError"><span>{{ invoiceError }}</span><button type="button" (click)="loadInvoiceSummary()">Retry</button></div>
-      <div class="earnings-list" *ngIf="!invoiceLoading && !invoiceError && doctorEarnings.length">
-        <div class="earnings-row" *ngFor="let doctor of doctorEarnings">
-          <div class="earnings-person"><strong>{{ doctor.doctorName || 'Doctor' }}</strong><small>{{ doctor.invoiceCount }} invoices · {{ doctor.paymentCount }} payments received · {{ doctor.outstandingAmount | currency:'INR':'symbol':'1.0-0' }} outstanding</small></div>
-          <strong class="earnings-amount">{{ doctor.paidAmount | currency:'INR':'symbol':'1.0-0' }}</strong>
+      <div class="pending-loading" *ngIf="invoiceLoading"><i class="pi pi-spin pi-spinner"></i> Loading {{ invoicePeriodLabel.toLowerCase() }} invoices…</div>
+      <div class="pending-error" *ngIf="!invoiceLoading && invoiceError"><span>{{ invoiceError }}</span><button type="button" (click)="loadWeeklyInvoices()">Retry</button></div>
+      <div class="dashboard-invoice-list" *ngIf="!invoiceLoading && !invoiceError && weeklyInvoices.length">
+        <div class="dashboard-invoice-row" *ngFor="let invoice of visibleWeeklyInvoices">
+          <div class="dashboard-invoice-main">
+            <strong>{{ getInvoicePatientName(invoice) }}</strong>
+            <small>{{ getInvoiceNumber(invoice) }} · {{ getInvoiceDoctorName(invoice) }} · {{ (invoice.issuedAt || invoice.createdAt || invoice.date) | date:'d MMM yyyy' }}</small>
+          </div>
+          <div class="dashboard-invoice-amount">
+            <strong>{{ invoiceAmount(invoice) | currency:'INR':'symbol':'1.0-0' }}</strong>
+            <small>Paid {{ invoicePaidAmount(invoice) | currency:'INR':'symbol':'1.0-0' }}</small>
+            <small class="invoice-balance">Balance {{ invoiceBalance(invoice) | currency:'INR':'symbol':'1.0-0' }}</small>
+          </div>
         </div>
       </div>
-      <div class="pending-empty" *ngIf="!invoiceLoading && !invoiceError && !doctorEarnings.length"><i class="pi pi-info-circle"></i><span>No invoice earnings for this period.</span></div>
+      <div class="pending-empty" *ngIf="!invoiceLoading && !invoiceError && !weeklyInvoices.length"><i class="pi pi-info-circle"></i><span>No invoices issued {{ invoicePeriodLabel.toLowerCase() }}.</span></div>
+      <app-list-pagination
+        [totalRecords]="weeklyInvoices.length"
+        [currentPage]="invoicePage"
+        [rows]="invoicePageSize"
+        [showPagination]="!invoiceLoading && !invoiceError"
+        (pageChange)="setInvoicePage($event)">
+      </app-list-pagination>
     </article>
+  </section>
 
-    <article class="panel clinic-revenue-panel" *ngIf="isAdmin">
+  <section class="invoice-summary-grid" *ngIf="isAdmin" aria-label="Invoice payment collection">
+    <article class="panel invoice-summary-card">
       <div class="panel-heading">
-        <div><span class="panel-kicker">Clinic revenue</span><h2>Monthly total</h2></div>
+        <div><span class="panel-kicker">Payments collected</span><h2>This month</h2></div>
         <span class="panel-icon"><i class="pi pi-chart-bar"></i></span>
       </div>
-      <div class="clinic-total">{{ clinicMonthlyTotals.paidAmount | currency:'INR':'symbol':'1.0-0' }}</div>
-      <p class="clinic-total-caption">Collected from {{ clinicMonthlyTotals.paymentCount }} payments this month</p>
-      <div class="clinic-total-meta"><span>Invoiced <strong>{{ clinicMonthlyTotals.invoicedAmount | currency:'INR':'symbol':'1.0-0' }}</strong></span><span>Outstanding <strong>{{ clinicMonthlyTotals.outstandingAmount | currency:'INR':'symbol':'1.0-0' }}</strong></span></div>
+      <div class="clinic-total" *ngIf="!invoiceCardsLoading">{{ monthlyInvoiceCardPaid | currency:'INR':'symbol':'1.0-0' }}</div>
+      <div class="invoice-card-loading" *ngIf="invoiceCardsLoading"><i class="pi pi-spin pi-spinner"></i> Loading…</div>
+      <div class="invoice-summary-meta" *ngIf="!invoiceCardsLoading"><span>Balance <strong>{{ monthlyInvoiceCardBalance | currency:'INR':'symbol':'1.0-0' }}</strong></span></div>
+    </article>
+
+    <article class="panel invoice-summary-card">
+      <div class="panel-heading">
+        <div><span class="panel-kicker">Payments collected</span><h2>This week</h2></div>
+        <span class="panel-icon"><i class="pi pi-calendar"></i></span>
+      </div>
+      <div class="clinic-total" *ngIf="!invoiceCardsLoading">{{ weeklyInvoiceCardPaid | currency:'INR':'symbol':'1.0-0' }}</div>
+      <div class="invoice-card-loading" *ngIf="invoiceCardsLoading"><i class="pi pi-spin pi-spinner"></i> Loading…</div>
+      <div class="invoice-summary-meta" *ngIf="!invoiceCardsLoading"><span>Balance <strong>{{ weeklyInvoiceCardBalance | currency:'INR':'symbol':'1.0-0' }}</strong></span></div>
+    </article>
+
+    <article class="panel invoice-summary-card today-invoice-card">
+      <div class="panel-heading">
+        <div><span class="panel-kicker">Payments collected</span><h2>Today</h2></div>
+        <span class="panel-icon"><i class="pi pi-calendar-plus"></i></span>
+      </div>
+      <div class="clinic-total" *ngIf="!invoiceCardsLoading">{{ dailyInvoiceCardPaid | currency:'INR':'symbol':'1.0-0' }}</div>
+      <div class="invoice-card-loading" *ngIf="invoiceCardsLoading"><i class="pi pi-spin pi-spinner"></i> Loading…</div>
+      <div class="invoice-summary-meta" *ngIf="!invoiceCardsLoading"><span>Balance <strong>{{ dailyInvoiceCardBalance | currency:'INR':'symbol':'1.0-0' }}</strong></span></div>
+      <p class="clinic-total-caption">{{ invoiceCardDate | date:'d MMM yyyy' }}</p>
     </article>
   </section>
 
-  <section class="quick-actions" aria-label="Clinic actions">
+  <section class="panel monthly-income-panel" *ngIf="isAdmin">
+    <div class="panel-heading">
+      <div><span class="panel-kicker">Collected income</span><h2>Monthly income · {{ selectedIncomeYearLabel }}</h2></div>
+      <div class="income-year-filter">
+        <label for="income-year-picker">Year</label>
+        <p-calendar inputId="income-year-picker" [ngModel]="incomeYearDate" (onSelect)="onIncomeYearChange($event)" view="year" dateFormat="yy" [readonlyInput]="true" [showIcon]="true" styleClass="income-year-picker"></p-calendar>
+        <button type="button" class="all-years-button" [class.active]="selectedIncomeYear === 'ALL'" (click)="showAllIncomeYears()">All years</button>
+      </div>
+      <span class="panel-icon"><i class="pi pi-chart-bar"></i></span>
+    </div>
+    <div class="pending-loading" *ngIf="monthlyIncomeLoading"><i class="pi pi-spin pi-spinner"></i> Loading monthly income…</div>
+    <div class="pending-error" *ngIf="!monthlyIncomeLoading && monthlyIncomeError"><span>{{ monthlyIncomeError }}</span><button type="button" (click)="loadMonthlyIncome()">Retry</button></div>
+    <div class="income-chart" *ngIf="!monthlyIncomeLoading && !monthlyIncomeError"><p-chart type="bar" [data]="monthlyIncomeChart" [options]="monthlyIncomeChartOptions"></p-chart></div>
+  </section>
+
+  <!-- <section class="quick-actions" aria-label="Clinic actions">
     <a class="action-card" routerLink="/pages/patient"><span class="action-icon patients"><i class="pi pi-user-plus"></i></span><span><strong>Add patient</strong><small>Create a patient record</small></span><i class="pi pi-angle-right"></i></a>
     <a class="action-card" routerLink="/pages/appointment-list"><span class="action-icon appointments"><i class="pi pi-calendar"></i></span><span><strong>Appointments</strong><small>Review the schedule</small></span><i class="pi pi-angle-right"></i></a>
-    <a class="action-card" routerLink="/pages/invoice-list"><span class="action-icon schedule"><i class="pi pi-receipt"></i></span><span><strong>Invoices</strong><small>Review invoices and payments</small></span><i class="pi pi-angle-right"></i></a>
+    <a class="action-card" routerLink="/pages/invoice-list"><span class="action-icon schedule"><i class="pi pi-file-pdf"></i></span><span><strong>Invoices</strong><small>Review invoices and payments</small></span><i class="pi pi-angle-right"></i></a>
     <a class="action-card" routerLink="/pages/patient-list"><span class="action-icon records"><i class="pi pi-users"></i></span><span><strong>Patients</strong><small>Find and manage records</small></span><i class="pi pi-angle-right"></i></a>
-  </section>
+  </section> -->
 </main>

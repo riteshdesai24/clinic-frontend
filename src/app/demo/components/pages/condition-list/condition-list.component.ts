@@ -8,6 +8,15 @@ export class ConditionListComponent implements OnInit {
   conditions: any[] = [];
   filteredConditions: any[] = [];
   loading = false;
+  page = 1;
+  readonly pageSize = 10;
+
+  get visibleConditions(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredConditions.slice(start, start + this.pageSize);
+  }
+
+  changePage(page: number): void { this.page = page; }
 
   constructor(private api: AuthService, private router: Router) {}
 
@@ -27,6 +36,7 @@ export class ConditionListComponent implements OnInit {
   }
 
   search(event: Event): void {
+    this.page = 1;
     const query = (event.target as HTMLInputElement).value.toLowerCase().trim();
     this.filteredConditions = !query ? [...this.conditions] : this.conditions.filter(c =>
       [c.name, c.description, c.status].some(value => String(value || '').toLowerCase().includes(query))

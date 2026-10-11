@@ -11,6 +11,15 @@ export class TreatmentListComponent implements OnInit {
   treatments: any[] = [];
   filteredTreatments: any[] = [];
   loading = false;
+  page = 1;
+  readonly pageSize = 10;
+  get visibleTreatments(): any[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredTreatments.slice(start, start + this.pageSize);
+  }
+
+  changePage(page: number): void { this.page = page; }
+
   constructor(private api: AuthService, private router: Router) {}
 
   ngOnInit(): void { this.loadTreatments(); }
@@ -29,6 +38,7 @@ export class TreatmentListComponent implements OnInit {
   }
 
   search(event: Event): void {
+    this.page = 1;
     const query = (event.target as HTMLInputElement).value.toLowerCase().trim();
     this.filteredTreatments = !query ? [...this.treatments] : this.treatments.filter(t =>
       [t.name, t.treatmentName, t.description].some(value => String(value || '').toLowerCase().includes(query))

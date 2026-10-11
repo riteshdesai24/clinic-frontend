@@ -227,6 +227,10 @@ export class AuthService {
     return this.http.get(`${environment.apiUrl}/api/invoices`, { params });
   }
 
+  getInvoicePdf(invoiceId: string): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/api/invoices/${encodeURIComponent(invoiceId)}/pdf`, { responseType: 'blob' });
+  }
+
   recordInvoicePayment(invoiceId: string, data: { amount: number; method: string; reference?: string }): Observable<any> {
     return this.http.post(`${environment.apiUrl}/api/invoices/${invoiceId}/payments`, data);
   }

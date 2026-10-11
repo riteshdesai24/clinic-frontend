@@ -19,7 +19,9 @@ export class TreatmentRecordComponent implements OnInit {
   treatmentMastersLoading = false;
   treatmentMasters: any[] = [];
   invoiceError = '';
+  readonly gstRate = 18;
   private savedAppointmentId = '';
+  private savedDiscountAmount = 0;
 
   constructor(
     private fb: FormBuilder,
@@ -32,7 +34,8 @@ export class TreatmentRecordComponent implements OnInit {
   ngOnInit(): void {
     this.form = this.fb.group({
       appointmentId: ['', Validators.required],
-      treatmentMasterId: ['', Validators.required],
+      treatmentMasterIds: [[], Validators.required],
+      discountAmount: [0, [Validators.min(0)]],
       diagnosis: ['', Validators.required],
       notes: [''],
       followUpDate: [''],
@@ -56,10 +59,22 @@ export class TreatmentRecordComponent implements OnInit {
       return;
     }
     const value = this.form.getRawValue();
+    const treatmentMasterIds: string[] = Array.isArray(value.treatmentMasterIds) ? value.treatmentMasterIds : [];
+    const discountAmount = Number(value.discountAmount || 0);
+    if (!treatmentMasterIds.length) {
+      this.form.get('treatmentMasterIds')?.markAsTouched();
+      return;
+    }
+    if (discountAmount > this.selectedTreatmentPrice) {
+      this.form.get('discountAmount')?.setErrors({ exceedsSubtotal: true });
+      this.form.get('discountAmount')?.markAsTouched();
+      return;
+    }
     const payload = {
-      ...value,
       appointmentId: value.appointmentId?.value || value.appointmentId,
-      treatmentMasterId: value.treatmentMasterId?.value || value.treatmentMasterId,
+      treatmentMasterIds,
+      diagnosis: value.diagnosis,
+      notes: value.notes,
       followUpDate: value.followUpDate || undefined,
       medicines: value.medicines.filter((medicine: any) => medicine.name?.trim())
     };
@@ -69,6 +84,7 @@ export class TreatmentRecordComponent implements OnInit {
         this.saving = false;
         this.treatmentSaved = true;
         this.savedAppointmentId = payload.appointmentId;
+        this.savedDiscountAmount = discountAmount;
         this.form.disable();
         this.issueInvoice();
       },
@@ -83,7 +99,7 @@ export class TreatmentRecordComponent implements OnInit {
     if (!this.savedAppointmentId || this.savingInvoice) return;
     this.savingInvoice = true;
     this.invoiceError = '';
-    this.api.createInvoice({ appointmentId: this.savedAppointmentId }).subscribe({
+    this.api.createInvoice({ appointmentId: this.savedAppointmentId, gstRate: this.gstRate, discountAmount: this.savedDiscountAmount }).subscribe({
       next: (response: any) => this.finishInvoice(response?.data),
       error: (error: any) => {
         const existing = error?.error?.data;
@@ -149,5 +165,34 @@ export class TreatmentRecordComponent implements OnInit {
         this.messages.add({ severity: 'error', summary: 'Treatments unavailable', detail: 'Unable to load priced active treatments for invoice creation.' });
       }
     });
+  }
+
+  get selectedTreatmentPrice(): number {
+    return this.selectedTreatments.reduce((sum, treatment) => sum + Number(treatment.price || 0), 0);
+  }
+
+  get selectedTreatments(): any[] {
+    const ids = this.form?.get('treatmentMasterIds')?.value;
+    return Array.isArray(ids) ? this.treatmentMasters.filter(treatment => ids.includes(treatment._id)) : [];
+  }
+
+  get discountAmount(): number {
+    return Math.max(0, Number(this.form?.get('discountAmount')?.value || 0));
+  }
+
+  get taxableAmount(): number {
+    return Math.max(0, this.selectedTreatmentPrice - this.discountAmount);
+  }
+
+  get gstAmount(): number {
+    return this.taxableAmount * this.gstRate / 100;
+  }
+
+  get invoiceTotal(): number {
+    return this.taxableAmount + this.gstAmount;
+  }
+
+  get discountExceedsSubtotal(): boolean {
+    return this.discountAmount > this.selectedTreatmentPrice;
   }
 }
