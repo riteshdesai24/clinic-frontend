@@ -16,6 +16,7 @@ export class PatientComponent implements OnInit {
   loading = false;
   error: string | null = null;
   success: string | null = null;
+  validationAttempted = false;
 
 
   isEdit = false;
@@ -110,6 +111,15 @@ export class PatientComponent implements OnInit {
   routeItems: MenuItem[] = [];
   activeTab: number = 0;
   clinicData: any;
+
+  private readonly requiredControlsByTab = [
+    ['firstName', 'lastName', 'gender'],
+    ['phone'],
+    [],
+    [],
+    [],
+    []
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -305,6 +315,11 @@ export class PatientComponent implements OnInit {
     this.activeTab = event.index;
   }
 
+  hasTabErrors(tabIndex: number): boolean {
+    return this.validationAttempted && this.requiredControlsByTab[tabIndex]
+      .some(controlName => this.patientForm.get(controlName)?.invalid);
+  }
+
   // ======================
   // DOB → AGE
   // ======================
@@ -329,11 +344,21 @@ export class PatientComponent implements OnInit {
   // SUBMIT
   // ======================
   onSubmit(): void {
-    if (this.patientForm.invalid) {
-      this.patientForm.markAllAsTouched();
-      return;
-    }
+    if (!this.validateRequiredFields()) return;
     this.isEdit ? this.updatePatient() : this.createPatient();
+  }
+
+  private validateRequiredFields(): boolean {
+    if (this.patientForm.invalid) {
+      this.validationAttempted = true;
+      this.patientForm.markAllAsTouched();
+      const firstInvalidTab = this.requiredControlsByTab.findIndex(controls =>
+        controls.some(controlName => this.patientForm.get(controlName)?.invalid)
+      );
+      if (firstInvalidTab !== -1) this.activeTab = firstInvalidTab;
+      return false;
+    }
+    return true;
   }
 
   bookAppointment(): void {
@@ -342,10 +367,7 @@ export class PatientComponent implements OnInit {
       return;
     }
 
-    if (this.patientForm.invalid) {
-      this.patientForm.markAllAsTouched();
-      return;
-    }
+    if (!this.validateRequiredFields()) return;
 
     this.loading = true;
     const data = this.toPatientPayload();
@@ -377,10 +399,7 @@ export class PatientComponent implements OnInit {
   // CREATE
   // ======================
   createPatient(): void {
-    if (this.patientForm.invalid) {
-      this.patientForm.markAllAsTouched();
-      return;
-    }
+    if (!this.validateRequiredFields()) return;
     this.loading = true;
 
     // Patient records are independent; appointment booking is a separate optional flow.
@@ -400,6 +419,7 @@ export class PatientComponent implements OnInit {
   // UPDATE
   // ======================
   updatePatient(): void {
+    if (!this.validateRequiredFields()) return;
     if (!this.patientId) return;
     this.loading = true;
 

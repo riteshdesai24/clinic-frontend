@@ -135,6 +135,12 @@
     border-bottom: 3px solid #15998c !important;
     margin-bottom: -2px;
   }
+
+  .p-tabview-nav li.p-invalid-tab .p-tabview-nav-link {
+    color: #e24b4a !important;
+    border-bottom: 3px solid #e24b4a !important;
+    margin-bottom: -2px;
+  }
 }
 
 // Responsive

@@ -31,7 +31,7 @@
         <p-tabView [(activeIndex)]="activeTab" (onChange)="onTabChange($event)" styleClass="mb-section">
 
           <!-- Tab 1: Personal Info -->
-          <p-tabPanel header="Personal Info" leftIcon="pi pi-fw pi-user">
+          <p-tabPanel header="Personal Info" leftIcon="pi pi-fw pi-user" [headerStyleClass]="hasTabErrors(0) ? 'p-invalid-tab' : ''">
             <div class="field-grid g3 mb-section">
 
               <div class="pf-field">
@@ -52,6 +52,7 @@
                   <i class="pi pi-user"></i>
                   <input pInputText formControlName="firstName" class="w-full" />
                 </span>
+                <small class="p-error" *ngIf="f['firstName'].touched && f['firstName'].errors?.['required']">First name is required.</small>
               </div>
 
               <div class="pf-field">
@@ -68,6 +69,7 @@
                   <i class="pi pi-user"></i>
                   <input pInputText formControlName="lastName" class="w-full" />
                 </span>
+                <small class="p-error" *ngIf="f['lastName'].touched && f['lastName'].errors?.['required']">Last name is required.</small>
               </div>
 
               <div class="pf-field">
@@ -85,6 +87,7 @@
                   placeholder="Select Gender"
                   styleClass="w-full">
                 </p-dropdown>
+                <small class="p-error" *ngIf="f['gender'].touched && f['gender'].errors?.['required']">Gender is required.</small>
               </div>
 
               <div class="pf-field">
@@ -134,7 +137,7 @@
           </p-tabPanel>
 
           <!-- Tab 2: Contact -->
-          <p-tabPanel header="Contact" leftIcon="pi pi-fw pi-phone">
+          <p-tabPanel header="Contact" leftIcon="pi pi-fw pi-phone" [headerStyleClass]="hasTabErrors(1) ? 'p-invalid-tab' : ''">
             <div class="field-grid g2 mb-section">
 
               <div class="pf-field">
@@ -143,6 +146,7 @@
                   <i class="pi pi-phone"></i>
                   <input pInputText formControlName="phone" class="w-full" />
                 </span>
+                <small class="p-error" *ngIf="f['phone'].touched && f['phone'].errors?.['required']">Phone is required.</small>
               </div>
 
               <div class="pf-field">
@@ -218,7 +222,7 @@
           </p-tabPanel>
 
           <!-- Tab 3: Address -->
-          <p-tabPanel header="Address" leftIcon="pi pi-fw pi-home">
+          <p-tabPanel header="Address" leftIcon="pi pi-fw pi-home" [headerStyleClass]="hasTabErrors(2) ? 'p-invalid-tab' : ''">
             <div class="field-grid g3 mb-section">
 
               <div class="pf-field">
@@ -272,7 +276,7 @@
           </p-tabPanel>
 
           <!-- Tab 4: Medical -->
-          <p-tabPanel header="Medical" leftIcon="pi pi-fw pi-heart">
+          <p-tabPanel header="Medical" leftIcon="pi pi-fw pi-heart" [headerStyleClass]="hasTabErrors(3) ? 'p-invalid-tab' : ''">
 
             <p class="section-label">Medical Conditions</p>
             <div class="field-grid g1 mb-section">
@@ -333,7 +337,7 @@
           </p-tabPanel>
 
           <!-- Tab 5: Insurance -->
-          <p-tabPanel header="Insurance" leftIcon="pi pi-fw pi-shield">
+          <p-tabPanel header="Insurance" leftIcon="pi pi-fw pi-shield" [headerStyleClass]="hasTabErrors(4) ? 'p-invalid-tab' : ''">
             <p class="section-label">Primary Insurance</p>
             <div class="field-grid g2 mb-section">
 
@@ -371,7 +375,7 @@
           </p-tabPanel>
 
           <!-- Tab 6: Demographics -->
-          <p-tabPanel header="Demographics" leftIcon="pi pi-fw pi-globe">
+          <p-tabPanel header="Demographics" leftIcon="pi pi-fw pi-globe" [headerStyleClass]="hasTabErrors(5) ? 'p-invalid-tab' : ''">
             <div class="field-grid g3 mb-section">
 
               <div class="pf-field">
@@ -450,6 +454,7 @@
         </p-tabView>
 
         <!-- Messages -->
+        <small class="p-error" role="alert" *ngIf="validationAttempted && patientForm.invalid">Please complete all required fields marked with * before saving.</small>
         <small class="p-error" *ngIf="error">{{ error }}</small>
         <small class="p-success" *ngIf="success">{{ success }}</small>
 
@@ -482,7 +487,7 @@
             [label]="isEdit ? 'Update' : 'Create Patient'"
             class="p-button-sm pf-btn-primary"
             [loading]="loading"
-            [disabled]="patientForm.invalid || loading">
+            [disabled]="loading">
           </button>
         </div>
 
