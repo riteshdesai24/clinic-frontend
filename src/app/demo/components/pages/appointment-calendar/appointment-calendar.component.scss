@@ -1,0 +1,252 @@
+.calendar-page {
+  width: 100%;
+}
+
+.calendar-card {
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  background: var(--surface-card);
+  box-shadow: 0 10px 30px rgb(15 61 57 / 6%);
+  padding: 1.5rem;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.calendar-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.calendar-icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 12px;
+  color: var(--primary-700);
+  background: var(--primary-100);
+}
+
+.calendar-title,
+.calendar-subtitle {
+  margin: 0;
+}
+
+.calendar-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.calendar-subtitle {
+  margin-top: 0.2rem;
+  color: var(--text-color-secondary);
+  font-size: 0.88rem;
+}
+
+.calendar-add-btn {
+  min-width: 10rem;
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: var(--text-color-secondary);
+  font-size: 0.82rem;
+}
+
+.calendar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+}
+
+.legend-dot.confirmed { background: #15998c; }
+.legend-dot.pending { background: #f59e0b; }
+.legend-dot.completed { background: #16a34a; }
+.legend-dot.cancelled { background: #ef4444; }
+
+.calendar-wrapper {
+  width: 100%;
+  min-width: 0;
+}
+
+::ng-deep .fc {
+  font-family: inherit;
+}
+
+::ng-deep .fc-toolbar {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+::ng-deep .fc-toolbar-title {
+  font-size: clamp(1.1rem, 2vw, 1.7rem);
+}
+
+::ng-deep .fc-button {
+  border-radius: 8px !important;
+  background: var(--primary-600) !important;
+  border-color: var(--primary-600) !important;
+  color: #fff !important;
+}
+
+::ng-deep .fc-button:hover,
+::ng-deep .fc-button:focus {
+  background: var(--primary-700) !important;
+  border-color: var(--primary-700) !important;
+}
+
+::ng-deep .fc-button:disabled {
+  opacity: 0.7;
+}
+
+::ng-deep .fc-daygrid-day-number,
+::ng-deep .fc-col-header-cell-cushion {
+  color: var(--text-color);
+}
+
+::ng-deep .fc-event {
+  border: 0 !important;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+::ng-deep .fc-daygrid-event {
+  white-space: normal;
+}
+
+::ng-deep .fc .fc-daygrid-day-frame {
+  min-height: 7.1rem;
+}
+
+::ng-deep .fc .fc-daygrid-day-number {
+  padding: 0.45rem 0.6rem;
+}
+
+@media (min-width: 1200px) {
+  .calendar-card {
+    padding: 1.75rem;
+  }
+
+  .calendar-wrapper {
+    min-height: 760px;
+  }
+
+  ::ng-deep .fc {
+    min-height: 760px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .calendar-wrapper {
+    min-height: 620px;
+  }
+
+  ::ng-deep .fc {
+    min-height: 620px;
+  }
+
+  ::ng-deep .fc .fc-daygrid-day-frame {
+    min-height: 6rem;
+  }
+
+  ::ng-deep .fc-event {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 991px) {
+  .calendar-card {
+    padding: 1.1rem;
+  }
+
+  .calendar-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .calendar-add-btn {
+    width: 100%;
+  }
+
+  .calendar-wrapper {
+    overflow-x: auto;
+  }
+
+  ::ng-deep .fc {
+    min-width: 640px;
+  }
+}
+
+@media (max-width: 767px) {
+  .calendar-card {
+    padding: 1rem;
+  }
+
+  .calendar-heading {
+    align-items: flex-start;
+  }
+
+  .calendar-title {
+    font-size: 1.08rem;
+  }
+
+  .calendar-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .calendar-legend {
+    gap: 0.6rem 0.9rem;
+    font-size: 0.76rem;
+  }
+
+  ::ng-deep .fc-toolbar {
+    justify-content: center;
+  }
+
+  ::ng-deep .fc-header-toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  ::ng-deep .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  ::ng-deep .fc .fc-daygrid-day-frame {
+    min-height: 4.8rem;
+  }
+
+  ::ng-deep .fc-event {
+    font-size: 0.66rem;
+    line-height: 1.2;
+    padding: 0.12rem 0.2rem;
+  }
+
+  ::ng-deep .fc-scrollgrid-liquid > .fc-scrollgrid-section > .fc-scrollgrid-section-body {
+    overflow: hidden;
+  }
+}

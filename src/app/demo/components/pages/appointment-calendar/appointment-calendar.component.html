@@ -1,0 +1,38 @@
+<div class="calendar-page">
+    <div class="calendar-card">
+        <div class="calendar-header">
+            <div class="calendar-heading">
+                <div class="calendar-icon">
+                    <i class="pi pi-calendar"></i>
+                </div>
+                <div>
+                    <h5 class="calendar-title">Appointment Calendar</h5>
+                    <p class="calendar-subtitle">
+                        View all booked appointments for the month and click a
+                        day to add one.
+                    </p>
+                </div>
+            </div>
+
+            <button
+                pButton
+                type="button"
+                icon="pi pi-plus"
+                label="Add Appointment"
+                class="calendar-add-btn"
+                (click)="openNewAppointment()"
+            ></button>
+        </div>
+
+        <div class="calendar-legend">
+            <span><i class="legend-dot confirmed"></i>Confirmed</span>
+            <span><i class="legend-dot pending"></i>Pending</span>
+            <span><i class="legend-dot completed"></i>Completed</span>
+            <span><i class="legend-dot cancelled"></i>Cancelled</span>
+        </div>
+
+        <div class="calendar-wrapper">
+            <full-calendar [options]="calendarOptions"></full-calendar>
+        </div>
+    </div>
+</div>

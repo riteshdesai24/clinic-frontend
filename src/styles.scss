@@ -320,6 +320,41 @@ body .gender-other {
     }
 }
 
+html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+body .layout-wrapper {
+    width: 100%;
+    max-width: 100%;
+}
+
+body .layout-main-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 1.25rem clamp(0.75rem, 2vw, 2rem) 1.5rem;
+}
+
+body .layout-main {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+body .layout-main > * {
+    width: 100%;
+    max-width: 100%;
+}
+
+@media (max-width: 991px) {
+    body .layout-main-container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+}
+
 /* Keep list action icons visible on light, low emphasis controls. */
 body .pl-card .action-row > .p-button.action-btn.action-view,
 body .pl-card .action-row > .p-button.action-btn.action-edit,

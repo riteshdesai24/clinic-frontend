@@ -3,18 +3,21 @@ import { LayoutService } from './service/app.layout.service';
 
 @Component({
     selector: 'app-menu',
-    templateUrl: './app.menu.component.html'
+    templateUrl: './app.menu.component.html',
 })
 export class AppMenuComponent implements OnInit {
-
     model: any[] = [];
     clinicPlan: string = '';
     user: any = {};
 
-    constructor(public layoutService: LayoutService) { }
+    constructor(public layoutService: LayoutService) {}
 
     ngOnInit() {
-        this.user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')!) : {};
+        this.user = localStorage.getItem('user')
+            ? JSON.parse(localStorage.getItem('user')!)
+            : sessionStorage.getItem('user')
+              ? JSON.parse(sessionStorage.getItem('user')!)
+              : {};
         this.clinicPlan = this.user.plan || '';
         this.buildMenu();
     }
@@ -22,25 +25,59 @@ export class AppMenuComponent implements OnInit {
     buildMenu() {
         const role = String(this.user.role || '').toUpperCase();
         if (role === 'DOCTOR') {
-            this.model = [{
-                label: 'Menus',
-                items: [
-                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
-                    { label: 'Appointment', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/appointment-list'] }
-                ]
-            }];
+            this.model = [
+                {
+                    label: 'Menus',
+                    items: [
+                        {
+                            label: 'Dashboard',
+                            icon: 'pi pi-fw pi-home',
+                            routerLink: ['/'],
+                        },
+                        {
+                            label: 'Calendar',
+                            icon: 'pi pi-fw pi-calendar',
+                            routerLink: ['/pages/appointment-calendar'],
+                        },
+                        {
+                            label: 'Appointment',
+                            icon: 'pi pi-fw pi-calendar',
+                            routerLink: ['/pages/appointment-list'],
+                        },
+                    ],
+                },
+            ];
             return;
         }
 
         if (role === 'STAFF') {
-            this.model = [{
-                label: 'Menus',
-                items: [
-                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
-                    { label: 'Patient', icon: 'pi pi-fw pi-user', routerLink: ['/pages/patient-list'] },
-                    { label: 'Appointment', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/appointment-list'] }
-                ]
-            }];
+            this.model = [
+                {
+                    label: 'Menus',
+                    items: [
+                        {
+                            label: 'Dashboard',
+                            icon: 'pi pi-fw pi-home',
+                            routerLink: ['/'],
+                        },
+                        {
+                            label: 'Patient',
+                            icon: 'pi pi-fw pi-user',
+                            routerLink: ['/pages/patient-list'],
+                        },
+                        {
+                            label: 'Calendar',
+                            icon: 'pi pi-fw pi-calendar',
+                            routerLink: ['/pages/appointment-calendar'],
+                        },
+                        {
+                            label: 'Appointment',
+                            icon: 'pi pi-fw pi-calendar',
+                            routerLink: ['/pages/appointment-list'],
+                        },
+                    ],
+                },
+            ];
             return;
         }
 
@@ -48,30 +85,72 @@ export class AppMenuComponent implements OnInit {
             {
                 label: 'Menus',
                 items: [
-                    { label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
-                    ...(this.clinicPlan?.toUpperCase() === 'GOLD' ? [{
-                        label: 'Staff',
-                        icon: 'pi pi-fw pi-users',
-                        routerLink: ['/pages/staff-list']
-                    }] : []),
-                    { label: 'Doctor', icon: 'pi pi-fw pi-user', routerLink: ['/pages/doctor-list'] },
-                    { label: 'Patient', icon: 'pi pi-fw pi-user', routerLink: ['/pages/patient-list'] },
-                    { label: 'Appointment', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/appointment-list'] },
-                    { label: 'Invoice', icon: 'pi pi-fw pi-file-pdf', routerLink: ['/pages/invoice-list'] },
-                    ...(this.user.role === 'ADMIN' || this.user.role === 'STAFF' || this.user.role === 'DOCTOR' ? [{ label: 'Attendance', icon: 'pi pi-fw pi-clock', routerLink: ['/pages/attendance'] }] : []),
-                    
-                ]
+                    {
+                        label: 'Dashboard',
+                        icon: 'pi pi-fw pi-home',
+                        routerLink: ['/'],
+                    },
+                    ...(this.clinicPlan?.toUpperCase() === 'GOLD'
+                        ? [
+                              {
+                                  label: 'Staff',
+                                  icon: 'pi pi-fw pi-users',
+                                  routerLink: ['/pages/staff-list'],
+                              },
+                          ]
+                        : []),
+                    {
+                        label: 'Doctor',
+                        icon: 'pi pi-fw pi-user',
+                        routerLink: ['/pages/doctor-list'],
+                    },
+                    {
+                        label: 'Patient',
+                        icon: 'pi pi-fw pi-user',
+                        routerLink: ['/pages/patient-list'],
+                    },
+                    {
+                        label: 'Calendar',
+                        icon: 'pi pi-fw pi-calendar',
+                        routerLink: ['/pages/appointment-calendar'],
+                    },
+                    {
+                        label: 'Appointment',
+                        icon: 'pi pi-fw pi-calendar',
+                        routerLink: ['/pages/appointment-list'],
+                    },
+                    {
+                        label: 'Invoice',
+                        icon: 'pi pi-fw pi-file-pdf',
+                        routerLink: ['/pages/invoice-list'],
+                    },
+                    ...(this.user.role === 'ADMIN' ||
+                    this.user.role === 'STAFF' ||
+                    this.user.role === 'DOCTOR'
+                        ? [
+                              {
+                                  label: 'Attendance',
+                                  icon: 'pi pi-fw pi-clock',
+                                  routerLink: ['/pages/attendance'],
+                              },
+                          ]
+                        : []),
+                ],
             },
             {
                 label: 'Masters',
                 icon: 'pi pi-fw pi-briefcase',
                 items: [
-                    { label: 'Insurance', icon: 'pi pi-fw pi-shield', routerLink: ['/pages/insurance-list'] },
-                    
+                    {
+                        label: 'Insurance',
+                        icon: 'pi pi-fw pi-shield',
+                        routerLink: ['/pages/insurance-list'],
+                    },
+
                     {
                         label: 'Medical Conditions',
                         icon: 'pi pi-fw pi-pencil',
-                        routerLink: ['/pages/medical-condition-list']
+                        routerLink: ['/pages/medical-condition-list'],
                     },
                     {
                         label: 'Dental Conditions',
@@ -80,16 +159,16 @@ export class AppMenuComponent implements OnInit {
                             {
                                 label: 'Conditions',
                                 icon: 'pi pi-fw pi-sign-in',
-                                routerLink: ['/pages/dental-condition-list']
+                                routerLink: ['/pages/dental-condition-list'],
                             },
                             {
                                 label: 'Treatments',
                                 icon: 'pi pi-fw pi-times-circle',
-                                routerLink: ['/pages/treatment-list']
-                            }
-                        ]
+                                routerLink: ['/pages/treatment-list'],
+                            },
+                        ],
                     },
-                ]
+                ],
             },
             /* {
                 label: 'UI Components',
