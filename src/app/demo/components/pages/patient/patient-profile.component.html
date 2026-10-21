@@ -1,0 +1,120 @@
+<main class="patient-profile-page">
+  <header class="profile-topbar">
+    <div class="profile-identity">
+      <span class="profile-avatar">{{ initials }}</span>
+      <div><strong>{{ fullName }}</strong><small>Patient ID: {{ patientId || '—' }}</small></div>
+    </div>
+    <div class="profile-top-actions">
+      <a class="profile-action secondary" routerLink="/pages/patient-list"><i class="pi pi-arrow-left"></i> Patients</a>
+    </div>
+  </header>
+
+  <div class="profile-layout">
+    <div class="profile-content">
+      <div class="profile-page-title"><div><span>Patient record</span><h1>Patient overview</h1></div><span class="record-badge"><i class="pi pi-check-circle"></i> Record loaded</span></div>
+
+      <div class="profile-state" *ngIf="recordLoading"><i class="pi pi-spin pi-spinner"></i> Loading patient details…</div>
+
+      <section class="profile-overview-grid" id="overview" *ngIf="!recordLoading">
+        <article class="profile-card patient-summary-card">
+          <div class="patient-summary-main">
+            <span class="profile-avatar large">{{ initials }}</span>
+            <h2>{{ fullName }}</h2>
+            <p>{{ display(patient['gender'], 'Gender not provided') }}<span *ngIf="patient['age']"> · {{ patient['age'] }} years</span></p>
+            <div class="patient-facts">
+              <div><small>Date of birth</small><strong>{{ patient['dob'] ? (patient['dob'] | date:'dd MMM yyyy') : 'Not provided' }}</strong></div>
+              <div><small>Blood group</small><strong>{{ display(patient['bloodGroup']) }}</strong></div>
+            </div>
+          </div>
+          <div class="patient-summary-contact">
+            <div><small>Address</small><strong>{{ address || 'Not provided' }}</strong></div>
+            <div><small>Mobile phone</small><strong>{{ display(patient['phone']) }}</strong></div>
+            <div><small>WhatsApp</small><strong>{{ display(patient['whatsappNumber']) }}</strong></div>
+            <div><small>Email</small><strong>{{ display(patient['email']) }}</strong></div>
+          </div>
+        </article>
+
+        <article class="profile-card profile-documents-card" id="documents">
+          <header><div><h2>Documents</h2><small>Patient files and reports</small></div><span class="document-count">{{ uploadedDocuments.length }}</span></header>
+          <div class="profile-documents-state" *ngIf="documentsLoading"><i class="pi pi-spin pi-spinner"></i> Loading documents…</div>
+          <div class="profile-documents-state error" *ngIf="!documentsLoading && documentsError">{{ documentsError }} <button type="button" (click)="loadDocuments()">Retry</button></div>
+          <div class="profile-documents-state" *ngIf="!documentsLoading && !documentsError && !uploadedDocuments.length">No documents uploaded for this patient.</div>
+          <ul class="profile-document-list" *ngIf="!documentsLoading && uploadedDocuments.length">
+            <li *ngFor="let file of uploadedDocuments">
+              <i class="document-type-icon" [ngClass]="previewKindFor(file)" aria-hidden="true"></i>
+              <div class="profile-document-meta">
+                <button type="button" class="profile-document-name" (click)="previewDocument(file)" [title]="documentName(file)">{{ documentName(file) }}</button>
+                <small>{{ documentSize(file) }}<span *ngIf="documentSize(file) && (file.uploadedAt || file.createdAt)"> · </span>{{ (file.uploadedAt || file.createdAt) ? ((file.uploadedAt || file.createdAt) | date:'dd MMM yyyy') : '' }}</small>
+              </div>
+              <button type="button" class="profile-document-preview" aria-label="Preview document" title="Preview document" (click)="previewDocument(file)"><i class="pi pi-eye"></i></button>
+            </li>
+          </ul>
+        </article>
+
+        <article class="profile-card contact-card" id="contact">
+          <header><h2>Contact details</h2><i class="pi pi-phone"></i></header>
+          <dl>
+            <div><dt>Other mobile</dt><dd>{{ display(patient['otherMobile']) }}</dd></div>
+            <div><dt>Work email</dt><dd>{{ display(patient['workEmail']) }}</dd></div>
+            <div><dt>Landline</dt><dd>{{ display(patient['landlineNumber']) }}</dd></div>
+            <div><dt>Emergency contact</dt><dd>{{ display(patient['emergencyContactName']) }} · {{ display(patient['emergencyContactNumber']) }}</dd></div>
+          </dl>
+        </article>
+
+        <article class="profile-card medical-card" id="medical">
+          <header><h2>Medical information</h2><i class="pi pi-heart"></i></header>
+          <div class="medical-item"><small>Current medications</small><p>{{ display(patient['currentMedications']) }}</p></div>
+          <div class="medical-item"><small>Allergies</small><p>{{ display(patient['medicalAllergies'] || patient['allergicTo']) }}</p></div>
+          <div class="medical-item"><small>Medical conditions</small><p>{{ display(patient['medicalConditions']) }}</p></div>
+          <div class="medical-item"><small>Dental conditions</small><p>{{ display(patient['dentalConditions']) }}</p></div>
+        </article>
+      </section>
+
+      <section class="profile-card appointments-card" id="appointments">
+        <header class="section-card-heading"><div><span>Care history</span><h2>Appointments</h2></div><span class="appointment-count">{{ appointments.length }}</span></header>
+        <div class="profile-state" *ngIf="appointmentsLoading"><i class="pi pi-spin pi-spinner"></i> Loading appointments…</div>
+        <div class="profile-state error" *ngIf="!appointmentsLoading && appointmentsError">{{ appointmentsError }}</div>
+        <div class="profile-state" *ngIf="!appointmentsLoading && !appointmentsError && !appointments.length">No appointments recorded for this patient.</div>
+        <div class="profile-appointments-table-wrap" *ngIf="!appointmentsLoading && !appointmentsError && appointments.length">
+          <table>
+            <thead><tr><th>Date</th><th>Time</th><th>Doctor</th><th>Treatment</th><th>Status</th><th>Reason and notes</th></tr></thead>
+            <tbody><tr *ngFor="let appointment of appointments">
+              <td>{{ appointment.date ? (appointment.date | date:'dd MMM yyyy') : '—' }}</td>
+              <td>{{ display(appointment.time) }}</td>
+              <td>{{ display(appointment.doctorName) }}</td>
+              <td>{{ display(appointment.treatmentName) }}</td>
+              <td><span class="appointment-status">{{ display(appointment.status) }}</span></td>
+              <td>{{ appointment.reason || appointment.notes || '—' }}</td>
+            </tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="profile-card insurance-card" id="insurance">
+        <header><h2>Insurance</h2><i class="pi pi-shield"></i></header>
+        <dl>
+          <div><dt>Provider</dt><dd>{{ display(patient['insuranceCompany']) }}</dd></div>
+          <div><dt>Plan</dt><dd>{{ display(patient['insuranceSubCompany']) }}</dd></div>
+          <div><dt>Policy number</dt><dd>{{ display(patient['insurancePolicy']) }}</dd></div>
+          <div><dt>Member ID</dt><dd>{{ display(patient['insuranceIdNumber']) }}</dd></div>
+        </dl>
+      </section>
+    </div>
+  </div>
+
+  <div class="document-preview-backdrop" *ngIf="previewVisible" (click)="closePreview()">
+    <section class="document-preview-dialog" role="dialog" aria-modal="true" [attr.aria-label]="'Preview ' + documentName(previewingDocument)" (click)="$event.stopPropagation()">
+      <header><div><strong>{{ documentName(previewingDocument) }}</strong><small>Document preview</small></div><div class="document-preview-actions"><button type="button" (click)="downloadPreview()"><i class="pi pi-download"></i> Download</button><button type="button" class="preview-close" aria-label="Close preview" (click)="closePreview()"><i class="pi pi-times"></i></button></div></header>
+      <div class="document-preview-content">
+        <div class="profile-documents-state" *ngIf="previewLoading"><i class="pi pi-spin pi-spinner"></i> Loading preview…</div>
+        <div class="profile-documents-state error" *ngIf="!previewLoading && previewError">{{ previewError }}</div>
+        <img *ngIf="!previewLoading && !previewError && previewKind === 'image' && previewImageUrl" [src]="previewImageUrl" [alt]="documentName(previewingDocument)" />
+        <iframe *ngIf="!previewLoading && !previewError && previewKind === 'pdf' && previewUrl" [src]="previewUrl" [title]="documentName(previewingDocument)"></iframe>
+        <div class="preview-unavailable" *ngIf="!previewLoading && !previewError && previewKind === 'other'">
+          <i class="pi pi-file"></i><strong>Preview is not available for this file type.</strong><span>Download the file to open it.</span>
+          <button type="button" (click)="downloadPreview()"><i class="pi pi-download"></i> Download document</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>

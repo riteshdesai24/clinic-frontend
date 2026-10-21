@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -315,6 +315,30 @@ export class AuthService {
   }
   deleteTreatmentAttachment(treatmentId: string, attachmentId: string): Observable<any> {
     return this.http.delete(`${environment.apiUrl}/api/treatments/${treatmentId}/attachments/${attachmentId}`);
+  }
+
+  uploadPatientAttachments(patientId: string, files: File[]): Observable<HttpEvent<any>> {
+    const body = new FormData();
+    files.forEach(file => body.append('files', file));
+    return this.http.post(`${environment.apiUrl}/api/patients/${patientId}/attachments`, body, { reportProgress: true, observe: 'events' });
+  }
+  getPatientAttachments(patientId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/patients/${patientId}/attachments`);
+  }
+  downloadPatientAttachment(patientId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/api/patients/${patientId}/attachments/${attachmentId}`, { responseType: 'blob' });
+  }
+
+  uploadDoctorAttachments(doctorId: string, files: File[]): Observable<HttpEvent<any>> {
+    const body = new FormData();
+    files.forEach(file => body.append('files', file));
+    return this.http.post(`${environment.apiUrl}/api/doctors/${doctorId}/attachments`, body, { reportProgress: true, observe: 'events' });
+  }
+  getDoctorAttachments(doctorId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/doctors/${doctorId}/attachments`);
+  }
+  downloadDoctorAttachment(doctorId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/api/doctors/${doctorId}/attachments/${attachmentId}`, { responseType: 'blob' });
   }
 
   // ================= PLANS AND PAYMENTS =================

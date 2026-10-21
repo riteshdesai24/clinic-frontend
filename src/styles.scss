@@ -13,27 +13,33 @@ $gutter: 1rem; //for primeflex grid system
 @import "assets/demo/styles/badges.scss";
 @import "assets/demo/styles/code.scss";
 
-/* Clinic theme: teal primary, cool neutral surfaces, and coral accents. */
-:root {
-    --primary-color: #15998c;
+/* Clinic theme: blue primary with cool neutral surfaces. */
+html:root {
+    --clinic-blue-deep: #075985;
+    --clinic-blue: #0d78ad;
+    --clinic-blue-bright: #1179b5;
+    --clinic-blue-gradient: linear-gradient(115deg, #075985, #1179b5 62%, #075985);
+    --primary-color: #0d78ad;
     --primary-color-text: #ffffff;
-    --primary-50: #edf9f7;
-    --primary-100: #d3f0ec;
-    --primary-200: #a8e0d8;
-    --primary-300: #78cec4;
-    --primary-400: #42b6aa;
-    --primary-500: #15998c;
-    --primary-600: #0f7d73;
-    --primary-700: #0b655e;
-    --primary-800: #084d48;
-    --primary-900: #053633;
-    --surface-ground: #f4f8f8;
-    --surface-section: #f4f8f8;
+    --primary-50: #eff8fc;
+    --primary-100: #d9eff8;
+    --primary-200: #b8e0f1;
+    --primary-300: #86cae6;
+    --primary-400: #4eadd5;
+    --primary-500: #0d78ad;
+    --primary-600: #096893;
+    --primary-700: #075779;
+    --primary-800: #06475f;
+    --primary-900: #06384b;
+    --teal-400: #4eadd5;
+    --teal-500: #0d78ad;
+    --surface-ground: #f4f8fb;
+    --surface-section: #f4f8fb;
     --surface-card: #ffffff;
-    --surface-border: #d8e5e3;
-    --highlight-bg: #e3f4f1;
-    --highlight-text-color: #084d48;
-    --focus-ring: 0 0 0 1px #15998c;
+    --surface-border: #d7e5ee;
+    --highlight-bg: #e2f2fa;
+    --highlight-text-color: #06475f;
+    --focus-ring: 0 0 0 1px #0d78ad;
     --red-500: #ef4444;
     --red-600: #dc2626;
 }
@@ -45,22 +51,22 @@ body {
 /* Shared custom page controls retain the palette even where older page CSS used indigo values. */
 body .pf-icon,
 body .il-icon {
-    background: #e3f4f1 !important;
-    color: #0f7d73 !important;
+    background: #d9eff8 !important;
+    color: #096893 !important;
 }
 
 body .pf-btn-primary,
 body .il-add-btn,
-body .p-button:not(.p-button-secondary):not(.p-button-success):not(.p-button-warning):not(.p-button-danger) {
-    background: #15998c !important;
-    border-color: #15998c !important;
+body .p-button:not(.p-button-secondary):not(.p-button-success):not(.p-button-warning):not(.p-button-danger):not(.primary-action):not(.action-btn) {
+    background: #0d78ad !important;
+    border-color: #0d78ad !important;
 }
 
 body .pf-btn-primary:hover,
 body .il-add-btn:hover,
-body .p-button:not(.p-button-secondary):not(.p-button-success):not(.p-button-warning):not(.p-button-danger):hover {
-    background: #0f7d73 !important;
-    border-color: #0f7d73 !important;
+body .p-button:not(.p-button-secondary):not(.p-button-success):not(.p-button-warning):not(.p-button-danger):not(.primary-action):not(.action-btn):hover {
+    background: #096893 !important;
+    border-color: #096893 !important;
 }
 
 body .pl-card .action-edit,
@@ -69,8 +75,8 @@ body .il-card .action-edit,
 body .il-card .action-view,
 body .condition-list-card .action-edit,
 body .treatment-list-card .action-edit {
-    background: #e3f4f1 !important;
-    color: #0f7d73 !important;
+    background: #d9eff8 !important;
+    color: #096893 !important;
 }
 
 body .pl-card .action-btn.action-view,
@@ -85,8 +91,8 @@ body .treatment-list-card .action-btn.action-edit {
 }
 
 body .status-active {
-    background: #e3f4f1 !important;
-    color: #0b655e !important;
+    background: #d9eff8 !important;
+    color: #075779 !important;
 }
 
 body .p-button-danger,
@@ -213,7 +219,7 @@ body .treatment-list-card .action-btn .p-button-icon {
 
 body .pl-card .pl-add-btn,
 body .il-card .il-add-btn,
-body .p-button:not(.p-button-secondary):not(.p-button-success):not(.p-button-warning):not(.p-button-danger) {
+body .p-button:not(.p-button-secondary):not(.p-button-success):not(.p-button-warning):not(.p-button-danger):not(.primary-action):not(.action-btn) {
     min-height: 2.5rem;
     border-radius: 8px !important;
     background: var(--primary-600) !important;
@@ -241,7 +247,7 @@ body .invoice-filter select:focus,
 body .payment-form input:focus,
 body .payment-form select:focus {
     border-color: var(--primary-400) !important;
-    box-shadow: 0 0 0 3px rgb(21 153 140 / 12%) !important;
+    box-shadow: 0 0 0 3px rgb(13 120 173 / 12%) !important;
     outline: 0;
 }
 
@@ -332,19 +338,32 @@ body .layout-wrapper {
 }
 
 body .layout-main-container {
-    width: 100%;
+    // Static navigation reserves horizontal room through its left margin.
+    // Let the block fill only the remaining width so the page does not extend
+    // beyond the viewport while the sidebar is open.
+    width: auto;
     max-width: 100%;
+    min-width: 0;
     padding: 1.25rem clamp(0.75rem, 2vw, 2rem) 1.5rem;
 }
 
 body .layout-main {
+    display: block;
+    flex: 1 1 auto;
     width: 100%;
     max-width: 100%;
     min-width: 0;
 }
 
 body .layout-main > * {
+    display: block;
+    box-sizing: border-box;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+body .layout-main :where(img, video, iframe, canvas) {
     max-width: 100%;
 }
 
@@ -355,50 +374,53 @@ body .layout-main > * {
     }
 }
 
-/* Keep list action icons visible on light, low emphasis controls. */
-body .pl-card .action-row > .p-button.action-btn.action-view,
-body .pl-card .action-row > .p-button.action-btn.action-edit,
-body .il-card .action-row > .p-button.action-btn.action-view,
-body .il-card .action-row > .p-button.action-btn.action-edit,
-body .condition-list-card .actions > .p-button.action-btn.action-edit,
-body .treatment-list-card .actions > .p-button.action-btn.action-edit {
-    background: #e8f5f3 !important;
-    border: 1px solid #c5e6e1 !important;
-    color: #14796f !important;
-    box-shadow: none !important;
-}
-body .pl-card .action-row > .p-button.action-btn.action-delete,
-body .il-card .action-row > .p-button.action-btn.action-delete,
-body .condition-list-card .actions > .p-button.action-btn.action-delete,
-body .treatment-list-card .actions > .p-button.action-btn.action-delete {
-    background: #fff1f1 !important;
-    border: 1px solid #f7d0d0 !important;
-    color: #c24141 !important;
+/* Keep icon-only row actions legible and centered across all list pages. */
+body .action-row > .p-button.action-btn,
+body td.actions > .p-button.action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 2.25rem !important;
+    min-width: 2.25rem !important;
+    height: 2.25rem !important;
+    min-height: 2.25rem !important;
+    padding: 0 !important;
+    border: 1px solid transparent !important;
+    border-radius: .55rem !important;
+    line-height: 1 !important;
     box-shadow: none !important;
 }
 
-/* Action controls keep the same appearance on hover; other buttons retain theme feedback. */
-body .pl-card .action-row > .p-button.action-btn.action-view:hover,
-body .pl-card .action-row > .p-button.action-btn.action-edit:hover,
-body .il-card .action-row > .p-button.action-btn.action-view:hover,
-body .il-card .action-row > .p-button.action-btn.action-edit:hover,
-body .condition-list-card .actions > .p-button.action-btn.action-edit:hover,
-body .treatment-list-card .actions > .p-button.action-btn.action-edit:hover {
-    background: #e8f5f3 !important;
-    border-color: #c5e6e1 !important;
-    color: #14796f !important;
-    box-shadow: none !important;
-    filter: none !important;
-    transform: none !important;
+body .action-row > .p-button.action-btn .p-button-icon,
+body td.actions > .p-button.action-btn .p-button-icon {
+    display: inline-block !important;
+    width: 1rem;
+    height: 1rem;
+    margin: 0 !important;
+    font-family: "primeicons" !important;
+    font-size: 1rem !important;
+    line-height: 1 !important;
+    color: inherit !important;
 }
-body .pl-card .action-row > .p-button.action-btn.action-delete:hover,
-body .il-card .action-row > .p-button.action-btn.action-delete:hover,
-body .condition-list-card .actions > .p-button.action-btn.action-delete:hover,
-body .treatment-list-card .actions > .p-button.action-btn.action-delete:hover {
-    background: #fff1f1 !important;
-    border-color: #f7d0d0 !important;
-    color: #c24141 !important;
-    box-shadow: none !important;
-    filter: none !important;
-    transform: none !important;
+
+body .action-row > .p-button.action-btn.action-view,
+body .action-row > .p-button.action-btn.action-edit,
+body .action-row > .p-button.action-btn.action-delete,
+body td.actions > .p-button.action-btn.action-view,
+body td.actions > .p-button.action-btn.action-edit,
+body td.actions > .p-button.action-btn.action-delete {
+    color: #475569 !important;
+    background: transparent !important;
+    border-color: transparent !important;
+}
+
+body .action-row > .p-button.action-btn.action-view:hover,
+body .action-row > .p-button.action-btn.action-edit:hover,
+body .action-row > .p-button.action-btn.action-delete:hover,
+body td.actions > .p-button.action-btn.action-view:hover,
+body td.actions > .p-button.action-btn.action-edit:hover,
+body td.actions > .p-button.action-btn.action-delete:hover {
+    color: #1e293b !important;
+    background: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
 }

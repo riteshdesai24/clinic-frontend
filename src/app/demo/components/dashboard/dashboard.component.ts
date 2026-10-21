@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from 'src/app/demo/service/auth.service';
 
 type DashboardPeriod = 'week' | 'month';
@@ -19,6 +20,7 @@ type AppointmentSummaryPeriod = 'today' | 'week' | 'month';
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
+  currentRouteUrl = '/';
   clinicName = '';
   userName = '';
   role = '';
@@ -36,6 +38,9 @@ export class DashboardComponent implements OnInit {
   cancelledAppointments: any[] = [];
   completedCount = 0;
   completedAppointments: any[] = [];
+  todayAppointments: any[] = [];
+  todayAppointmentsLoading = false;
+  todayAppointmentsError = '';
   completedLoading = false;
   completedError = '';
   allLoading = false;
@@ -87,9 +92,10 @@ export class DashboardComponent implements OnInit {
     month: this.emptySummary()
   };
 
-  constructor(private api: AuthService) {}
+  constructor(private api: AuthService, private router: Router) {}
 
   ngOnInit(): void {
+    this.currentRouteUrl = this.router.url || '/';
     try {
       const clinic = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
       const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
@@ -110,6 +116,7 @@ export class DashboardComponent implements OnInit {
     this.loadCompletedAppointments();
     this.loadAllAppointments();
     this.loadCancelledAppointments();
+    this.loadTodayAppointments();
     this.loadTreatmentNames();
     this.loadPatientNames();
     this.loadWeeklyInvoices();
@@ -132,6 +139,12 @@ export class DashboardComponent implements OnInit {
 
   get activeAppointmentSummary(): AppointmentSummary {
     return this.appointmentSummaries[this.summaryPeriod];
+  }
+
+  getSummaryPercent(value: number): number {
+    const total = this.activeAppointmentSummary.all;
+    if (!total) return 0;
+    return Math.min(100, Math.round((Number(value || 0) / total) * 100));
   }
 
   setInvoicePeriod(value: string): void {
@@ -204,6 +217,7 @@ export class DashboardComponent implements OnInit {
     this.loadCompletedAppointments();
     this.loadAllAppointments();
     this.loadCancelledAppointments();
+    this.loadTodayAppointments();
     this.loadWeeklyInvoices();
     this.loadInvoiceAmountCards();
   }
@@ -255,6 +269,49 @@ export class DashboardComponent implements OnInit {
         this.appointmentSummaries.today = { ...this.appointmentSummaries.today, completed: count };
       }
     });
+  }
+
+  loadTodayAppointments(): void {
+    this.todayAppointmentsLoading = true;
+    this.todayAppointmentsError = '';
+    const today = this.localDateParam(new Date());
+    const params: Record<string, string | number> = { date: today, page: 1, limit: 1000 };
+    const doctorId = this.isAdmin ? this.selectedDoctorId : this.isDoctor ? this.currentDoctorId : '';
+    if (doctorId) params['doctorId'] = doctorId;
+
+    this.api.getAppointmentList(params).subscribe({
+      next: (response: any) => {
+        const rows = Array.isArray(response?.data) ? response.data : response?.data?.appointments || [];
+        this.todayAppointments = rows
+          .filter((appointment: any) => this.appointmentLocalDate(appointment.date || appointment.appointmentDate) === today)
+          .map((appointment: any) => this.applyTreatmentName(this.toAppointmentRow(appointment)))
+          .sort((a: any, b: any) => this.timeSortValue(a.time || a.appointmentTime) - this.timeSortValue(b.time || b.appointmentTime));
+        this.todayAppointmentsLoading = false;
+      },
+      error: () => {
+        this.todayAppointments = [];
+        this.todayAppointmentsError = "Today's appointments could not be loaded.";
+        this.todayAppointmentsLoading = false;
+      }
+    });
+  }
+
+  private appointmentLocalDate(value: any): string {
+    if (!value) return '';
+    if (typeof value === 'string') {
+      const datePart = value.trim().match(/^\d{4}-\d{2}-\d{2}/)?.[0];
+      if (datePart) return datePart;
+    }
+    const date = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : this.localDateParam(date);
+  }
+
+  private timeSortValue(value: any): number {
+    const match = String(value || '').trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+    if (!match) return Number.MAX_SAFE_INTEGER;
+    let hour = Number(match[1]) % 12;
+    if (match[3]?.toUpperCase() === 'PM') hour += 12;
+    return hour * 60 + Number(match[2]);
   }
 
   loadDoctors(): void {
@@ -511,6 +568,7 @@ export class DashboardComponent implements OnInit {
         this.completedAppointments = this.completedAppointments.map(appointment => this.toAppointmentRow(appointment));
         this.allAppointments = this.allAppointments.map(appointment => this.toAppointmentRow(appointment));
         this.cancelledAppointments = this.cancelledAppointments.map(appointment => this.toAppointmentRow(appointment));
+        this.todayAppointments = this.todayAppointments.map(appointment => this.toAppointmentRow(appointment));
       }
     });
   }
@@ -545,6 +603,7 @@ export class DashboardComponent implements OnInit {
         this.completedAppointments = this.completedAppointments.map(appointment => this.applyTreatmentName(appointment));
         this.allAppointments = this.allAppointments.map(appointment => this.applyTreatmentName(appointment));
         this.cancelledAppointments = this.cancelledAppointments.map(appointment => this.applyTreatmentName(appointment));
+        this.todayAppointments = this.todayAppointments.map(appointment => this.applyTreatmentName(appointment));
       },
       error: () => { /* Appointment rows still show any treatment name returned directly by the API. */ }
     });

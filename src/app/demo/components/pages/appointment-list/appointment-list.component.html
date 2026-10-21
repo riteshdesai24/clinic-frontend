@@ -35,12 +35,6 @@
             <option *ngFor="let status of appointmentStatuses" [value]="status">{{ status | titlecase }}</option>
           </select>
         </label>
-        <label class="doctor-filter status-filter">Filter by period
-          <select [value]="selectedPeriod" (change)="onPeriodFilterChange($event)">
-            <option value="week">This week</option>
-            <option value="month">This month</option>
-          </select>
-        </label>
         <span class="p-input-icon-left pl-search">
           <i class="pi pi-search"></i>
           <input

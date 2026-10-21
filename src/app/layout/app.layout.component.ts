@@ -21,10 +21,15 @@ import { AppTopBarComponent } from './app.topbar.component';
             height: 60px;
         }
         :host ::ng-deep .layout-sidebar {
-            margin-top: 20px;
+            margin-top: 16px;
         }
         :host ::ng-deep .layout-main-container {
-            margin-top: 20px;
+            margin-top: 0;
+        }
+        @media (max-width: 991px) {
+            :host ::ng-deep .layout-sidebar {
+                margin-top: 0;
+            }
         }
     `]
 })

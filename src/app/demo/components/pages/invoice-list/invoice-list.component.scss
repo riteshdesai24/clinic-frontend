@@ -56,3 +56,94 @@ td small { margin-top: .25rem; color: var(--text-color-secondary); }
   .invoice-filters .invoice-filter { align-items: flex-start; flex-direction: column; }
   .invoice-filter select { width: 100%; }
 }
+
+.invoice-page {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+}
+
+.invoice-heading {
+  min-width: 0;
+  margin-bottom: 1.25rem;
+}
+
+.invoice-heading > div:last-of-type {
+  min-width: 0;
+}
+
+.invoice-card {
+  min-width: 0;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.invoice-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 0;
+}
+
+.invoice-filters .invoice-filter {
+  display: grid;
+  align-content: start;
+  gap: .45rem;
+  min-width: 0;
+  padding: 0;
+}
+
+.invoice-filter label {
+  line-height: 1.35;
+}
+
+.invoice-filter select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+}
+
+.empty-state {
+  min-height: 12rem;
+  align-content: center;
+}
+
+.table-wrap {
+  min-width: 0;
+}
+
+.row-actions {
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 10rem;
+}
+
+@media (max-width: 900px) {
+  .invoice-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .invoice-heading {
+    align-items: center;
+  }
+
+  .refresh-button {
+    margin-left: auto;
+  }
+
+  .invoice-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .invoice-filters .invoice-filter {
+    display: grid;
+  }
+
+  .invoice-card {
+    padding: .9rem;
+  }
+}

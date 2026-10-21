@@ -24,11 +24,11 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: #eeedfe;
+  background: #e7f3fa;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #534ab7;
+  color: #096893;
   font-size: 18px;
   flex-shrink: 0;
 }
@@ -47,7 +47,7 @@
 }
 
 .pl-add-btn {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+  background: linear-gradient(135deg, #075985, #1179b5) !important;
   border-color: transparent !important;
   border-radius: 10px !important;
   font-size: 0.875rem !important;
@@ -73,7 +73,7 @@
     font-size: 0.875rem !important;
 
     &:focus {
-      border-color: #6366f1 !important;
+      border-color: #0d78ad !important;
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
     }
   }
@@ -131,8 +131,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #eeedfe;
-  color: #534ab7;
+  background: #e7f3fa;
+  color: #096893;
   font-size: 0.75rem;
   font-weight: 600;
   display: flex;
@@ -212,9 +212,9 @@
 }
 
 .action-edit {
-  background: #eeedfe !important;
-  color: #534ab7 !important;
-  &:hover { background: #cecbf6 !important; }
+  background: #e7f3fa !important;
+  color: #096893 !important;
+  &:hover { background: #b8e0f1 !important; }
 }
 
 .action-delete {

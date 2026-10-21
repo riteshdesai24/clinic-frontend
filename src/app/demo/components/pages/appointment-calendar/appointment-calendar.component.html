@@ -1,38 +1,54 @@
 <div class="calendar-page">
-    <div class="calendar-card">
-        <div class="calendar-header">
-            <div class="calendar-heading">
-                <div class="calendar-icon">
-                    <i class="pi pi-calendar"></i>
-                </div>
-                <div>
-                    <h5 class="calendar-title">Appointment Calendar</h5>
-                    <p class="calendar-subtitle">
-                        View all booked appointments for the month and click a
-                        day to add one.
-                    </p>
-                </div>
+    <section class="calendar-shell">
+        <aside class="calendar-sidebar">
+            <div class="calendar-brand">
+                <span class="calendar-brand-icon"><i class="pi pi-calendar"></i></span>
+                <div><strong>Appointments</strong><small>Clinic schedule</small></div>
             </div>
 
-            <button
-                pButton
-                type="button"
-                icon="pi pi-plus"
-                label="Add Appointment"
-                class="calendar-add-btn"
-                (click)="openNewAppointment()"
-            ></button>
-        </div>
+            <button pButton type="button" icon="pi pi-plus" label="New appointment" class="calendar-add-btn" (click)="openNewAppointment()"></button>
 
-        <div class="calendar-legend">
-            <span><i class="legend-dot confirmed"></i>Confirmed</span>
-            <span><i class="legend-dot pending"></i>Pending</span>
-            <span><i class="legend-dot completed"></i>Completed</span>
-            <span><i class="legend-dot cancelled"></i>Cancelled</span>
-        </div>
+            <section class="sidebar-section" aria-label="Filter by appointment status">
+                <h2>Appointment status</h2>
+                <button type="button" class="status-filter" [class.active]="activeStatusFilter === 'ALL'" (click)="setStatusFilter('ALL')">
+                    <span class="status-filter-name"><i class="status-dot all"></i>All appointments</span><span>{{ getStatusCount('ALL') }}</span>
+                </button>
+                <button type="button" class="status-filter" [class.active]="activeStatusFilter === 'CONFIRMED'" (click)="setStatusFilter('CONFIRMED')">
+                    <span class="status-filter-name"><i class="status-dot confirmed"></i>Confirmed</span><span>{{ getStatusCount('CONFIRMED') }}</span>
+                </button>
+                <button type="button" class="status-filter" [class.active]="activeStatusFilter === 'PENDING'" (click)="setStatusFilter('PENDING')">
+                    <span class="status-filter-name"><i class="status-dot pending"></i>Pending</span><span>{{ getStatusCount('PENDING') }}</span>
+                </button>
+                <button type="button" class="status-filter" [class.active]="activeStatusFilter === 'COMPLETED'" (click)="setStatusFilter('COMPLETED')">
+                    <span class="status-filter-name"><i class="status-dot completed"></i>Completed</span><span>{{ getStatusCount('COMPLETED') }}</span>
+                </button>
+                <button type="button" class="status-filter" [class.active]="activeStatusFilter === 'CANCELLED'" (click)="setStatusFilter('CANCELLED')">
+                    <span class="status-filter-name"><i class="status-dot cancelled"></i>Cancelled</span><span>{{ getStatusCount('CANCELLED') }}</span>
+                </button>
+            </section>
 
-        <div class="calendar-wrapper">
-            <full-calendar [options]="calendarOptions"></full-calendar>
-        </div>
-    </div>
+            <section class="sidebar-section sidebar-upcoming" aria-label="Appointments in this calendar view">
+                <h2>In this view</h2>
+                <div class="sidebar-empty" *ngIf="todayAppointmentsLoading"><i class="pi pi-spin pi-spinner"></i> Loading today’s appointments…</div>
+                <div class="sidebar-empty" *ngIf="!todayAppointmentsLoading && !todayAppointments.length">No appointments scheduled for today.</div>
+                <a class="sidebar-appointment" *ngFor="let appointment of todayAppointments" [routerLink]="['/pages/appointment']" [queryParams]="{ id: appointment._id, view: true, returnUrl: '/pages/appointment-calendar' }">
+                    <span class="sidebar-appointment-date">{{ (appointment.date || appointment.appointmentDate) | date:'d' }}</span>
+                    <span class="sidebar-appointment-copy"><strong>{{ getPatientName(appointment) }}</strong><small>{{ appointment.time || appointment.appointmentTime || 'Time not set' }}</small></span>
+                </a>
+            </section>
+        </aside>
+
+        <main class="calendar-main">
+            <header class="calendar-main-heading">
+                <div><span class="calendar-eyebrow">Schedule</span><h1>Appointment calendar</h1><p>Browse appointments by month.</p></div>
+                <a class="calendar-list-link" routerLink="/pages/appointment-list"><i class="pi pi-list"></i> Appointment list</a>
+            </header>
+
+            <p *ngIf="calendarLoadError" class="calendar-error" role="alert">{{ calendarLoadError }}</p>
+
+            <div class="calendar-wrapper">
+                <full-calendar [options]="calendarOptions"></full-calendar>
+            </div>
+        </main>
+    </section>
 </div>

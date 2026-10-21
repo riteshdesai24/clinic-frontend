@@ -31,7 +31,13 @@
           </div>
         </div>
 
+        <div class="doctor-tabs" *ngIf="isUser === 'Doctor'" role="tablist" aria-label="Doctor form sections">
+          <button type="button" role="tab" [attr.aria-selected]="activeDoctorTab === 'details'" [class.active]="activeDoctorTab === 'details'" (click)="activeDoctorTab = 'details'"><i class="pi pi-user"></i> Doctor details</button>
+          <button type="button" role="tab" [attr.aria-selected]="activeDoctorTab === 'documents'" [class.active]="activeDoctorTab === 'documents'" (click)="activeDoctorTab = 'documents'"><i class="pi pi-file"></i> Documents</button>
+        </div>
+
         <!-- Info -->
+        <div *ngIf="isUser !== 'Doctor' || activeDoctorTab === 'details'">
         <p class="section-label">{{ isUser === 'Doctor' ? 'Doctor Info' : 'Staff Info' }}</p>
         <div class="field-grid g3 mb-section">
 
@@ -74,6 +80,14 @@
               <input pInputText formControlName="specialization" placeholder="Specialization" class="w-full" />
             </span>
             <small class="p-error" *ngIf="f['specialization'].touched && f['specialization'].errors?.['required']">Specialization is required.</small>
+          </div>
+
+          <div class="pf-field" *ngIf="isUser === 'Doctor'">
+            <label>Registration Number</label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-id-card"></i>
+              <input pInputText formControlName="registrationNumber" placeholder="Medical registration number" class="w-full" />
+            </span>
           </div>
 
           <!-- Role — only for Staff -->
@@ -120,6 +134,50 @@
           </div> -->
 
         </div>
+        </div>
+
+        <section class="doctor-documents" *ngIf="isUser === 'Doctor' && activeDoctorTab === 'documents'" aria-label="Doctor documents">
+          <div class="document-upload">
+            <header class="document-upload-heading"><div><h5>Upload Files</h5><p>Select qualifications, registration certificates, or other documents. They upload when you save the doctor record.</p></div></header>
+            <div class="document-upload-grid">
+              <div class="document-dropzone" *ngIf="!isview" [class.drag-over]="documentsDragOver"
+                (dragover)="$event.preventDefault(); documentsDragOver = true"
+                (dragleave)="documentsDragOver = false" (drop)="onDocumentsDropped($event)">
+                <i class="pi pi-cloud-upload" aria-hidden="true"></i><strong>Drag files to upload</strong><span>or select files from your device</span>
+                <label class="choose-file-button">Choose Files<input type="file" multiple accept=".jpg,.jpeg,.png,.pdf,.svg,.doc,.docx" (change)="onDocumentsSelected($event)" /></label>
+              </div>
+              <div class="document-queue">
+                <div class="document-queue-heading"><i [class]="documentsUploading ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"></i><strong>{{ documentsUploading ? 'Uploading…' : 'Files' }}</strong></div>
+                <div class="document-empty" *ngIf="!selectedDocuments.length">No files selected yet.</div>
+                <div class="document-file-row" *ngFor="let file of selectedDocuments; let i = index">
+                  <i class="document-file-icon" [ngClass]="documentIcon(file)" aria-hidden="true"></i>
+                  <div class="document-file-info"><div class="document-file-meta"><span [title]="file.name">{{ file.name }}</span><small>{{ formatFileSize(file.size) }}</small>
+                    <button type="button" aria-label="Remove file" (click)="removeSelectedDocument(i)" [disabled]="documentsUploading"><i class="pi pi-times"></i></button></div>
+                    <div class="document-progress"><span [class.complete]="!documentsUploading" [style.width.%]="documentsUploading ? documentUploadProgress : 0"></span></div>
+                    <small class="document-file-status">{{ documentsUploading ? documentUploadProgress + '%' : 'Ready to upload on save' }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <small class="document-upload-hint">Supported: JPG, PNG, PDF, SVG, DOC, DOCX · Maximum file size: 24 MB</small>
+            <small class="p-error document-upload-error" *ngIf="documentsError">{{ documentsError }}</small>
+          </div>
+          <section class="uploaded-documents" aria-label="Uploaded doctor documents">
+            <header><div><h5>Uploaded Documents</h5><p>Documents already saved to this doctor record.</p></div><span>{{ uploadedDocuments.length }}</span></header>
+            <div class="uploaded-documents-state" *ngIf="documentsLoading"><i class="pi pi-spin pi-spinner"></i> Loading documents…</div>
+            <div class="uploaded-documents-state error" *ngIf="!documentsLoading && documentsListError">{{ documentsListError }} <button type="button" (click)="loadDoctorDocuments()">Retry</button></div>
+            <div class="uploaded-documents-state" *ngIf="!documentsLoading && !documentsListError && !uploadedDocuments.length">No documents uploaded yet.</div>
+            <ul *ngIf="!documentsLoading && uploadedDocuments.length">
+              <li *ngFor="let file of uploadedDocuments">
+                <i class="document-file-icon" [ngClass]="documentIcon(file)" aria-hidden="true"></i>
+                <span class="uploaded-document-name">{{ documentName(file) }}</span>
+                <small>{{ formatFileSize(file.size || file.fileSize || 0) }}</small>
+                <small *ngIf="file.uploadedAt || file.createdAt">{{ (file.uploadedAt || file.createdAt) | date:'dd MMM yyyy' }}</small>
+                <button type="button" class="uploaded-document-download" aria-label="Download document" (click)="downloadDoctorDocument(file)"><i class="pi pi-download"></i></button>
+              </li>
+            </ul>
+          </section>
+        </section>
 
         <!-- Error -->
         <small class="p-error" *ngIf="error">{{ error }}</small>

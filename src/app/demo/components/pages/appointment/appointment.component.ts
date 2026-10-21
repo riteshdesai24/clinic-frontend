@@ -1,5 +1,12 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+    AbstractControl,
+    FormBuilder,
+    FormGroup,
+    ValidationErrors,
+    ValidatorFn,
+    Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AuthService } from 'src/app/demo/service/auth.service';
@@ -24,6 +31,19 @@ export class AppointmentComponent implements OnInit {
     isEdit = false;
     isView = false;
     isDoctor = false;
+    minAppointmentDate = this.todayAtMidnight();
+    private returnUrl = '/pages/appointment-list';
+
+    private readonly futureOrTodayValidator: ValidatorFn = (
+        control: AbstractControl,
+    ): ValidationErrors | null => {
+        const date = this.toCalendarDate(control.value);
+        if (!date) return null;
+        return this.dateAtMidnight(date).getTime() <
+            this.minAppointmentDate.getTime()
+            ? { pastDate: true }
+            : null;
+    };
 
     doctors: any[] = [];
     filteredDoctors: any[] = [];
@@ -62,6 +82,11 @@ export class AppointmentComponent implements OnInit {
 
         this.defaultDate =
             this.route.snapshot.queryParamMap.get('date') || this.defaultDate;
+        const requestedReturnUrl =
+            this.route.snapshot.queryParamMap.get('returnUrl');
+        if (requestedReturnUrl === '/' || requestedReturnUrl?.startsWith('/pages/')) {
+            this.returnUrl = requestedReturnUrl;
+        }
         this.appointmentId = this.route.snapshot.queryParamMap.get('id');
         this.isView =
             this.isDoctor ||
@@ -71,7 +96,12 @@ export class AppointmentComponent implements OnInit {
             return;
         }
 
-        const initialDate = this.defaultDate ? new Date(this.defaultDate) : '';
+        const initialDate = this.defaultDate
+            ? this.toCalendarDate(this.defaultDate) || ''
+            : '';
+
+        const dateValidators = [Validators.required];
+        if (!this.appointmentId) dateValidators.push(this.futureOrTodayValidator);
 
         this.appointmentForm = this.fb.group({
             patientName: [
@@ -82,7 +112,7 @@ export class AppointmentComponent implements OnInit {
             doctorId: [null, Validators.required],
             date: [
                 initialDate && !isNaN(initialDate.getTime()) ? initialDate : '',
-                Validators.required,
+                dateValidators,
             ],
             time: [this.currentTime(), Validators.required],
             notes: [''],
@@ -143,6 +173,40 @@ export class AppointmentComponent implements OnInit {
         return now;
     }
 
+    private todayAtMidnight(): Date {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return today;
+    }
+
+    private dateAtMidnight(date: Date): Date {
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
+    private toCalendarDate(value: any): Date | null {
+        if (!value) return null;
+        if (value instanceof Date) {
+            return Number.isNaN(value.getTime()) ? null : value;
+        }
+        if (typeof value === 'string') {
+            const dateOnly = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (dateOnly) {
+                return new Date(
+                    Number(dateOnly[1]),
+                    Number(dateOnly[2]) - 1,
+                    Number(dateOnly[3]),
+                );
+            }
+        }
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    private isBeforeToday(value: any): boolean {
+        const date = this.toCalendarDate(value);
+        return !!date && this.dateAtMidnight(date).getTime() < this.todayAtMidnight().getTime();
+    }
+
     private parseTime(t: string): Date | null {
         if (!t) return null;
         const [hh, mm] = t.split(':').map(Number);
@@ -154,6 +218,10 @@ export class AppointmentComponent implements OnInit {
 
     onSubmit(): void {
         if (this.isDoctor) return;
+        this.minAppointmentDate = this.todayAtMidnight();
+        this.appointmentForm
+            .get('date')
+            ?.updateValueAndValidity({ emitEvent: false });
         if (this.appointmentForm.invalid) {
             this.appointmentForm.markAllAsTouched();
             return;
@@ -163,6 +231,12 @@ export class AppointmentComponent implements OnInit {
 
     createAppointment(): void {
         if (this.isDoctor) return;
+        const dateControl = this.appointmentForm.get('date');
+        if (this.isBeforeToday(dateControl?.value)) {
+            dateControl?.setErrors({ ...dateControl.errors, pastDate: true });
+            dateControl?.markAsTouched();
+            return;
+        }
         this.loading = true;
 
         const raw = this.appointmentForm.getRawValue();
@@ -293,7 +367,7 @@ export class AppointmentComponent implements OnInit {
             this.close.emit();
             return;
         }
-        this.router.navigate(['/pages/appointment-list']);
+        this.returnToSource();
     }
 
     loadDoctors(onLoaded?: () => void): void {
@@ -355,6 +429,10 @@ export class AppointmentComponent implements OnInit {
             this.close.emit();
             return;
         }
-        this.router.navigate(['/pages/appointment-list']);
+        this.returnToSource();
+    }
+
+    private returnToSource(): void {
+        this.router.navigateByUrl(this.returnUrl);
     }
 }
