@@ -20,7 +20,6 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
   invoicePage = 1;
   readonly invoicePageSize = 10;
   selectedStatus = 'ALL';
-  selectedPeriod: 'week' | 'month' = 'week';
   readonly invoiceStatuses = ['ISSUED', 'PARTIALLY_PAID', 'PAID', 'VOID'];
   loading = false;
   savingPayment = false;
@@ -33,6 +32,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
   pdfUrl = '';
   safePdfUrl: SafeResourceUrl | null = null;
   pdfInvoiceNumber = '';
+  previewInvoice: any = null;
   isAdmin = false;
   isDoctor = false;
   doctorOptions: { label: string; value: string }[] = [];
@@ -108,11 +108,6 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
     this.applyDoctorFilter();
   }
 
-  onPeriodFilterChange(event: Event): void {
-    this.selectedPeriod = (event.target as HTMLSelectElement).value === 'month' ? 'month' : 'week';
-    this.loadInvoices();
-  }
-
   onInvoicePageChange(page: number): void {
     this.invoicePage = page;
   }
@@ -122,27 +117,46 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
   }
 
   viewPdf(invoice: any): void {
-    if (!invoice?._id) return;
-    this.pdfLoadingId = invoice._id;
-    this.pdfError = '';
-    this.api.getInvoicePdf(invoice._id).subscribe({
-      next: (blob: Blob) => {
-        this.releasePdfUrl();
-        if (!blob.size || (blob.type && blob.type !== 'application/pdf' && blob.type !== 'application/octet-stream')) {
-          this.pdfError = 'The server did not return a valid PDF.';
-          this.pdfLoadingId = '';
-          return;
-        }
-        this.pdfUrl = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
-        this.safePdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.pdfUrl);
-        this.pdfInvoiceNumber = invoice.invoiceNumber || 'Invoice';
-        this.pdfLoadingId = '';
-      },
-      error: (error: any) => {
-        this.pdfError = error?.error?.message || 'Could not load this invoice PDF.';
-        this.pdfLoadingId = '';
-      }
-    });
+    if (!invoice) return;
+    this.previewInvoice = invoice;
+  }
+
+  closeInvoicePreview(): void { this.previewInvoice = null; }
+
+  printInvoice(): void { window.print(); }
+
+  invoiceLineItems(invoice: any): any[] {
+    const items = invoice?.items || invoice?.lineItems || invoice?.services || invoice?.treatments;
+    if (Array.isArray(items) && items.length) return items;
+    return [{ description: invoice?.treatmentName || invoice?.description || 'Clinic services', quantity: 1, unitPrice: Number(invoice?.subtotal ?? invoice?.subTotal ?? invoice?.totalAmount ?? 0), total: Number(invoice?.subtotal ?? invoice?.subTotal ?? invoice?.totalAmount ?? 0) }];
+  }
+
+  invoiceSubtotal(invoice: any): number {
+    return Number(invoice?.subtotal ?? invoice?.subTotal ?? invoice?.taxableAmount ?? invoice?.totalAmount ?? 0);
+  }
+
+  invoiceDiscount(invoice: any): number { return Number(invoice?.discountAmount ?? invoice?.discount ?? 0); }
+
+  clinicName(): string {
+    try {
+      const clinic = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
+      return clinic.clinicName || clinic.name || 'Clinic';
+    } catch { return 'Clinic'; }
+  }
+
+  clinicLogo(): string {
+    try {
+      const clinic = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
+      const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
+      return clinic.clinicLogo || clinic.logoUrl || clinic.logo || user.clinicLogo || user.logoUrl || '';
+    } catch { return ''; }
+  }
+
+  clinicAddress(): string {
+    try {
+      const clinic = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
+      return [clinic.address, clinic.city, clinic.state, clinic.pincode].filter(Boolean).join(', ');
+    } catch { return ''; }
   }
 
   closePdf(): void {
@@ -159,7 +173,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
   loadInvoices(): void {
     this.loading = true;
     this.error = '';
-    const params: Record<string, string | number> = { page: 1, limit: 100, period: this.selectedPeriod };
+    const params: Record<string, string | number> = { page: 1, limit: 100 };
     if (this.isAdmin && this.selectedDoctorId) params['doctorId'] = this.selectedDoctorId;
     this.api.getInvoices(params).subscribe({
       next: (response: any) => {

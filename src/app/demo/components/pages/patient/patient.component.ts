@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuItem, MessageService } from 'primeng/api';
@@ -10,7 +11,7 @@ import { AuthService } from 'src/app/demo/service/auth.service';
   templateUrl: './patient.component.html',
   styleUrls: ['./patient.component.scss']
 })
-export class PatientComponent implements OnInit {
+export class PatientComponent implements OnInit, OnDestroy {
 
   patientForm!: FormGroup;
 
@@ -26,10 +27,7 @@ export class PatientComponent implements OnInit {
   patientId: string | null = null;
   appointmentDialogVisible = false;
   appointmentPatientName = '';
-  patientAppointments: any[] = [];
-  appointmentsLoading = false;
-  appointmentsError = '';
-  selectedDocuments: File[] = [];
+  selectedDocuments: { file: File; fileName: string }[] = [];
   documentsUploading = false;
   documentUploadProgress = 0;
   documentsDragOver = false;
@@ -37,6 +35,15 @@ export class PatientComponent implements OnInit {
   uploadedDocuments: any[] = [];
   documentsLoading = false;
   documentsListError = '';
+  previewVisible = false;
+  previewLoading = false;
+  previewError = '';
+  previewUrl: SafeResourceUrl | null = null;
+  previewImageUrl: string | null = null;
+  previewKind: 'image' | 'pdf' | 'other' = 'other';
+  previewingDocument: any = null;
+  previewBlob: Blob | null = null;
+  private previewObjectUrl: string | null = null;
 
   // ---------- Personal Info ----------
   titles = [
@@ -138,8 +145,11 @@ export class PatientComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private api: AuthService,
-    private msg: MessageService
+    private msg: MessageService,
+    private sanitizer: DomSanitizer
   ) {}
+
+  ngOnDestroy(): void { this.revokePreviewUrl(); }
 
   // ======================
   // INIT
@@ -224,7 +234,6 @@ export class PatientComponent implements OnInit {
 
     if (this.isEdit) {
       this.loadPatient();
-      this.loadPatientAppointments();
       this.loadPatientDocuments();
     }
 
@@ -426,35 +435,6 @@ export class PatientComponent implements OnInit {
 
   hideAppointmentDialog(): void {
     this.appointmentDialogVisible = false;
-    if (this.patientId) this.loadPatientAppointments();
-  }
-
-  loadPatientAppointments(): void {
-    if (!this.patientId) return;
-    this.appointmentsLoading = true;
-    this.appointmentsError = '';
-
-    this.api.getAppointmentList().subscribe({
-      next: (response: any) => {
-        const records = Array.isArray(response?.data)
-          ? response.data
-          : response?.data?.appointments || response?.appointments || [];
-        this.patientAppointments = records
-          .filter((appointment: any) =>
-            this.recordId(appointment.patientId || appointment.patient) === this.patientId,
-          )
-          .map((appointment: any) => this.toPatientAppointmentRow(appointment))
-          .sort((left: any, right: any) =>
-            new Date(right.date || 0).getTime() - new Date(left.date || 0).getTime(),
-          );
-        this.appointmentsLoading = false;
-      },
-      error: () => {
-        this.patientAppointments = [];
-        this.appointmentsLoading = false;
-        this.appointmentsError = 'Could not load this patient’s appointments.';
-      },
-    });
   }
 
   onDocumentsSelected(event: Event): void {
@@ -476,7 +456,14 @@ export class PatientComponent implements OnInit {
     this.documentsError = rejected.length
       ? 'Use JPG, PNG, PDF, SVG, DOC or DOCX files up to 24 MB.'
       : '';
-    this.selectedDocuments = [...this.selectedDocuments, ...files.filter(file => allowed.test(file.name) && file.size <= maxBytes)];
+    this.selectedDocuments = [...this.selectedDocuments, ...files
+      .filter(file => allowed.test(file.name) && file.size <= maxBytes)
+      .map(file => ({ file, fileName: file.name }))];
+  }
+
+  updateDocumentFileName(index: number, fileName: string): void {
+    const document = this.selectedDocuments[index];
+    if (document) document.fileName = fileName;
   }
 
   removeSelectedDocument(index: number): void {
@@ -539,6 +526,42 @@ export class PatientComponent implements OnInit {
     });
   }
 
+  previewPatientDocument(file: any): void {
+    const id = file?._id || file?.id || file?.attachmentId;
+    if (!this.patientId || !id) return;
+    this.previewingDocument = file; this.previewVisible = true; this.previewLoading = true; this.previewError = '';
+    this.api.downloadPatientAttachment(this.patientId, id).subscribe({
+      next: blob => {
+        this.previewBlob = blob; this.previewKind = this.documentPreviewKind(file, blob.type); this.revokePreviewUrl();
+        this.previewObjectUrl = URL.createObjectURL(blob); this.previewImageUrl = this.previewObjectUrl;
+        this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.previewObjectUrl); this.previewLoading = false;
+      },
+      error: () => { this.previewLoading = false; this.previewError = 'Could not open this document. Try downloading it instead.'; }
+    });
+  }
+
+  closeDocumentPreview(): void {
+    this.previewVisible = false; this.previewingDocument = null; this.previewBlob = null;
+    this.previewUrl = null; this.previewImageUrl = null; this.previewError = ''; this.revokePreviewUrl();
+  }
+
+  downloadPreviewDocument(): void {
+    if (this.previewBlob && this.previewingDocument) this.saveDownloadedDocument(this.previewBlob, this.documentName(this.previewingDocument));
+  }
+
+  documentPreviewKind(file: any, mimeType = ''): 'image' | 'pdf' | 'other' {
+    const mime = String(file?.mimeType || file?.mimetype || mimeType).toLowerCase();
+    const name = this.documentName(file).toLowerCase();
+    if (mime.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/.test(name)) return 'image';
+    if (mime === 'application/pdf' || name.endsWith('.pdf')) return 'pdf';
+    return 'other';
+  }
+
+  private revokePreviewUrl(): void {
+    if (this.previewObjectUrl) URL.revokeObjectURL(this.previewObjectUrl);
+    this.previewObjectUrl = null;
+  }
+
   documentName(document: any): string {
     return document?.originalName || document?.originalname || document?.originalFilename ||
       document?.fileName || document?.filename || document?.name || 'Document';
@@ -560,42 +583,6 @@ export class PatientComponent implements OnInit {
 
   formatFileSize(bytes: number): string {
     return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
-
-  private toPatientAppointmentRow(appointment: any): any {
-    const patient = this.asRecord(appointment.patientId) || this.asRecord(appointment.patient) || {};
-    const doctor = this.asRecord(appointment.doctorId) || this.asRecord(appointment.doctor) || {};
-    const treatmentValue = appointment.treatmentRecord?.treatmentMasterId ||
-      appointment.treatmentMasterId || appointment.treatmentId || appointment.treatment;
-    const treatment = this.asRecord(treatmentValue) || {};
-
-    return {
-      ...appointment,
-      patientName: patient.name || patient.patientName ||
-        [patient.firstName, patient.middleName, patient.lastName].filter(Boolean).join(' ') ||
-        appointment.patientName || '',
-      doctorName: doctor.staffname || doctor.name ||
-        [doctor.firstName, doctor.lastName].filter(Boolean).join(' ') ||
-        appointment.doctorName || appointment.doctor || '—',
-      date: appointment.date || appointment.appointmentDate,
-      time: appointment.time || appointment.appointmentTime || '—',
-      treatmentName: treatment.name || treatment.treatmentName ||
-        appointment.treatmentName || appointment.treatmentType || appointment.procedureName ||
-        appointment.treatmentRecord?.treatmentName || '—',
-      status: appointment.status || '—',
-      reason: appointment.reason || appointment.purpose || '—',
-      notes: appointment.notes || '—',
-    };
-  }
-
-  private recordId(value: any): string {
-    if (!value) return '';
-    if (typeof value === 'string') return value;
-    return String(value._id || value.id || value.patientId || '');
-  }
-
-  private asRecord(value: any): any {
-    return value && typeof value === 'object' ? value : null;
   }
 
   // ======================

@@ -10,9 +10,6 @@ import { AuthService } from 'src/app/demo/service/auth.service';
 export class PatientProfileComponent implements OnChanges, OnDestroy {
   @Input() patient: Record<string, any> = {};
   @Input() patientId: string | null = null;
-  @Input() appointments: any[] = [];
-  @Input() appointmentsLoading = false;
-  @Input() appointmentsError = '';
   @Input() recordLoading = false;
 
   uploadedDocuments: any[] = [];

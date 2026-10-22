@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { LayoutService } from "./service/app.layout.service";
 import { Router } from '@angular/router';
@@ -16,12 +16,20 @@ import { Router } from '@angular/router';
             padding: 0 !important;
             margin: 0 !important;
         }
+        :host ::ng-deep .layout-topbar-logo img.clinic-nav-logo {
+            display: block;
+            width: auto;
+            max-width: 160px;
+            height: 2.5rem;
+            object-fit: contain;
+        }
     `]
 })
 export class AppTopBarComponent implements OnInit {
 
     items!: MenuItem[];
     clinicName: string = '';
+    clinicLogo = '';
     menuItems: MenuItem[] = [];
     userData: any = {};
     clinicData: any = {};
@@ -37,13 +45,7 @@ export class AppTopBarComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.userData = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
-        this.clinicData = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
-        if (this.userData.role != 'ADMIN') {
-            this.clinicName = this.clinicData.clinicName || 'My Clinic';
-        } else {
-            this.clinicName = this.userData.clinicName || 'My Clinic';
-        }
+        this.loadClinicBranding();
         this.menuItems = [
             {
                 label: 'Profile', icon: 'pi pi-fw pi-user', command: () => this.router.navigate(['/pages/profile'])
@@ -55,6 +57,15 @@ export class AppTopBarComponent implements OnInit {
                 label: 'LogOut', icon: 'pi pi-fw pi-home', command: () => this.logout()
             },
         ];
+    }
+
+    @HostListener('window:clinic-profile-updated')
+    loadClinicBranding() {
+        this.userData = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
+        this.clinicData = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
+        this.clinicName = this.clinicData.clinicName || this.userData.clinicName || 'My Clinic';
+        this.clinicLogo = this.clinicData.clinicLogo || this.clinicData.logoUrl || this.clinicData.logo
+            || this.userData.clinicLogo || this.userData.logoUrl || this.userData.logo || '';
     }
 
     logout() {

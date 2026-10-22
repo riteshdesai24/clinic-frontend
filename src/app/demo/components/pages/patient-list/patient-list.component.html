@@ -82,6 +82,7 @@
             </td>
             <td>
               <div class="action-row">
+                <app-patient-visit-history [patientId]="p._id" [patientName]="(p.firstName || '') + ' ' + (p.lastName || '')" buttonClass="action-btn" [compact]="true"></app-patient-visit-history>
                 <button
                   pButton
                   icon="pi pi-eye"

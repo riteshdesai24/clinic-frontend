@@ -71,23 +71,8 @@
       </section>
 
       <section class="profile-card appointments-card" id="appointments">
-        <header class="section-card-heading"><div><span>Care history</span><h2>Appointments</h2></div><span class="appointment-count">{{ appointments.length }}</span></header>
-        <div class="profile-state" *ngIf="appointmentsLoading"><i class="pi pi-spin pi-spinner"></i> Loading appointments…</div>
-        <div class="profile-state error" *ngIf="!appointmentsLoading && appointmentsError">{{ appointmentsError }}</div>
-        <div class="profile-state" *ngIf="!appointmentsLoading && !appointmentsError && !appointments.length">No appointments recorded for this patient.</div>
-        <div class="profile-appointments-table-wrap" *ngIf="!appointmentsLoading && !appointmentsError && appointments.length">
-          <table>
-            <thead><tr><th>Date</th><th>Time</th><th>Doctor</th><th>Treatment</th><th>Status</th><th>Reason and notes</th></tr></thead>
-            <tbody><tr *ngFor="let appointment of appointments">
-              <td>{{ appointment.date ? (appointment.date | date:'dd MMM yyyy') : '—' }}</td>
-              <td>{{ display(appointment.time) }}</td>
-              <td>{{ display(appointment.doctorName) }}</td>
-              <td>{{ display(appointment.treatmentName) }}</td>
-              <td><span class="appointment-status">{{ display(appointment.status) }}</span></td>
-              <td>{{ appointment.reason || appointment.notes || '—' }}</td>
-            </tr></tbody>
-          </table>
-        </div>
+        <header class="section-card-heading"><div><span>Care history</span><h2>Appointments and treatments</h2></div></header>
+        <app-patient-visit-history [patientId]="patientId" [patientName]="fullName"></app-patient-visit-history>
       </section>
 
       <section class="profile-card insurance-card" id="insurance">

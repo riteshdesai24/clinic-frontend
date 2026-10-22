@@ -17,6 +17,8 @@ export class ProfileComponent implements OnInit {
   loading = true;
   saving = false;
   savingPassword = false;
+  clinicLogo = '';
+  logoError = '';
 
   private readonly editableFields: Record<string, string[]> = {
     ADMIN: ['clinicName', 'phone', 'email'],
@@ -46,6 +48,7 @@ export class ProfileComponent implements OnInit {
     this.api.getCurrentProfile().subscribe({
       next: (response: any) => {
         this.profile = response?.data || {};
+        this.clinicLogo = this.profile.clinicLogo || this.profile.logoUrl || this.profile.logo || this.readClinicLogo();
         this.fields = this.editableFields[this.profile.role] || [];
         const controls: Record<string, any> = {};
         this.fields.forEach(field => {
@@ -71,9 +74,10 @@ export class ProfileComponent implements OnInit {
       return;
     }
     this.saving = true;
-    this.api.updateCurrentProfile(this.profileForm.getRawValue()).subscribe({
+    const changes = { ...this.profileForm.getRawValue(), clinicLogo: this.clinicLogo };
+    this.api.updateCurrentProfile(changes).subscribe({
       next: (response: any) => {
-        this.profile = response?.data || { ...this.profile, ...this.profileForm.getRawValue() };
+        this.profile = { ...this.profile, ...changes, ...(response?.data || {}) };
         this.persistProfile();
         this.saving = false;
         this.msg.add({ severity: 'success', summary: 'Saved', detail: 'Your profile has been updated.' });
@@ -83,6 +87,45 @@ export class ProfileComponent implements OnInit {
         this.msg.add({ severity: 'error', summary: 'Could not save', detail: error?.error?.message || 'Unable to update your profile.' });
       }
     });
+  }
+
+  onClinicLogoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    this.logoError = '';
+    if (!file) return;
+    if (!/^image\/(png|jpeg|gif|webp|svg\+xml)$/.test(file.type) || file.size > 10 * 1024 * 1024) {
+      this.logoError = 'Choose an SVG, PNG, JPEG, GIF, or WebP image under 10 MB.';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const scale = Math.min(1, 600 / image.width, 300 / image.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext('2d');
+        if (!context) { this.logoError = 'Could not prepare this image. Please try another file.'; return; }
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        this.clinicLogo = canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.86);
+      };
+      image.onerror = () => { this.logoError = 'Could not read this image. Please try another file.'; };
+      image.src = String(reader.result || '');
+    };
+    reader.onerror = () => { this.logoError = 'Could not read this image. Please try another file.'; };
+    reader.readAsDataURL(file);
+  }
+
+  removeClinicLogo(): void { this.clinicLogo = ''; this.logoError = ''; }
+
+  private readClinicLogo(): string {
+    try {
+      const clinic = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
+      return clinic.clinicLogo || clinic.logoUrl || clinic.logo || '';
+    } catch { return ''; }
   }
 
   cancel(): void {
@@ -122,11 +165,14 @@ export class ProfileComponent implements OnInit {
     try {
       const user = JSON.parse(storage.getItem('user') || '{}');
       storage.setItem('user', JSON.stringify({ ...user, ...this.profile }));
-      if (this.profile.role === 'ADMIN') {
-        const clinicStorage = localStorage.getItem('clinic') ? localStorage : sessionStorage;
-        const clinic = JSON.parse(clinicStorage.getItem('clinic') || '{}');
-        clinicStorage.setItem('clinic', JSON.stringify({ ...clinic, clinicName: this.profile.clinicName }));
-      }
+      const clinicStorage = localStorage.getItem('clinic') ? localStorage : sessionStorage;
+      const clinic = JSON.parse(clinicStorage.getItem('clinic') || '{}');
+      clinicStorage.setItem('clinic', JSON.stringify({
+        ...clinic,
+        ...(this.profile.role === 'ADMIN' ? { clinicName: this.profile.clinicName } : {}),
+        clinicLogo: this.clinicLogo
+      }));
+      window.dispatchEvent(new Event('clinic-profile-updated'));
     } catch {
       // The server profile remains authoritative if old browser storage is malformed.
     }

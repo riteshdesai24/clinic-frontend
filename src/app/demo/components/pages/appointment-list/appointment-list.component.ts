@@ -32,7 +32,6 @@ export class AppointmentListComponent implements OnInit {
   cancelling = false;
   showInvoiceDialog = false;
   issuingInvoice = false;
-  readonly invoiceGstRate = 18;
   invoiceDiscountAmount = 0;
   appointmentToInvoice: any = null;
 
@@ -251,7 +250,7 @@ export class AppointmentListComponent implements OnInit {
   confirmIssueInvoice(): void {
     if (!this.appointmentToInvoice || this.issuingInvoice || !Number.isFinite(Number(this.invoiceDiscountAmount)) || Number(this.invoiceDiscountAmount) < 0) return;
     this.issuingInvoice = true;
-    this.api.createInvoice({ appointmentId: this.appointmentToInvoice._id, gstRate: this.invoiceGstRate, discountAmount: Number(this.invoiceDiscountAmount) }).subscribe({
+    this.api.createInvoice({ appointmentId: this.appointmentToInvoice._id, gstRate: 0, discountAmount: Number(this.invoiceDiscountAmount) }).subscribe({
       next: (response: any) => {
         this.issuingInvoice = false;
         this.showInvoiceDialog = false;

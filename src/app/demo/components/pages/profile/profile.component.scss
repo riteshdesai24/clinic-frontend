@@ -1,14 +1,22 @@
-.profile-card { background: var(--surface-card); border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px #0000000d; }
+.profile-card { background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px; padding: clamp(1.25rem, 3vw, 2.5rem); box-shadow: 0 2px 12px #0000000d; }
 .profile-heading { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
 .profile-heading h2 { margin: 0 0 .35rem; }
 .profile-heading p { margin: 0; color: var(--text-color-secondary); }
 .profile-icon { width: 3rem; height: 3rem; display: grid; place-items: center; border-radius: 50%; background: var(--primary-100); color: var(--primary-700); font-size: 1.25rem; }
 .profile-meta { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0 0 1.5rem; color: var(--text-color-secondary); }
 .profile-meta i { margin-right: .35rem; }
-.field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.25rem; }
+.field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem 2rem; margin-top: 2rem; }
 .field { display: flex; flex-direction: column; gap: .5rem; }
 .field input { width: 100%; }
 .profile-actions { display: flex; justify-content: flex-end; gap: .75rem; margin-top: 2rem; }
-.password-section { border-top: 1px solid var(--surface-border); margin-top: 2rem; padding-top: 1.5rem; }
-.password-section h3 { margin-top: 0; }
+.clinic-logo-section { display: flex; align-items: center; gap: 1.25rem; padding: 1.35rem 0 .5rem; }
+.clinic-logo-preview { display: grid; width: 6.2rem; height: 6.2rem; flex: none; place-items: center; overflow: hidden; border: 1px solid var(--surface-border); border-radius: 50%; color: var(--text-color-secondary); background: var(--surface-ground); font-size: 2rem; }
+.clinic-logo-preview img { width: 100%; height: 100%; object-fit: contain; }
+.clinic-logo-controls { display: grid; justify-items: start; gap: .55rem; }.clinic-logo-controls > strong { color: var(--text-color); font-size: 1.05rem; }.clinic-logo-controls > small { color: var(--text-color-secondary); }.clinic-logo-buttons { display: flex; align-items: center; gap: .65rem; }
+.logo-upload-button { position: relative; display: inline-flex; align-items: center; gap: .5rem; min-height: 2.5rem; padding: .6rem .95rem; overflow: hidden; border-radius: 7px; color: white; background: #7654db; cursor: pointer; font-size: .86rem; font-weight: 600; }
+.logo-upload-button:hover { background: #6743ce; }.logo-upload-button input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.password-section { border-top: 1px solid var(--surface-border); margin-top: 2.25rem; padding-top: 1.75rem; }
+.password-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.2rem; }.password-heading h3 { margin: 0 0 .25rem; font-size: 1.2rem; }.password-heading p { margin: 0; color: var(--text-color-secondary); }
+.password-section .field-grid { margin-top: 0; }
 .profile-spinner { display: block; margin: 2rem auto; }
+@media (max-width: 700px) { .field-grid { grid-template-columns: 1fr; gap: 1rem; }.clinic-logo-section { align-items: flex-start; }.clinic-logo-preview { width: 5rem; height: 5rem; }.profile-actions { flex-wrap: wrap; } }

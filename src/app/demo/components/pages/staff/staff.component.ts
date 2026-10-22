@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
@@ -11,7 +12,7 @@ import { AuthService } from 'src/app/demo/service/auth.service';
   templateUrl: './staff.component.html',
   styleUrls: ['./staff.component.scss']
 })
-export class StaffComponent implements OnInit {
+export class StaffComponent implements OnInit, OnDestroy {
 
   staffForm!: FormGroup;
 
@@ -31,12 +32,21 @@ export class StaffComponent implements OnInit {
   isview = false;
 
   userId: string | null = null;
-  selectedDocuments: File[] = [];
+  selectedDocuments: { file: File; fileName: string }[] = [];
   documentsUploading = false;
   documentUploadProgress = 0;
   documentsDragOver = false;
   documentsError = '';
   uploadedDocuments: any[] = [];
+  previewVisible = false;
+  previewLoading = false;
+  previewError = '';
+  previewUrl: SafeResourceUrl | null = null;
+  previewImageUrl: string | null = null;
+  previewKind: 'image' | 'pdf' | 'other' = 'other';
+  previewingDocument: any = null;
+  previewBlob: Blob | null = null;
+  private previewObjectUrl: string | null = null;
   documentsLoading = false;
   documentsListError = '';
   activeDoctorTab: 'details' | 'documents' = 'details';
@@ -48,8 +58,11 @@ export class StaffComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private sanitizer: DomSanitizer
   ) {}
+
+  ngOnDestroy(): void { this.revokePreviewUrl(); }
 
   ngOnInit(): void {
     this.userId = this.route.snapshot.queryParamMap.get('id');
@@ -281,7 +294,14 @@ export class StaffComponent implements OnInit {
     const maxBytes = 24 * 1024 * 1024;
     const rejected = files.filter(file => !allowed.test(file.name) || file.size > maxBytes);
     this.documentsError = rejected.length ? 'Use JPG, PNG, PDF, SVG, DOC or DOCX files up to 24 MB.' : '';
-    this.selectedDocuments = [...this.selectedDocuments, ...files.filter(file => allowed.test(file.name) && file.size <= maxBytes)];
+    this.selectedDocuments = [...this.selectedDocuments, ...files
+      .filter(file => allowed.test(file.name) && file.size <= maxBytes)
+      .map(file => ({ file, fileName: file.name }))];
+  }
+
+  updateDocumentFileName(index: number, fileName: string): void {
+    const document = this.selectedDocuments[index];
+    if (document) document.fileName = fileName;
   }
 
   removeSelectedDocument(index: number): void {
@@ -336,6 +356,42 @@ export class StaffComponent implements OnInit {
       next: blob => this.saveDownloadedDocument(blob, this.documentName(file)),
       error: () => this.documentsListError = 'Could not download this document.'
     });
+  }
+
+  previewDoctorDocument(file: any): void {
+    const id = file?._id || file?.id || file?.attachmentId;
+    if (!this.userId || !id) return;
+    this.previewingDocument = file; this.previewVisible = true; this.previewLoading = true; this.previewError = '';
+    this.authService.downloadDoctorAttachment(this.userId, id).subscribe({
+      next: blob => {
+        this.previewBlob = blob; this.previewKind = this.documentPreviewKind(file, blob.type); this.revokePreviewUrl();
+        this.previewObjectUrl = URL.createObjectURL(blob); this.previewImageUrl = this.previewObjectUrl;
+        this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.previewObjectUrl); this.previewLoading = false;
+      },
+      error: () => { this.previewLoading = false; this.previewError = 'Could not open this document. Try downloading it instead.'; }
+    });
+  }
+
+  closeDocumentPreview(): void {
+    this.previewVisible = false; this.previewingDocument = null; this.previewBlob = null;
+    this.previewUrl = null; this.previewImageUrl = null; this.previewError = ''; this.revokePreviewUrl();
+  }
+
+  downloadPreviewDocument(): void {
+    if (this.previewBlob && this.previewingDocument) this.saveDownloadedDocument(this.previewBlob, this.documentName(this.previewingDocument));
+  }
+
+  documentPreviewKind(file: any, mimeType = ''): 'image' | 'pdf' | 'other' {
+    const mime = String(file?.mimeType || file?.mimetype || mimeType).toLowerCase();
+    const name = this.documentName(file).toLowerCase();
+    if (mime.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/.test(name)) return 'image';
+    if (mime === 'application/pdf' || name.endsWith('.pdf')) return 'pdf';
+    return 'other';
+  }
+
+  private revokePreviewUrl(): void {
+    if (this.previewObjectUrl) URL.revokeObjectURL(this.previewObjectUrl);
+    this.previewObjectUrl = null;
   }
 
   documentName(file: any): string {
