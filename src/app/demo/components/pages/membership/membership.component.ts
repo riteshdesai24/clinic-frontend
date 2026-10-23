@@ -70,9 +70,9 @@ export class MembershipComponent {
       await this.loadRazorpay();
       this.auth.createPaymentOrder(plan.amount * 100, plan.clinicPlan).subscribe({
         next: (response) => this.openCheckout(response, plan),
-        error: () => {
+        error: (error) => {
           this.busyPlan = '';
-          this.showMessage('Could not start checkout. Please try again.', 'error');
+          this.showMessage(error?.error?.message || 'Could not start checkout. Please try again.', 'error');
         }
       });
     } catch {
@@ -82,13 +82,30 @@ export class MembershipComponent {
   }
 
   private openCheckout(response: any, plan: MembershipPlan): void {
-    const order = response?.order || response?.data?.order || response?.data || response;
-    const key = response?.keyId || response?.key || response?.data?.keyId || order?.key_id;
-    const orderId = order?.id || order?.orderId;
+    const payload = response?.data?.data || response?.data || response;
+    const order = payload?.order || response?.order || payload;
+    const key = response?.keyId || response?.key_id || response?.razorpay_key_id || response?.key || response?.razorpayKeyId
+      || response?.data?.keyId || response?.data?.key_id || response?.data?.razorpay_key_id || response?.data?.key || response?.data?.razorpayKeyId
+      || payload?.keyId || payload?.key_id || payload?.razorpay_key_id || payload?.key || payload?.razorpayKeyId
+      || order?.key_id;
+    const orderId = order?.id || order?.orderId || payload?.orderId;
+
+    if (response?.success === false || payload?.success === false) {
+      this.busyPlan = '';
+      this.showMessage(response?.message || payload?.message || 'The payment order could not be created.', 'error');
+      return;
+    }
 
     if (!key || !orderId || !window.Razorpay) {
       this.busyPlan = '';
-      this.showMessage('Checkout setup is incomplete. Please contact the clinic.', 'error');
+      this.showMessage('The payment order was created, but checkout details are missing. Ensure the API returns the Razorpay key ID and order ID.', 'error');
+      return;
+    }
+
+    const orderAmount = Number(order?.amount);
+    if (Number.isFinite(orderAmount) && orderAmount !== plan.amount * 100) {
+      this.busyPlan = '';
+      this.showMessage('The order amount does not match the selected membership. Please contact the clinic.', 'error');
       return;
     }
 
@@ -101,6 +118,12 @@ export class MembershipComponent {
       description: `${plan.name} membership (${plan.duration})`,
       order_id: orderId,
       handler: (payment: any) => {
+        if (!payment?.razorpay_order_id || !payment?.razorpay_payment_id || !payment?.razorpay_signature) {
+          finished = true;
+          this.busyPlan = '';
+          this.showMessage('Razorpay did not return the required payment details. Please contact the clinic before retrying.', 'error');
+          return;
+        }
         const planActivatedAt = new Date();
         const planExpiresAt = this.addMonths(planActivatedAt, plan.durationMonths);
         const membershipPayload = {
@@ -118,9 +141,10 @@ export class MembershipComponent {
               this.showMessage('Payment could not be verified. Please contact the clinic before retrying.', 'error');
               return;
             }
-            const verifiedClinic = result?.clinic || result?.data?.clinic;
-            const activatedAt = verifiedClinic?.planActivatedAt || membershipPayload.planActivatedAt;
-            const expiresAt = verifiedClinic?.planExpiresAt || membershipPayload.planExpiresAt;
+            const verifiedData = result?.data?.data || result?.data || result;
+            const verifiedClinic = verifiedData?.clinic;
+            const activatedAt = verifiedClinic?.planActivatedAt || verifiedData?.planActivatedAt || membershipPayload.planActivatedAt;
+            const expiresAt = verifiedClinic?.planExpiresAt || verifiedData?.planExpiresAt || membershipPayload.planExpiresAt;
             this.membershipAccess.savePlan(plan.clinicPlan, activatedAt, expiresAt, verifiedClinic);
             this.hasActiveMembership = true;
             this.showMessage(`${plan.name} membership payment verified successfully.`, 'success');
