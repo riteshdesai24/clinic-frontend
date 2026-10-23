@@ -9,6 +9,8 @@ interface MembershipPlan {
   name: string;
   amount: number;
   duration: string;
+  durationMonths: number;
+  clinicPlan: 'BRONZE' | 'SILVER' | 'GOLD';
   icon: string;
   features: string[];
   featured?: boolean;
@@ -22,7 +24,7 @@ interface MembershipPlan {
 export class MembershipComponent {
   readonly plans: MembershipPlan[] = [
     {
-      name: 'Monthly', amount: 1999, duration: '1 month', icon: 'pi-calendar',
+      name: 'Monthly', amount: 1999, duration: '1 month', durationMonths: 1, clinicPlan: 'BRONZE', icon: 'pi-calendar',
       features: [
         'Clinic dashboard',
         'Patient records',
@@ -31,7 +33,7 @@ export class MembershipComponent {
       ]
     },
     {
-      name: 'Quarterly', amount: 6999, duration: '3 months', icon: 'pi-calendar-plus', featured: true,
+      name: 'Quarterly', amount: 6999, duration: '3 months', durationMonths: 3, clinicPlan: 'SILVER', icon: 'pi-calendar-plus', featured: true,
       features: [
         'Everything in Monthly',
         'Doctor and staff management',
@@ -41,7 +43,7 @@ export class MembershipComponent {
       ]
     },
     {
-      name: 'Yearly', amount: 10499, duration: '12 months', icon: 'pi-star',
+      name: 'Yearly', amount: 10499, duration: '12 months', durationMonths: 12, clinicPlan: 'GOLD', icon: 'pi-star',
       features: [
         'Everything in Quarterly',
         'Appointment activity summaries',
@@ -95,7 +97,16 @@ export class MembershipComponent {
       description: `${plan.name} membership (${plan.duration})`,
       order_id: orderId,
       handler: (payment: any) => {
-        this.auth.verifyPayment(payment).subscribe({
+        const planActivatedAt = new Date();
+        const planExpiresAt = this.addMonths(planActivatedAt, plan.durationMonths);
+        const membershipPayload = {
+          ...payment,
+          plan: plan.clinicPlan,
+          planActivatedAt: planActivatedAt.toISOString(),
+          planExpiresAt: planExpiresAt.toISOString()
+        };
+
+        this.auth.verifyPayment(membershipPayload).subscribe({
           next: (result) => {
             finished = true;
             this.busyPlan = '';
@@ -146,5 +157,15 @@ export class MembershipComponent {
   private showMessage(message: string, type: 'success' | 'error'): void {
     this.message = message;
     this.messageType = type;
+  }
+
+  private addMonths(date: Date, months: number): Date {
+    const result = new Date(date);
+    const originalDay = result.getDate();
+    result.setDate(1);
+    result.setMonth(result.getMonth() + months);
+    const lastDayOfTargetMonth = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
+    result.setDate(Math.min(originalDay, lastDayOfTargetMonth));
+    return result;
   }
 }

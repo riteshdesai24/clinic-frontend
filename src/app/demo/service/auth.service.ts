@@ -380,7 +380,14 @@ export class AuthService {
   createPaymentOrder(amount: number): Observable<any> {
     return this.http.post(`${environment.apiUrl}/api/payments/create-order`, { amount });
   }
-  verifyPayment(data: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }): Observable<any> {
+  verifyPayment(data: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+    plan?: 'FREE' | 'SILVER' | 'GOLD' | 'BRONZE' | 'PLATINUM';
+    planActivatedAt?: string;
+    planExpiresAt?: string;
+  }): Observable<any> {
     return this.http.post(`${environment.apiUrl}/api/payments/verify`, data);
   }
   getPaymentHistory(): Observable<any> { return this.http.get(`${environment.apiUrl}/api/payments/history`); }
