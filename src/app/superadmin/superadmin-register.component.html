@@ -1,0 +1,20 @@
+<div class="sa-auth-wrap">
+  <section class="sa-auth-card">
+    <a routerLink="/auth/login" class="sa-back"><i class="pi pi-arrow-left"></i> Clinic app</a>
+    <div class="sa-mark"><i class="pi pi-shield"></i></div>
+    <p class="sa-eyebrow">CLINIC PLATFORM</p>
+    <h1>Create super admin account</h1>
+    <p class="sa-subtitle">Set up an account to manage the clinic platform.</p>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>Full name<input pInputText formControlName="name" autocomplete="name" /></label>
+      <label>Email address<input pInputText type="email" formControlName="email" autocomplete="email" /></label>
+      <label>Password<input pInputText type="password" formControlName="password" autocomplete="new-password" /></label>
+      <small class="sa-password-hint">Use 8+ characters with uppercase, lowercase, number, and special character.</small>
+      <label>Confirm password<input pInputText type="password" formControlName="confirmPassword" autocomplete="new-password" /></label>
+      <p class="sa-error" *ngIf="form.hasError('passwordMismatch') && form.get('confirmPassword')?.touched">Passwords do not match.</p>
+      <p class="sa-error" *ngIf="error">{{ error }}</p>
+      <button pButton type="submit" [disabled]="loading" [label]="loading ? 'Please wait…' : 'Create account'"></button>
+    </form>
+    <p class="sa-switch">Already have an account? <a routerLink="/superadmin/login">Sign in</a></p>
+  </section>
+</div>

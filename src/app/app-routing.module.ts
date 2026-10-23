@@ -29,6 +29,7 @@ import { AuthGuard } from './guards/auth.guard';
             { path: 'landing', loadChildren: () => import('./demo/components/landing/landing.module').then(m => m.LandingModule) },
             { path: 'notfound', component: NotfoundComponent },
             { path: 'patient', loadChildren: () => import('./demo/components/pages/patient/patient.module').then(m => m.PatientModule) },
+            { path: 'superadmin', loadChildren: () => import('./superadmin/superadmin.module').then(m => m.SuperAdminModule) },
 
             { path: '**', redirectTo: '/notfound' },
         ], {

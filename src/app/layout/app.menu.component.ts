@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { LayoutService } from './service/app.layout.service';
+import { AuthService } from '../demo/service/auth.service';
 
 @Component({
     selector: 'app-menu',
@@ -7,10 +8,10 @@ import { LayoutService } from './service/app.layout.service';
 })
 export class AppMenuComponent implements OnInit {
     model: any[] = [];
-    clinicPlan: string = '';
+    canManageStaff = false;
     user: any = {};
 
-    constructor(public layoutService: LayoutService) {}
+    constructor(public layoutService: LayoutService, private authService: AuthService) {}
 
     ngOnInit() {
         this.user = localStorage.getItem('user')
@@ -18,8 +19,21 @@ export class AppMenuComponent implements OnInit {
             : sessionStorage.getItem('user')
               ? JSON.parse(sessionStorage.getItem('user')!)
               : {};
-        this.clinicPlan = this.user.plan || '';
         this.buildMenu();
+        if (String(this.user.role || '').toUpperCase() === 'ADMIN' && this.user.plan) {
+            this.authService.getPlans().subscribe({
+                next: (response: any) => {
+                    const plans = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
+                    const assignedPlan = String(this.user.plan).toLowerCase();
+                    const membership = plans.find((plan: any) =>
+                        String(plan?.name || '').toLowerCase() === assignedPlan || String(plan?._id || plan?.id || '').toLowerCase() === assignedPlan
+                    );
+                    this.canManageStaff = membership?.staffAllowed === true;
+                    this.buildMenu();
+                },
+                error: () => { this.canManageStaff = false; this.buildMenu(); }
+            });
+        }
     }
 
     buildMenu() {
@@ -90,7 +104,7 @@ export class AppMenuComponent implements OnInit {
                         icon: 'pi pi-fw pi-home',
                         routerLink: ['/'],
                     },
-                    ...(this.clinicPlan?.toUpperCase() === 'GOLD'
+                    ...(this.canManageStaff
                         ? [
                               {
                                   label: 'Staff',
