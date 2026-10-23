@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { LayoutService } from './service/app.layout.service';
 import { AuthService } from '../demo/service/auth.service';
 
@@ -9,22 +9,35 @@ import { AuthService } from '../demo/service/auth.service';
 export class AppMenuComponent implements OnInit {
     model: any[] = [];
     canManageStaff = false;
+    clinicPlan = '';
     user: any = {};
 
     constructor(public layoutService: LayoutService, private authService: AuthService) {}
 
     ngOnInit() {
-        this.user = localStorage.getItem('user')
-            ? JSON.parse(localStorage.getItem('user')!)
-            : sessionStorage.getItem('user')
-              ? JSON.parse(sessionStorage.getItem('user')!)
-              : {};
+        this.refreshUserAndPlan();
+    }
+
+    @HostListener('window:clinic-membership-updated')
+    refreshUserAndPlan() {
+        try {
+            this.user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
+        } catch {
+            this.user = {};
+        }
+        let clinic: any = {};
+        try {
+            clinic = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
+        } catch {
+            clinic = {};
+        }
+        this.clinicPlan = clinic.plan || this.user.plan || '';
         this.buildMenu();
-        if (String(this.user.role || '').toUpperCase() === 'ADMIN' && this.user.plan) {
+        if (String(this.user.role || '').toUpperCase() === 'ADMIN' && this.clinicPlan) {
             this.authService.getPlans().subscribe({
                 next: (response: any) => {
                     const plans = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
-                    const assignedPlan = String(this.user.plan).toLowerCase();
+                    const assignedPlan = String(this.clinicPlan).toLowerCase();
                     const membership = plans.find((plan: any) =>
                         String(plan?.name || '').toLowerCase() === assignedPlan || String(plan?._id || plan?.id || '').toLowerCase() === assignedPlan
                     );
@@ -47,6 +60,11 @@ export class AppMenuComponent implements OnInit {
                             label: 'Dashboard',
                             icon: 'pi pi-fw pi-home',
                             routerLink: ['/'],
+                        },
+                        {
+                            label: 'Membership',
+                            icon: 'pi pi-fw pi-star',
+                            routerLink: ['/pages/membership'],
                         },
                         {
                             label: 'Calendar',
@@ -73,6 +91,11 @@ export class AppMenuComponent implements OnInit {
                             label: 'Dashboard',
                             icon: 'pi pi-fw pi-home',
                             routerLink: ['/'],
+                        },
+                        {
+                            label: 'Membership',
+                            icon: 'pi pi-fw pi-star',
+                            routerLink: ['/pages/membership'],
                         },
                         {
                             label: 'Patient',
@@ -103,6 +126,11 @@ export class AppMenuComponent implements OnInit {
                         label: 'Dashboard',
                         icon: 'pi pi-fw pi-home',
                         routerLink: ['/'],
+                    },
+                    {
+                        label: 'Membership',
+                        icon: 'pi pi-fw pi-star',
+                        routerLink: ['/pages/membership'],
                     },
                     ...(this.canManageStaff
                         ? [

@@ -3,6 +3,7 @@ import { LayoutService } from 'src/app/layout/service/app.layout.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/demo/service/auth.service';
+import { MembershipAccessService } from 'src/app/core/membership-access.service';
 
 @Component({
     selector: 'app-login',
@@ -23,7 +24,8 @@ export class LoginComponent implements OnInit {
         public layoutService: LayoutService,
         private fb: FormBuilder,
         private router: Router,
-        private authService: AuthService
+        private authService: AuthService,
+        private membershipAccess: MembershipAccessService
     ) {}
 
     ngOnInit() {
@@ -68,6 +70,10 @@ export class LoginComponent implements OnInit {
 
         this.authService.login(email, password).subscribe({
             next: (res) => {
+                ['token', 'user', 'clinic'].forEach((key) => {
+                    localStorage.removeItem(key);
+                    sessionStorage.removeItem(key);
+                });
                 // ✅ Store token safely
                 if (res?.token) {
                     localStorage.setItem('token', res.token);
@@ -84,8 +90,11 @@ export class LoginComponent implements OnInit {
                     sessionStorage.setItem('clinic', JSON.stringify(res.clinic));
                 }
 
-                // Navigate
-                this.router.navigate(['/']);
+                const returnUrl = this.router.parseUrl(this.router.url).queryParams['returnUrl'];
+                const destination = typeof returnUrl === 'string' && returnUrl.startsWith('/')
+                    ? returnUrl
+                    : this.membershipAccess.hasActivePlan() ? '/' : '/pages/membership';
+                this.router.navigateByUrl(destination);
             },
 
             error: (err) => {
