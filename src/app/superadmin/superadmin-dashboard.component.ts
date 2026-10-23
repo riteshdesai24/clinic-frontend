@@ -15,7 +15,7 @@ export class SuperAdminDashboardComponent implements OnInit {
     countries: { title: 'Country master', singular: 'Country', description: 'Maintain the countries available throughout the clinic platform.', columns: ['name', 'code', 'isActive'], fields: [{ key: 'name', label: 'Country name', required: true }, { key: 'code', label: 'Country code' }] },
     states: { title: 'State master', singular: 'State', description: 'Organize states and link each one to its country. Import country IDs or country names.', columns: ['name', 'country', 'isActive'], fields: [{ key: 'name', label: 'State name', required: true }, { key: 'country', label: 'Country ID or name', required: true }] },
     cities: { title: 'City master', singular: 'City', description: 'Maintain cities and associate them with their state. Import state IDs or state names.', columns: ['name', 'state', 'isActive'], fields: [{ key: 'name', label: 'City name', required: true }, { key: 'state', label: 'State ID or name', required: true }] },
-    memberships: { title: 'Membership plans', singular: 'Membership', description: 'Set the plan name, price, and whether staff accounts are allowed.', columns: ['name', 'price', 'staffAllowed'], fields: [{ key: 'name', label: 'Membership name', required: true }, { key: 'price', label: 'Price', type: 'number', required: true }, { key: 'staffAllowed', label: 'Allow staff accounts', type: 'checkbox' }] },
+    memberships: { title: 'Membership plans', singular: 'Membership', description: 'Set the plan name, description, included features, price, duration, and staff access.', columns: ['name', 'description', 'price', 'durationMonths', 'staffAllowed', 'features'], fields: [{ key: 'name', label: 'Membership name', required: true }, { key: 'description', label: 'Plan description', type: 'textarea' }, { key: 'features', label: 'Included points (one per line)', type: 'textarea' }, { key: 'price', label: 'Price', type: 'number', required: true }, { key: 'durationMonths', label: 'Duration (months)', type: 'number', required: true }, { key: 'staffAllowed', label: 'Allow staff accounts', type: 'checkbox' }] },
     treatmentmasters: { title: 'Treatment master', singular: 'Treatment', description: 'Manage the platform treatment catalogue used by clinics.', columns: ['name', 'description', 'duration', 'price', 'status'], fields: [{ key: 'name', label: 'Treatment name', required: true }, { key: 'description', label: 'Description' }, { key: 'duration', label: 'Duration (minutes)', type: 'number' }, { key: 'price', label: 'Price', type: 'number' }, { key: 'status', label: 'Status (ACTIVE or INACTIVE)' }] },
     labmasters: { title: 'Lab master', singular: 'Lab', description: 'Manage laboratories and their contact details.', columns: ['name', 'code', 'email', 'phone', 'isActive'], fields: [{ key: 'name', label: 'Lab name', required: true }, { key: 'code', label: 'Lab code' }, { key: 'description', label: 'Description' }, { key: 'email', label: 'Email', type: 'email' }, { key: 'phone', label: 'Phone' }, { key: 'address', label: 'Address' }] }
   };
@@ -76,7 +76,7 @@ export class SuperAdminDashboardComponent implements OnInit {
   private makeForm(row: any): any {
     const controls: Record<string, any> = {};
     this.config.fields.forEach(field => {
-      const value = field.key === 'features' && Array.isArray(row?.[field.key]) ? row[field.key].join(', ') : (row?.[field.key] ?? '');
+      const value = field.key === 'features' && Array.isArray(row?.[field.key]) ? row[field.key].join('\n') : (row?.[field.key] ?? '');
       const validators = field.required && (field.key !== 'password' || !this.editingId) ? [Validators.required] : [];
       controls[field.key] = [value, validators];
     });
@@ -86,7 +86,12 @@ export class SuperAdminDashboardComponent implements OnInit {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const payload = { ...this.form.value };
     Object.keys(payload).forEach(key => { if (payload[key] === '' || payload[key] === null) delete payload[key]; });
-    if (this.selected === 'memberships') payload.staffAllowed = Boolean(payload.staffAllowed);
+    if (this.selected === 'memberships') {
+      payload.staffAllowed = Boolean(payload.staffAllowed);
+      if (typeof payload.features === 'string') {
+        payload.features = payload.features.split(/[\n,;]+/).map((feature: string) => feature.trim()).filter(Boolean);
+      }
+    }
     if (this.selected === 'clinics' && !payload.password) delete payload.password;
     const request = this.editingId ? this.api.update(this.selected, this.editingId, payload) : this.api.create(this.selected, payload);
     this.loading = true;
@@ -148,9 +153,12 @@ export class SuperAdminDashboardComponent implements OnInit {
   private async prepareImportRows(rows: Record<string, any>[]): Promise<Record<string, any>[]> {
     const payloads = rows.map(row => {
       const payload = { ...row };
-      for (const key of ['price', 'duration']) if (payload[key] !== '' && payload[key] !== undefined) payload[key] = Number(payload[key]);
+      for (const key of ['price', 'duration', 'durationMonths']) if (payload[key] !== '' && payload[key] !== undefined) payload[key] = Number(payload[key]);
       if (payload['staffAllowed'] !== undefined) payload['staffAllowed'] = this.toBoolean(payload['staffAllowed']);
       if (payload['isActive'] !== undefined) payload['isActive'] = this.toBoolean(payload['isActive']);
+      if (this.selected === 'memberships' && typeof payload['features'] === 'string') {
+        payload['features'] = payload['features'].split(/[\n,;]+/).map((feature: string) => feature.trim()).filter(Boolean);
+      }
       return payload;
     });
     if (this.selected === 'states') {

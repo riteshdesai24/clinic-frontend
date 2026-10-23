@@ -45,6 +45,19 @@ export class AppointmentComponent implements OnInit {
             : null;
     };
 
+    private readonly clinicHoursValidator: ValidatorFn = (
+        control: AbstractControl,
+    ): ValidationErrors | null => {
+        const value = control.value;
+        if (!value) return null;
+        const time = value instanceof Date ? value : this.parseTime(String(value));
+        if (!time || Number.isNaN(time.getTime())) return { invalidTime: true };
+        const minutes = time.getHours() * 60 + time.getMinutes();
+        return minutes < 9 * 60 || minutes > 20 * 60 + 30
+            ? { outsideClinicHours: true }
+            : null;
+    };
+
     doctors: any[] = [];
     filteredDoctors: any[] = [];
     patients: any[] = [];
@@ -96,9 +109,15 @@ export class AppointmentComponent implements OnInit {
             return;
         }
 
-        const initialDate = this.defaultDate
-            ? this.toCalendarDate(this.defaultDate) || ''
-            : '';
+        const requestedDate = this.toCalendarDate(this.defaultDate);
+        const afterClosing = this.isPastClinicClosingTime();
+        const requestedDateIsToday = !!requestedDate &&
+            this.dateAtMidnight(requestedDate).getTime() === this.todayAtMidnight().getTime();
+        const shouldMoveDefaultDateToTomorrow = !this.appointmentId && afterClosing &&
+            (!requestedDate || requestedDateIsToday);
+        const initialDate = shouldMoveDefaultDateToTomorrow
+            ? this.tomorrowAtMidnight()
+            : requestedDate || '';
 
         const dateValidators = [Validators.required];
         if (!this.appointmentId) dateValidators.push(this.futureOrTodayValidator);
@@ -114,7 +133,7 @@ export class AppointmentComponent implements OnInit {
                 initialDate && !isNaN(initialDate.getTime()) ? initialDate : '',
                 dateValidators,
             ],
-            time: [this.currentTime(), Validators.required],
+            time: [this.currentTime(), [Validators.required, this.clinicHoursValidator]],
             notes: [''],
             status: ['PENDING', Validators.required],
         });
@@ -169,8 +188,25 @@ export class AppointmentComponent implements OnInit {
 
     private currentTime(): Date {
         const now = new Date();
-        now.setSeconds(0, 0);
+        if (this.isPastClinicClosingTime(now)) {
+            now.setHours(9, 0, 0, 0);
+            return now;
+        }
+        const minutes = now.getMinutes();
+        const roundedMinutes = Math.ceil((now.getHours() * 60 + minutes + 1) / 30) * 30;
+        const nextSlot = Math.max(9 * 60, Math.min(20 * 60 + 30, roundedMinutes));
+        now.setHours(Math.floor(nextSlot / 60), nextSlot % 60, 0, 0);
         return now;
+    }
+
+    private isPastClinicClosingTime(date = new Date()): boolean {
+        return date.getHours() * 60 + date.getMinutes() > 20 * 60 + 30;
+    }
+
+    private tomorrowAtMidnight(): Date {
+        const tomorrow = this.todayAtMidnight();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return tomorrow;
     }
 
     private todayAtMidnight(): Date {

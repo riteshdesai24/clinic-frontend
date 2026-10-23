@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/demo/service/auth.service';
+import { MembershipAccessService } from 'src/app/core/membership-access.service';
 
 type DashboardPeriod = 'week' | 'month';
 
@@ -24,6 +25,7 @@ export class DashboardComponent implements OnInit {
   clinicName = '';
   userName = '';
   role = '';
+  hasActiveMembership = false;
   period: DashboardPeriod = 'week';
   summaryPeriod: AppointmentSummaryPeriod = 'week';
   invoicePeriod: DashboardPeriod = 'week';
@@ -92,9 +94,10 @@ export class DashboardComponent implements OnInit {
     month: this.emptySummary()
   };
 
-  constructor(private api: AuthService, private router: Router) {}
+  constructor(private api: AuthService, private router: Router, private membershipAccess: MembershipAccessService) {}
 
   ngOnInit(): void {
+    this.refreshMembershipStatus();
     this.currentRouteUrl = this.router.url || '/';
     try {
       const clinic = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
@@ -122,6 +125,11 @@ export class DashboardComponent implements OnInit {
     this.loadWeeklyInvoices();
     this.loadInvoiceAmountCards();
     if (this.isAdmin) this.loadMonthlyIncome();
+  }
+
+  @HostListener('window:clinic-membership-updated')
+  refreshMembershipStatus(): void {
+    this.hasActiveMembership = this.membershipAccess.hasActivePlan();
   }
 
   setPeriod(value: string): void {

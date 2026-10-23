@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 
-const PAID_PLANS = new Set(['BRONZE', 'SILVER', 'GOLD', 'PLATINUM']);
-
 @Injectable({ providedIn: 'root' })
 export class MembershipAccessService {
     hasActivePlan(): boolean {
@@ -12,7 +10,7 @@ export class MembershipAccessService {
         const expiresAt = clinic?.planExpiresAt || user?.planExpiresAt || nestedClinic.planExpiresAt;
         const expiryTime = expiresAt ? new Date(expiresAt).getTime() : NaN;
 
-        return PAID_PLANS.has(plan) && Number.isFinite(expiryTime) && expiryTime > Date.now();
+        return !!plan && plan !== 'FREE' && Number.isFinite(expiryTime) && expiryTime > Date.now();
     }
 
     savePlan(plan: string, activatedAt: string, expiresAt: string, clinicResponse?: any): void {

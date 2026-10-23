@@ -60,6 +60,10 @@ export class AuthService {
     return this.http.get(`${environment.apiUrl}/api/users/${encodeURIComponent(id)}`);
   }
 
+  getCurrentUser(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/users/me`);
+  }
+
   createUser(data: Record<string, unknown>): Observable<any> {
     // clinicLogo can be included in the payload when creating a clinic account.
     return this.http.post(`${environment.apiUrl}/api/users`, data);
@@ -377,14 +381,14 @@ export class AuthService {
     return this.http.put(`${environment.apiUrl}/api/plans/${id}`, data);
   }
   deletePlan(id: string): Observable<any> { return this.http.delete(`${environment.apiUrl}/api/plans/${id}`); }
-  createPaymentOrder(amount: number, plan: 'FREE' | 'SILVER' | 'GOLD' | 'BRONZE' | 'PLATINUM'): Observable<any> {
+  createPaymentOrder(amount: number, plan: string): Observable<any> {
     return this.http.post(`${environment.apiUrl}/api/payments/create-order`, { amount, plan });
   }
   verifyPayment(data: {
     razorpay_order_id: string;
     razorpay_payment_id: string;
     razorpay_signature: string;
-    plan?: 'FREE' | 'SILVER' | 'GOLD' | 'BRONZE' | 'PLATINUM';
+    plan?: string;
     planActivatedAt?: string;
     planExpiresAt?: string;
   }): Observable<any> {

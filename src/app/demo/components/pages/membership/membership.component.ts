@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from 'src/app/demo/service/auth.service';
 import { MembershipAccessService } from 'src/app/core/membership-access.service';
 
@@ -7,14 +8,13 @@ declare global {
 }
 
 interface MembershipPlan {
+  id: string;
   name: string;
-  amount: number;
-  duration: string;
-  durationMonths: number;
-  clinicPlan: 'BRONZE' | 'SILVER' | 'GOLD';
-  icon: string;
+  description: string;
   features: string[];
-  featured?: boolean;
+  price: number;
+  durationMonths: number;
+  staffAllowed: boolean;
 }
 
 @Component({
@@ -22,44 +22,74 @@ interface MembershipPlan {
   templateUrl: './membership.component.html',
   styleUrls: ['./membership.component.scss']
 })
-export class MembershipComponent {
-  readonly plans: MembershipPlan[] = [
-    {
-      name: 'Monthly', amount: 1999, duration: '1 month', durationMonths: 1, clinicPlan: 'BRONZE', icon: 'pi-calendar',
-      features: [
-        'Clinic dashboard',
-        'Patient records',
-        'Appointment scheduling and calendar',
-        'Invoices and payment tracking'
-      ]
-    },
-    {
-      name: 'Quarterly', amount: 6999, duration: '3 months', durationMonths: 3, clinicPlan: 'SILVER', icon: 'pi-calendar-plus', featured: true,
-      features: [
-        'Everything in Monthly',
-        'Doctor and staff management',
-        'Attendance tracking',
-        'Insurance records',
-        'Treatment and condition records'
-      ]
-    },
-    {
-      name: 'Yearly', amount: 10499, duration: '12 months', durationMonths: 12, clinicPlan: 'GOLD', icon: 'pi-star',
-      features: [
-        'Everything in Quarterly',
-        'Appointment activity summaries',
-        'Income and invoice summaries',
-        'Patient visit history'
-      ]
-    }
-  ];
+export class MembershipComponent implements OnInit {
+  plans: MembershipPlan[] = [];
+  loadingPlans = false;
+  plansError = '';
   busyPlan = '';
   message = '';
   messageType: 'success' | 'error' = 'success';
   hasActiveMembership = false;
+  currentPlanName = '';
+  currentPlanExpiresAt = '';
+  currentPlan: MembershipPlan | null = null;
 
-  constructor(private auth: AuthService, private membershipAccess: MembershipAccessService) {
+  constructor(private auth: AuthService, private membershipAccess: MembershipAccessService, private router: Router) {
     this.hasActiveMembership = this.membershipAccess.hasActivePlan();
+    this.readCurrentMembership();
+  }
+
+  ngOnInit(): void {
+    this.loadingPlans = true;
+    this.auth.getPlans().subscribe({
+      next: response => {
+        const records = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
+        this.plans = records.map((record: any) => ({
+          id: String(record?._id || record?.id || record?.name || ''),
+          name: String(record?.name || ''),
+          description: String(record?.description || ''),
+          features: Array.isArray(record?.features)
+            ? record.features.map((feature: any) => String(feature)).filter(Boolean)
+            : typeof record?.features === 'string'
+              ? record.features.split(/[\n,;]+/).map((feature: string) => feature.trim()).filter(Boolean)
+              : [],
+          price: Number(record?.price),
+          durationMonths: Number(record?.durationMonths || 1),
+          staffAllowed: record?.staffAllowed === true
+        })).filter((plan: MembershipPlan) => !!plan.name && Number.isFinite(plan.price) && plan.price >= 0);
+        this.readCurrentMembership();
+        this.loadingPlans = false;
+      },
+      error: error => {
+        this.plansError = error?.error?.message || 'Could not load memberships. Please try again.';
+        this.loadingPlans = false;
+      }
+    });
+  }
+
+  durationLabel(plan: MembershipPlan): string {
+    return `${plan.durationMonths} ${plan.durationMonths === 1 ? 'month' : 'months'}`;
+  }
+
+  private readCurrentMembership(): void {
+    const storedClinic = this.readStoredObject('clinic') || {};
+    const storedUser = this.readStoredObject('user') || {};
+    const userClinic = storedUser.clinic || {};
+    this.currentPlanName = String(storedClinic.plan || storedUser.plan || userClinic.plan || '').trim();
+    this.currentPlanExpiresAt = storedClinic.planExpiresAt || storedUser.planExpiresAt || userClinic.planExpiresAt || '';
+    const currentName = this.currentPlanName.toLowerCase();
+    this.currentPlan = this.plans.find(plan =>
+      plan.name.toLowerCase() === currentName || plan.id.toLowerCase() === currentName
+    ) || null;
+    this.hasActiveMembership = this.membershipAccess.hasActivePlan();
+  }
+
+  private readStoredObject(key: string): any {
+    try {
+      return JSON.parse(localStorage.getItem(key) || sessionStorage.getItem(key) || '{}');
+    } catch {
+      return {};
+    }
   }
 
   async buy(plan: MembershipPlan): Promise<void> {
@@ -68,7 +98,7 @@ export class MembershipComponent {
 
     try {
       await this.loadRazorpay();
-      this.auth.createPaymentOrder(plan.amount * 100, plan.clinicPlan).subscribe({
+      this.auth.createPaymentOrder(plan.price * 100, plan.name).subscribe({
         next: (response) => this.openCheckout(response, plan),
         error: (error) => {
           this.busyPlan = '';
@@ -103,7 +133,7 @@ export class MembershipComponent {
     }
 
     const orderAmount = Number(order?.amount);
-    if (Number.isFinite(orderAmount) && orderAmount !== plan.amount * 100) {
+    if (Number.isFinite(orderAmount) && orderAmount !== plan.price * 100) {
       this.busyPlan = '';
       this.showMessage('The order amount does not match the selected membership. Please contact the clinic.', 'error');
       return;
@@ -112,10 +142,10 @@ export class MembershipComponent {
     let finished = false;
     const checkout = new window.Razorpay({
       key,
-      amount: order.amount || plan.amount * 100,
+      amount: order.amount || plan.price * 100,
       currency: order.currency || 'INR',
       name: 'Techno My clinic',
-      description: `${plan.name} membership (${plan.duration})`,
+      description: `${plan.name} membership (${this.durationLabel(plan)})`,
       order_id: orderId,
       handler: (payment: any) => {
         if (!payment?.razorpay_order_id || !payment?.razorpay_payment_id || !payment?.razorpay_signature) {
@@ -128,7 +158,7 @@ export class MembershipComponent {
         const planExpiresAt = this.addMonths(planActivatedAt, plan.durationMonths);
         const membershipPayload = {
           ...payment,
-          plan: plan.clinicPlan,
+          plan: plan.name,
           planActivatedAt: planActivatedAt.toISOString(),
           planExpiresAt: planExpiresAt.toISOString()
         };
@@ -142,12 +172,12 @@ export class MembershipComponent {
               return;
             }
             const verifiedData = result?.data?.data || result?.data || result;
-            const verifiedClinic = verifiedData?.clinic;
-            const activatedAt = verifiedClinic?.planActivatedAt || verifiedData?.planActivatedAt || membershipPayload.planActivatedAt;
-            const expiresAt = verifiedClinic?.planExpiresAt || verifiedData?.planExpiresAt || membershipPayload.planExpiresAt;
-            this.membershipAccess.savePlan(plan.clinicPlan, activatedAt, expiresAt, verifiedClinic);
-            this.hasActiveMembership = true;
-            this.showMessage(`${plan.name} membership payment verified successfully.`, 'success');
+            const verifiedClinic = verifiedData?.clinic || result?.clinic;
+            const membership = result?.membership || verifiedData?.membership || {};
+            const activatedAt = verifiedClinic?.planActivatedAt || membership?.activatedAt || verifiedData?.planActivatedAt || membershipPayload.planActivatedAt;
+            const expiresAt = verifiedClinic?.planExpiresAt || membership?.expiresAt || verifiedData?.planExpiresAt || membershipPayload.planExpiresAt;
+            this.membershipAccess.savePlan(plan.name, activatedAt, expiresAt, verifiedClinic);
+            this.refreshCurrentUserAndReturnToDashboard(plan.name, activatedAt, expiresAt);
           },
           error: () => {
             finished = true;
@@ -169,6 +199,38 @@ export class MembershipComponent {
       this.showMessage('Payment did not go through. You can try again.', 'error');
     });
     checkout.open();
+  }
+
+  private refreshCurrentUserAndReturnToDashboard(planName: string, activatedAt: string, expiresAt: string): void {
+    this.auth.getCurrentUser().subscribe({
+      next: response => {
+        const data = response?.data?.data || response?.data || response;
+        const user = data?.user;
+        const clinic = data?.clinic;
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+          sessionStorage.setItem('user', JSON.stringify(user));
+        }
+        if (clinic) {
+          localStorage.setItem('clinic', JSON.stringify(clinic));
+          sessionStorage.setItem('clinic', JSON.stringify(clinic));
+        }
+        this.membershipAccess.savePlan(
+          clinic?.plan || user?.plan || planName,
+          clinic?.planActivatedAt || user?.planActivatedAt || activatedAt,
+          clinic?.planExpiresAt || user?.planExpiresAt || expiresAt,
+          clinic
+        );
+        this.hasActiveMembership = true;
+        this.showMessage(`${planName} membership activated successfully.`, 'success');
+        this.router.navigate(['/']);
+      },
+      error: () => {
+        this.hasActiveMembership = true;
+        this.showMessage('Payment is verified, but account details could not be refreshed. Please reload your dashboard.', 'error');
+        this.router.navigate(['/']);
+      }
+    });
   }
 
   private loadRazorpay(): Promise<void> {

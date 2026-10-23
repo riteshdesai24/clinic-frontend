@@ -77,16 +77,23 @@
           </div>
 
           <div class="pf-field">
-            <label>Time <span class="req">*</span></label>
+            <label>Time <span class="req">*</span> <small>(9:00 AM–8:30 PM)</small></label>
             <p-calendar
               formControlName="time"
               [timeOnly]="true"
               [hourFormat]="'12'"
+              [stepMinute]="30"
               [showIcon]="true"
               icon="pi pi-clock"
               styleClass="w-full"
               inputStyleClass="w-full">
             </p-calendar>
+            <small class="p-error" *ngIf="appointmentForm.get('time')?.touched && appointmentForm.get('time')?.hasError('outsideClinicHours')">
+              Choose an appointment time between 9:00 AM and 8:30 PM.
+            </small>
+            <small class="p-error" *ngIf="appointmentForm.get('time')?.touched && appointmentForm.get('time')?.hasError('required')">
+              Appointment time is required.
+            </small>
           </div>
 
           <div class="pf-field">

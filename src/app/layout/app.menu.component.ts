@@ -12,7 +12,10 @@ export class AppMenuComponent implements OnInit {
     clinicPlan = '';
     user: any = {};
 
-    constructor(public layoutService: LayoutService, private authService: AuthService) {}
+    constructor(
+        public layoutService: LayoutService,
+        private authService: AuthService
+    ) {}
 
     ngOnInit() {
         this.refreshUserAndPlan();

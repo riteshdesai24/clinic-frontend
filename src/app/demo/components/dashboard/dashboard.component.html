@@ -7,7 +7,7 @@
       <span class="welcome-date"><i class="pi pi-calendar" aria-hidden="true"></i>{{ invoiceCardDate | date:'EEEE, MMMM d, y' }}</span>
     </div>
     <div class="welcome-actions">
-      <a class="secondary-action" routerLink="/pages/membership"><i class="pi pi-star" aria-hidden="true"></i> Membership plans</a>
+      <a *ngIf="!hasActiveMembership" class="secondary-action" routerLink="/pages/membership"><i class="pi pi-star" aria-hidden="true"></i> Membership plans</a>
       <a class="secondary-action" routerLink="/pages/appointment-calendar"><i class="pi pi-calendar" aria-hidden="true"></i> Calendar</a>
       <a class="primary-action" routerLink="/pages/appointment" [queryParams]="{ returnUrl: currentRouteUrl }" *ngIf="role !== 'DOCTOR'">
         <i class="pi pi-plus" aria-hidden="true"></i> New appointment

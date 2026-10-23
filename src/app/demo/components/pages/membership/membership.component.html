@@ -1,6 +1,6 @@
 <main class="membership-page">
   <header class="page-heading">
-    <a *ngIf="hasActiveMembership" routerLink="/" class="back-link"><i class="pi pi-arrow-left"></i> Dashboard</a>
+    <!-- <a *ngIf="hasActiveMembership" routerLink="/" class="back-link"><i class="pi pi-arrow-left"></i> Dashboard</a> -->
     <span class="eyebrow">TECHNO MY CLINIC</span>
     <h1>Choose your membership</h1>
     <p>Select a plan to continue to secure checkout.</p>
@@ -11,18 +11,36 @@
     {{ message }}
   </div>
 
-  <section class="plan-grid" aria-label="Membership plans">
-    <article class="plan-card" *ngFor="let plan of plans" [class.featured]="plan.featured">
-      <span *ngIf="plan.featured" class="popular">POPULAR</span>
-      <span class="plan-icon"><i class="pi" [ngClass]="plan.icon"></i></span>
+  <section *ngIf="hasActiveMembership" class="current-plan-card" aria-label="Current membership">
+    <div class="current-plan-icon"><i class="pi pi-check-circle" aria-hidden="true"></i></div>
+    <div class="current-plan-content">
+      <span class="current-plan-label">YOUR CURRENT PLAN</span>
+      <h2>{{ currentPlan?.name || currentPlanName || 'Active membership' }}</h2>
+      <p *ngIf="currentPlan?.description">{{ currentPlan.description }}</p>
+      <p class="upgrade-hint">Your membership is active. You can upgrade by choosing another plan below.</p>
+      <p *ngIf="currentPlanExpiresAt" class="expiry-date">Valid until {{ currentPlanExpiresAt | date:'mediumDate' }}</p>
+    </div>
+    <!-- <a class="browse-plans" href="#available-plans">View upgrade options <i class="pi pi-arrow-down" aria-hidden="true"></i></a> -->
+  </section>
+
+  <p *ngIf="loadingPlans" class="plans-state"><i class="pi pi-spin pi-spinner"></i> Loading memberships…</p>
+  <p *ngIf="plansError" class="plans-state error-message" role="alert">{{ plansError }}</p>
+  <p *ngIf="!loadingPlans && !plansError && !plans.length" class="plans-state">No memberships are available right now.</p>
+
+  <section id="available-plans" class="plan-grid" aria-label="Membership plans" *ngIf="!loadingPlans && plans.length">
+    <article class="plan-card" *ngFor="let plan of plans" [class.featured]="plan.staffAllowed">
+      <span *ngIf="plan.staffAllowed" class="popular">STAFF ACCESS</span>
+      <span class="plan-icon"><i class="pi" [ngClass]="plan.staffAllowed ? 'pi-star' : 'pi-calendar'"></i></span>
       <span class="plan-caption">MEMBERSHIP</span>
       <h2>{{ plan.name }}</h2>
-      <p class="duration">{{ plan.duration }} of care</p>
-      <div class="price"><span>₹</span>{{ plan.amount | number }}</div>
-      <ul class="feature-list" [attr.aria-label]="plan.name + ' plan features'">
+      <p class="plan-description" *ngIf="plan.description">{{ plan.description }}</p>
+      <p class="duration">{{ durationLabel(plan) }}</p>
+      <div class="price"><span>₹</span>{{ plan.price | number }}</div>
+      <ul class="feature-list" [attr.aria-label]="plan.name + ' plan details'">
         <li *ngFor="let feature of plan.features"><i class="pi pi-check" aria-hidden="true"></i><span>{{ feature }}</span></li>
+        <li><i class="pi" [ngClass]="plan.staffAllowed ? 'pi-check' : 'pi-minus'" aria-hidden="true"></i><span>{{ plan.staffAllowed ? 'Staff accounts included' : 'Staff accounts not included' }}</span></li>
       </ul>
-      <button type="button" class="buy-button" [disabled]="!!busyPlan" (click)="buy(plan)">
+      <button type="button" class="buy-button" [disabled]="!!busyPlan || loadingPlans" (click)="buy(plan)">
         <i class="pi" [class.pi-spin]="busyPlan === plan.name" [class.pi-spinner]="busyPlan === plan.name" [class.pi-lock]="busyPlan !== plan.name"></i>
         {{ busyPlan === plan.name ? 'Preparing checkout…' : 'Buy membership' }}
       </button>
