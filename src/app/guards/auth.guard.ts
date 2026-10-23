@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { CanActivate, CanActivateChild, Router, UrlTree } from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
@@ -13,7 +13,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
       return true;
     }
 
-    return this.router.parseUrl('/auth/login');
+    return this.router.parseUrl('/landing');
   }
 
   canActivate(): boolean | UrlTree {
