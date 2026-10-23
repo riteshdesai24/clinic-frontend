@@ -1,0 +1,32 @@
+<main class="membership-page">
+  <header class="page-heading">
+    <a routerLink="/" class="back-link"><i class="pi pi-arrow-left"></i> Dashboard</a>
+    <span class="eyebrow">TECHNO MY CLINIC</span>
+    <h1>Choose your membership</h1>
+    <p>Select a plan to continue to secure checkout.</p>
+  </header>
+
+  <div *ngIf="message" class="checkout-message" [class.success-message]="messageType === 'success'" [class.error-message]="messageType === 'error'" role="status">
+    <i class="pi" [class.pi-check-circle]="messageType === 'success'" [class.pi-exclamation-circle]="messageType === 'error'"></i>
+    {{ message }}
+  </div>
+
+  <section class="plan-grid" aria-label="Membership plans">
+    <article class="plan-card" *ngFor="let plan of plans" [class.featured]="plan.featured">
+      <span *ngIf="plan.featured" class="popular">POPULAR</span>
+      <span class="plan-icon"><i class="pi" [ngClass]="plan.icon"></i></span>
+      <span class="plan-caption">MEMBERSHIP</span>
+      <h2>{{ plan.name }}</h2>
+      <p class="duration">{{ plan.duration }} of care</p>
+      <div class="price"><span>₹</span>{{ plan.amount | number }}</div>
+      <ul class="feature-list" [attr.aria-label]="plan.name + ' plan features'">
+        <li *ngFor="let feature of plan.features"><i class="pi pi-check" aria-hidden="true"></i><span>{{ feature }}</span></li>
+      </ul>
+      <button type="button" class="buy-button" [disabled]="!!busyPlan" (click)="buy(plan)">
+        <i class="pi" [class.pi-spin]="busyPlan === plan.name" [class.pi-spinner]="busyPlan === plan.name" [class.pi-lock]="busyPlan !== plan.name"></i>
+        {{ busyPlan === plan.name ? 'Preparing checkout…' : 'Buy membership' }}
+      </button>
+    </article>
+  </section>
+  <p class="secure-note"><i class="pi pi-shield"></i> Payments are handled through secure Razorpay checkout.</p>
+</main>

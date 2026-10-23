@@ -84,8 +84,8 @@ export class LoginComponent implements OnInit {
                     sessionStorage.setItem('clinic', JSON.stringify(res.clinic));
                 }
 
-                // Navigate
-                this.router.navigate(['/']);
+                const returnUrl = this.router.parseUrl(this.router.url).queryParams['returnUrl'];
+                this.router.navigateByUrl(typeof returnUrl === 'string' && returnUrl.startsWith('/') ? returnUrl : '/pages/membership');
             },
 
             error: (err) => {

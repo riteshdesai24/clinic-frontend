@@ -35,6 +35,11 @@ export class AppMenuComponent implements OnInit {
                             routerLink: ['/'],
                         },
                         {
+                            label: 'Membership',
+                            icon: 'pi pi-fw pi-star',
+                            routerLink: ['/pages/membership'],
+                        },
+                        {
                             label: 'Calendar',
                             icon: 'pi pi-fw pi-calendar',
                             routerLink: ['/pages/appointment-calendar'],
@@ -59,6 +64,11 @@ export class AppMenuComponent implements OnInit {
                             label: 'Dashboard',
                             icon: 'pi pi-fw pi-home',
                             routerLink: ['/'],
+                        },
+                        {
+                            label: 'Membership',
+                            icon: 'pi pi-fw pi-star',
+                            routerLink: ['/pages/membership'],
                         },
                         {
                             label: 'Patient',
@@ -89,6 +99,11 @@ export class AppMenuComponent implements OnInit {
                         label: 'Dashboard',
                         icon: 'pi pi-fw pi-home',
                         routerLink: ['/'],
+                    },
+                    {
+                        label: 'Membership',
+                        icon: 'pi pi-fw pi-star',
+                        routerLink: ['/pages/membership'],
                     },
                     ...(this.clinicPlan?.toUpperCase() === 'GOLD'
                         ? [
