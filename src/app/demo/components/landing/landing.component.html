@@ -1,53 +1,70 @@
-﻿<main class="clinic-landing">
+<main class="clinic-landing">
   <header class="landing-nav">
-    <a class="brand" routerLink="/landing" aria-label="Techno My clinic home"><span class="brand-mark"><i class="pi pi-plus"></i></span><span>Techno <b>My clinic</b></span></a>
-    <a class="login-link" routerLink="/auth/login"><i class="pi pi-user"></i><span>Login</span></a>
+    <a class="brand" routerLink="/landing" aria-label="Techno My clinic home">
+      <span class="brand-mark"><i class="pi pi-plus"></i></span>
+      <span class="brand-name">Techno <b>My clinic</b></span>
+    </a>
+    <nav aria-label="Main navigation"><a class="nav-login" routerLink="/auth/login"><i class="pi pi-user"></i> Login</a></nav>
   </header>
 
   <section class="hero" id="home">
     <div class="hero-copy">
-      <span class="eyebrow"><i class="pi pi-heart-fill"></i> CARE THAT'S CLOSER</span>
-      <h1>Your health,<br><em>our priority.</em></h1>
-      <p>Thoughtful, trusted care for every stage of life. Meet a team that puts you and your family first.</p>
-      <a class="primary-cta" routerLink="/auth/login">Get started <i class="pi pi-arrow-right"></i></a>
-      <div class="hero-note"><span class="note-icon"><i class="pi pi-shield"></i></span><span><b>Care you can count on</b><small>Here for your whole family</small></span></div>
+      <span class="eyebrow"><span class="eyebrow-dot"></span> YOUR CLINIC, IN SYNC</span>
+      <h1>More time for care.<br><span>Less time on admin.</span></h1>
+      <p>Bring appointments, patient records, billing, and your team together in one clear, easy-to-use clinic workspace.</p>
+      <div class="hero-actions">
+        <a class="primary-cta" routerLink="/auth/login">Get started <i class="pi pi-arrow-right"></i></a>
+        <a class="text-cta" [routerLink]="['/landing']" fragment="platform">Explore the platform <i class="pi pi-angle-down"></i></a>
+      </div>
+      <div class="hero-proof"><span class="proof-icon"><i class="pi pi-shield"></i></span><span><b>Built for your clinic</b><small>One connected workspace for your team</small></span></div>
     </div>
-    <div class="hero-art" aria-label="Illustration of a doctor ready to help" role="img">
-      <div class="art-glow"></div><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
-      <div class="doctor-card"><div class="doctor-hair"></div><div class="doctor-face"><span class="doctor-eye eye-one"></span><span class="doctor-eye eye-two"></span><span class="doctor-smile"></span></div><div class="doctor-neck"></div><div class="doctor-coat"><span class="coat-shirt"></span><span class="coat-pocket"><i class="pi pi-plus"></i></span><span class="stethoscope"></span></div></div>
-      <div class="floating-card availability"><span class="status-dot"></span><span><b>Here for you</b><small>Every step of the way</small></span></div>
-      <div class="floating-card care-badge"><i class="pi pi-heart-fill"></i><span>Care with<br>compassion</span></div>
-      <div class="art-spark spark-one">✳</div><div class="art-spark spark-two">✦</div>
+
+    <div class="product-preview" aria-label="Preview of the clinic dashboard">
+      <div class="preview-orb orb-one"></div><div class="preview-orb orb-two"></div>
+      <div class="preview-window">
+        <div class="preview-topbar"><span class="preview-logo"><i class="pi pi-plus"></i> Techno My clinic</span><span class="preview-avatar">TM</span></div>
+        <div class="preview-body">
+          <div class="preview-greeting"><span>DASHBOARD PREVIEW</span><b>Your day at a glance</b></div>
+          <div class="preview-metrics">
+            <div class="preview-metric"><span class="metric-symbol appointments"><i class="pi pi-calendar"></i></span><small>Appointments</small><b>24</b><em>Today</em></div>
+            <div class="preview-metric"><span class="metric-symbol patients"><i class="pi pi-users"></i></span><small>Patients</small><b>138</b><em>This month</em></div>
+          </div>
+          <div class="preview-panel">
+            <div class="panel-title"><b>Weekly activity</b><span>Last 7 days <i class="pi pi-chevron-down"></i></span></div>
+            <div class="chart-area"><div class="chart-lines"><i></i><i></i><i></i></div><svg viewBox="0 0 440 112" role="presentation" aria-hidden="true"><defs><linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#48a9c8" stop-opacity=".25"/><stop offset="1" stop-color="#48a9c8" stop-opacity="0"/></linearGradient></defs><path class="chart-area-fill" d="M0 86 C28 77 34 70 63 75 S99 58 126 65 S165 34 190 44 S229 55 253 42 S293 50 316 28 S356 41 377 20 S414 29 440 8 V112 H0 Z"/><path class="chart-line" d="M0 86 C28 77 34 70 63 75 S99 58 126 65 S165 34 190 44 S229 55 253 42 S293 50 316 28 S356 41 377 20 S414 29 440 8"/></svg></div>
+            <div class="chart-days"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div>
+          </div>
+          <div class="preview-appointment"><span class="appointment-dot"></span><span><b>Next appointment</b><small>Patient visit · 10:30 AM</small></span><i class="pi pi-arrow-up-right"></i></div>
+        </div>
+      </div>
+      <div class="floating-stat"><span class="stat-icon"><i class="pi pi-check"></i></span><span><b>All in one place</b><small>Patients · Team · Billing</small></span></div>
+      <span class="preview-spark spark-a">✳</span><span class="preview-spark spark-b">✦</span>
     </div>
   </section>
 
-  <section class="section departments" id="departments">
-    <div class="section-heading"><span class="eyebrow">PERSONALIZED FOR YOU</span><h2>Care for every need</h2><p>Explore our departments and find the right support for your health.</p></div>
-    <div class="department-grid">
-      <article class="department-card"><span class="department-icon mint"><i class="pi pi-heart-fill"></i></span><h3>Primary Care</h3><p>Everyday health and wellness for all ages.</p></article>
-      <article class="department-card"><span class="department-icon blue"><i class="pi pi-users"></i></span><h3>Family Medicine</h3><p>Personal care for your entire family.</p></article>
-      <article class="department-card"><span class="department-icon lavender"><i class="pi pi-sun"></i></span><h3>Women's Health</h3><p>Support through every stage of life.</p></article>
-      <article class="department-card"><span class="department-icon peach"><i class="pi pi-bolt"></i></span><h3>Urgent Care</h3><p>Timely help when you need it most.</p></article>
+  <section class="platform-section" id="platform">
+    <div class="section-heading"><span class="eyebrow">A BETTER WAY TO WORK</span><h2>Your clinic, beautifully organized</h2><p>Spend less time switching between tasks and more time focused on people.</p></div>
+    <div class="feature-grid">
+      <article class="feature-card"><span class="feature-icon icon-blue"><i class="pi pi-calendar"></i></span><h3>Appointments made simple</h3><p>Plan the day with a clear calendar, appointment lists, and visit status at a glance.</p><a routerLink="/auth/login">Explore appointments <i class="pi pi-arrow-up-right"></i></a></article>
+      <article class="feature-card"><span class="feature-icon icon-mint"><i class="pi pi-users"></i></span><h3>Patient records together</h3><p>Keep patient details, visit history, treatments, and conditions organized.</p><a routerLink="/auth/login">Explore patient records <i class="pi pi-arrow-up-right"></i></a></article>
+      <article class="feature-card"><span class="feature-icon icon-violet"><i class="pi pi-briefcase"></i></span><h3>Support for your team</h3><p>Manage doctors, staff, attendance, and insurance information in one workspace.</p><a routerLink="/auth/login">Explore clinic tools <i class="pi pi-arrow-up-right"></i></a></article>
+      <article class="feature-card"><span class="feature-icon icon-peach"><i class="pi pi-chart-bar"></i></span><h3>Know how your clinic is doing</h3><p>Review appointment activity, invoices, payments, and income summaries.</p><a routerLink="/auth/login">Explore your dashboard <i class="pi pi-arrow-up-right"></i></a></article>
     </div>
   </section>
 
-  <section class="section membership" id="membership">
-    <div class="section-heading"><span class="eyebrow">MEMBERSHIP PLANS</span><h2>Care that fits your life</h2><p>Choose a plan and make your wellbeing a priority.</p></div>
+  <section class="membership-section" id="membership">
+    <div class="section-heading"><span class="eyebrow">MEMBERSHIP PLANS</span><h2>Choose what works for you</h2><p>Simple plans for keeping your clinic moving forward.</p></div>
     <div class="membership-grid">
-      <article class="membership-card"><span class="plan-period">MEMBERSHIP</span><h3>Monthly</h3><div class="plan-price"><span>₹</span>1,999</div><a routerLink="/auth/login" class="plan-link">Choose plan <i class="pi pi-arrow-right"></i></a></article>
-      <article class="membership-card featured-plan"><span class="popular-tag">POPULAR</span><span class="plan-period">MEMBERSHIP</span><h3>Quarterly</h3><div class="plan-price"><span>₹</span>6,999</div><a routerLink="/auth/login" class="plan-link">Choose plan <i class="pi pi-arrow-right"></i></a></article>
-      <article class="membership-card"><span class="plan-period">MEMBERSHIP</span><h3>Yearly</h3><div class="plan-price"><span>₹</span>10,499</div><a routerLink="/auth/login" class="plan-link">Choose plan <i class="pi pi-arrow-right"></i></a></article>
+      <article class="membership-card"><span class="plan-period">1 MONTH</span><h3>Monthly</h3><div class="plan-price"><span>₹</span>1,999</div><ul class="plan-features"><li><i class="pi pi-check"></i>Clinic dashboard</li><li><i class="pi pi-check"></i>Patient records</li><li><i class="pi pi-check"></i>Appointments and calendar</li><li><i class="pi pi-check"></i>Invoices and payment tracking</li></ul><a routerLink="/auth/login" class="plan-link">Choose monthly <i class="pi pi-arrow-right"></i></a></article>
+      <article class="membership-card featured-plan"><span class="popular-tag">POPULAR</span><span class="plan-period">3 MONTHS</span><h3>Quarterly</h3><div class="plan-price"><span>₹</span>6,999</div><ul class="plan-features"><li><i class="pi pi-check"></i>Everything in Monthly</li><li><i class="pi pi-check"></i>Doctor and staff management</li><li><i class="pi pi-check"></i>Attendance tracking</li><li><i class="pi pi-check"></i>Insurance records</li><li><i class="pi pi-check"></i>Treatments and conditions</li></ul><a routerLink="/auth/login" class="plan-link">Choose quarterly <i class="pi pi-arrow-right"></i></a></article>
+      <article class="membership-card"><span class="plan-period">12 MONTHS</span><h3>Yearly</h3><div class="plan-price"><span>₹</span>10,499</div><ul class="plan-features"><li><i class="pi pi-check"></i>Everything in Quarterly</li><li><i class="pi pi-check"></i>Appointment activity summaries</li><li><i class="pi pi-check"></i>Income and invoice summaries</li><li><i class="pi pi-check"></i>Patient visit history</li></ul><a routerLink="/auth/login" class="plan-link">Choose yearly <i class="pi pi-arrow-right"></i></a></article>
     </div>
   </section>
 
-  <section class="section services" id="services">
-    <div class="section-heading"><span class="eyebrow">MORE FOR YOUR WELLBEING</span><h2>Services, growing with you</h2><p>We're thoughtfully expanding the ways we can support your health.</p></div>
-    <div class="service-grid">
-      <article class="service-card"><div class="service-illustration diagnostics"><i class="pi pi-chart-line"></i><span class="scan-ring"></span></div><div class="service-info"><span class="coming-soon">COMING SOON</span><h3>Advanced diagnostics</h3><p>More ways to understand your health with confidence.</p></div></article>
-      <article class="service-card"><div class="service-illustration virtual"><i class="pi pi-video"></i><span class="video-heart"><i class="pi pi-heart-fill"></i></span></div><div class="service-info"><span class="coming-soon">COMING SOON</span><h3>Virtual care</h3><p>Convenient support, wherever you feel most comfortable.</p></div></article>
-      <article class="service-card"><div class="service-illustration wellness"><i class="pi pi-sparkles"></i><span class="wellness-leaf"><i class="pi pi-sun"></i></span></div><div class="service-info"><span class="coming-soon">COMING SOON</span><h3>Wellness programs</h3><p>Personal guidance to help you feel your best.</p></div></article>
-    </div>
+  <section class="coming-section" id="services">
+    <div class="coming-copy"><span class="eyebrow">COMING SOON</span><h2>More ways to support your clinic</h2><p>We’re building new tools to make everyday clinic work even smoother.</p></div>
+    <div class="coming-items"><div><span><i class="pi pi-video"></i></span><b>Virtual care</b><small>Coming soon</small></div><div><span><i class="pi pi-chart-line"></i></span><b>Advanced insights</b><small>Coming soon</small></div><div><span><i class="pi pi-sparkles"></i></span><b>Wellness programs</b><small>Coming soon</small></div></div>
   </section>
 
-  <footer class="landing-footer"><a class="brand" routerLink="/landing"><span class="brand-mark"><i class="pi pi-plus"></i></span><span>Techno <b>My clinic</b></span></a><span>Care that puts you first.</span><a routerLink="/auth/login">Login <i class="pi pi-arrow-right"></i></a></footer>
+  <footer class="landing-footer"><a class="brand" routerLink="/landing"><span class="brand-mark"><i class="pi pi-plus"></i></span><span class="brand-name">Techno <b>My clinic</b></span></a><span>Everything your clinic needs, in one place.</span><a routerLink="/auth/login">Login <i class="pi pi-arrow-right"></i></a></footer>
 </main>
