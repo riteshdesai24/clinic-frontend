@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { LayoutService } from './service/app.layout.service';
 
 @Component({
@@ -13,12 +13,23 @@ export class AppMenuComponent implements OnInit {
     constructor(public layoutService: LayoutService) {}
 
     ngOnInit() {
-        this.user = localStorage.getItem('user')
-            ? JSON.parse(localStorage.getItem('user')!)
-            : sessionStorage.getItem('user')
-              ? JSON.parse(sessionStorage.getItem('user')!)
-              : {};
-        this.clinicPlan = this.user.plan || '';
+        this.refreshUserAndPlan();
+    }
+
+    @HostListener('window:clinic-membership-updated')
+    refreshUserAndPlan() {
+        try {
+            this.user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
+        } catch {
+            this.user = {};
+        }
+        let clinic: any = {};
+        try {
+            clinic = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
+        } catch {
+            clinic = {};
+        }
+        this.clinicPlan = clinic.plan || this.user.plan || '';
         this.buildMenu();
     }
 

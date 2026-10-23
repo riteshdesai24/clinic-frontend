@@ -1,6 +1,6 @@
 <main class="membership-page">
   <header class="page-heading">
-    <a routerLink="/" class="back-link"><i class="pi pi-arrow-left"></i> Dashboard</a>
+    <a *ngIf="hasActiveMembership" routerLink="/" class="back-link"><i class="pi pi-arrow-left"></i> Dashboard</a>
     <span class="eyebrow">TECHNO MY CLINIC</span>
     <h1>Choose your membership</h1>
     <p>Select a plan to continue to secure checkout.</p>

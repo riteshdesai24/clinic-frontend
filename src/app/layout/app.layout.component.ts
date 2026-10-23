@@ -1,9 +1,10 @@
-import { Component, OnDestroy, Renderer2, ViewChild } from '@angular/core';
+import { Component, HostListener, OnDestroy, Renderer2, ViewChild } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { LayoutService } from "./service/app.layout.service";
 import { AppSidebarComponent } from "./app.sidebar.component";
 import { AppTopBarComponent } from './app.topbar.component';
+import { MembershipAccessService } from 'src/app/core/membership-access.service';
 
 @Component({
     selector: 'app-layout',
@@ -26,6 +27,20 @@ import { AppTopBarComponent } from './app.topbar.component';
         :host ::ng-deep .layout-main-container {
             margin-top: 0;
         }
+        :host ::ng-deep .layout-wrapper.membership-only .layout-sidebar {
+            display: none;
+        }
+        :host ::ng-deep .layout-wrapper.membership-only .layout-main-container {
+            margin-left: 0 !important;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+        :host ::ng-deep .layout-wrapper.membership-only .layout-menu-button {
+            display: none;
+        }
+        :host ::ng-deep .layout-wrapper.membership-only app-config {
+            display: none;
+        }
         @media (max-width: 991px) {
             :host ::ng-deep .layout-sidebar {
                 margin-top: 0;
@@ -34,6 +49,8 @@ import { AppTopBarComponent } from './app.topbar.component';
     `]
 })
 export class AppLayoutComponent implements OnDestroy {
+
+    hasActiveMembership = false;
 
     overlayMenuOpenSubscription: Subscription;
 
@@ -45,7 +62,9 @@ export class AppLayoutComponent implements OnDestroy {
 
     @ViewChild(AppTopBarComponent) appTopbar!: AppTopBarComponent;
 
-    constructor(public layoutService: LayoutService, public renderer: Renderer2, public router: Router) {
+    constructor(public layoutService: LayoutService, public renderer: Renderer2, public router: Router,
+        private membershipAccess: MembershipAccessService) {
+        this.refreshMembershipState();
         this.overlayMenuOpenSubscription = this.layoutService.overlayOpen$.subscribe(() => {
             if (!this.menuOutsideClickListener) {
                 this.menuOutsideClickListener = this.renderer.listen('document', 'click', event => {
@@ -76,9 +95,15 @@ export class AppLayoutComponent implements OnDestroy {
 
         this.router.events.pipe(filter(event => event instanceof NavigationEnd))
             .subscribe(() => {
+                this.refreshMembershipState();
                 this.hideMenu();
                 this.hideProfileMenu();
             });
+    }
+
+    @HostListener('window:clinic-membership-updated')
+    refreshMembershipState(): void {
+        this.hasActiveMembership = this.membershipAccess.hasActivePlan();
     }
 
     hideMenu() {

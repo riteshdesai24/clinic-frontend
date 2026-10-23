@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LayoutService } from 'src/app/layout/service/app.layout.service';
 import { AuthService } from 'src/app/demo/service/auth.service';
+import { MembershipAccessService } from 'src/app/core/membership-access.service';
 
 @Component({
     selector: 'app-register',
@@ -20,7 +21,8 @@ export class RegisterComponent implements OnInit {
         public layoutService: LayoutService,
         private fb: FormBuilder,
         private router: Router,
-        private authService: AuthService
+        private authService: AuthService,
+        private membershipAccess: MembershipAccessService
     ) { }
 
     ngOnInit() {
@@ -57,6 +59,10 @@ export class RegisterComponent implements OnInit {
 
         this.authService.register(email, phone, password, clinicName).subscribe({
             next: (res) => {
+                ['token', 'user', 'clinic'].forEach((key) => {
+                    localStorage.removeItem(key);
+                    sessionStorage.removeItem(key);
+                });
                 if (res?.token) {
                     localStorage.setItem('token', res.token);
                     sessionStorage.setItem('token', res.token);
@@ -69,7 +75,12 @@ export class RegisterComponent implements OnInit {
                     localStorage.setItem('clinic', JSON.stringify(res.clinic));
                     sessionStorage.setItem('clinic', JSON.stringify(res.clinic));
                 }
-                this.router.navigate(['/']);
+                if (res?.token) {
+                    const destination = this.membershipAccess.hasActivePlan() ? '/' : '/pages/membership';
+                    this.router.navigateByUrl(destination);
+                } else {
+                    this.router.navigate(['/auth/login'], { queryParams: { returnUrl: '/pages/membership' } });
+                }
             },
             error: (err) => {
                 this.error = err?.error?.message || err?.message || 'Registration failed';

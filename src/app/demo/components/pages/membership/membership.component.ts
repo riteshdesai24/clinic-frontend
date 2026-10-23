@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from 'src/app/demo/service/auth.service';
+import { MembershipAccessService } from 'src/app/core/membership-access.service';
 
 declare global {
   interface Window { Razorpay?: any; }
@@ -55,8 +56,11 @@ export class MembershipComponent {
   busyPlan = '';
   message = '';
   messageType: 'success' | 'error' = 'success';
+  hasActiveMembership = false;
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private membershipAccess: MembershipAccessService) {
+    this.hasActiveMembership = this.membershipAccess.hasActivePlan();
+  }
 
   async buy(plan: MembershipPlan): Promise<void> {
     this.message = '';
@@ -64,7 +68,7 @@ export class MembershipComponent {
 
     try {
       await this.loadRazorpay();
-      this.auth.createPaymentOrder(plan.amount * 100).subscribe({
+      this.auth.createPaymentOrder(plan.amount * 100, plan.clinicPlan).subscribe({
         next: (response) => this.openCheckout(response, plan),
         error: () => {
           this.busyPlan = '';
@@ -114,6 +118,11 @@ export class MembershipComponent {
               this.showMessage('Payment could not be verified. Please contact the clinic before retrying.', 'error');
               return;
             }
+            const verifiedClinic = result?.clinic || result?.data?.clinic;
+            const activatedAt = verifiedClinic?.planActivatedAt || membershipPayload.planActivatedAt;
+            const expiresAt = verifiedClinic?.planExpiresAt || membershipPayload.planExpiresAt;
+            this.membershipAccess.savePlan(plan.clinicPlan, activatedAt, expiresAt, verifiedClinic);
+            this.hasActiveMembership = true;
             this.showMessage(`${plan.name} membership payment verified successfully.`, 'success');
           },
           error: () => {

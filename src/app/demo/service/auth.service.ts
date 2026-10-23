@@ -377,8 +377,8 @@ export class AuthService {
     return this.http.put(`${environment.apiUrl}/api/plans/${id}`, data);
   }
   deletePlan(id: string): Observable<any> { return this.http.delete(`${environment.apiUrl}/api/plans/${id}`); }
-  createPaymentOrder(amount: number): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/api/payments/create-order`, { amount });
+  createPaymentOrder(amount: number, plan: 'FREE' | 'SILVER' | 'GOLD' | 'BRONZE' | 'PLATINUM'): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/payments/create-order`, { amount, plan });
   }
   verifyPayment(data: {
     razorpay_order_id: string;
