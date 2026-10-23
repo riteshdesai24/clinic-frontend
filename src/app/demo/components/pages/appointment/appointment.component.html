@@ -66,9 +66,14 @@
               [monthNavigator]="true"
               [yearNavigator]="true"
               yearRange="2020:2030"
+              [minDate]="appointmentId ? null : minAppointmentDate"
+              [readonlyInput]="true"
               styleClass="w-full"
               inputStyleClass="w-full">
             </p-calendar>
+            <small class="p-error" *ngIf="appointmentForm.get('date')?.touched && appointmentForm.get('date')?.hasError('pastDate')">
+              Choose today or a future date.
+            </small>
           </div>
 
           <div class="pf-field">

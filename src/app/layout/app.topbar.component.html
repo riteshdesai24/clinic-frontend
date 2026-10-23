@@ -5,8 +5,8 @@
             <i class="pi pi-bars"></i>
         </button>
 
-        <!-- <img src="assets/layout/images/{{layoutService.config().colorScheme === 'light' ? 'logo-dark' : 'logo-white'}}.svg" alt="logo"> -->
-        <span>{{clinicName}}</span>
+        <img *ngIf="clinicLogo" class="clinic-nav-logo" [src]="clinicLogo" [alt]="clinicName + ' logo'">
+        <span *ngIf="!clinicLogo">{{clinicName}}</span>
     </a>
 
 

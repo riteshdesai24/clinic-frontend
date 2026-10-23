@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
+import { HttpEventType } from '@angular/common/http';
 import { LayoutService } from 'src/app/layout/service/app.layout.service';
 import { AuthService } from 'src/app/demo/service/auth.service';
 
@@ -10,7 +12,7 @@ import { AuthService } from 'src/app/demo/service/auth.service';
   templateUrl: './staff.component.html',
   styleUrls: ['./staff.component.scss']
 })
-export class StaffComponent implements OnInit {
+export class StaffComponent implements OnInit, OnDestroy {
 
   staffForm!: FormGroup;
 
@@ -30,6 +32,24 @@ export class StaffComponent implements OnInit {
   isview = false;
 
   userId: string | null = null;
+  selectedDocuments: { file: File; fileName: string }[] = [];
+  documentsUploading = false;
+  documentUploadProgress = 0;
+  documentsDragOver = false;
+  documentsError = '';
+  uploadedDocuments: any[] = [];
+  previewVisible = false;
+  previewLoading = false;
+  previewError = '';
+  previewUrl: SafeResourceUrl | null = null;
+  previewImageUrl: string | null = null;
+  previewKind: 'image' | 'pdf' | 'other' = 'other';
+  previewingDocument: any = null;
+  previewBlob: Blob | null = null;
+  private previewObjectUrl: string | null = null;
+  documentsLoading = false;
+  documentsListError = '';
+  activeDoctorTab: 'details' | 'documents' = 'details';
   clinic: any = {};
 
   constructor(
@@ -38,8 +58,11 @@ export class StaffComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private sanitizer: DomSanitizer
   ) {}
+
+  ngOnDestroy(): void { this.revokePreviewUrl(); }
 
   ngOnInit(): void {
     this.userId = this.route.snapshot.queryParamMap.get('id');
@@ -62,7 +85,8 @@ export class StaffComponent implements OnInit {
       phone:          ['', Validators.required],
       // password:       [''],
       role:           ['STAFF', Validators.required],
-      specialization: ['']
+      specialization: [''],
+      registrationNumber: ['']
     });
 
     if (this.isUser === 'Doctor') {
@@ -135,6 +159,9 @@ export class StaffComponent implements OnInit {
     if (formData.role === 'DOCTOR' && formData.specialization) {
       data.specialization = formData.specialization;
     }
+    if (formData.role === 'DOCTOR' && formData.registrationNumber) {
+      data.registrationNumber = formData.registrationNumber;
+    }
 
     // Server auto-generates password — do not send from frontend
     const api$ = this.isUser === 'Doctor'
@@ -142,7 +169,17 @@ export class StaffComponent implements OnInit {
       : this.authService.createStaff(data);
 
     api$.subscribe({
-      next: () => {
+      next: (res: any) => {
+        const doctorId = res?.data?.doctor?._id || res?.data?._id || res?.doctor?._id || res?._id;
+        if (this.isUser === 'Doctor' && this.selectedDocuments.length && doctorId) {
+          this.uploadDoctorDocuments(doctorId, () => this.showCreated());
+          return;
+        }
+        if (this.isUser === 'Doctor' && this.selectedDocuments.length && !doctorId) {
+          this.loading = false;
+          this.error = 'Doctor saved, but the server did not return a doctor ID for document upload.';
+          return;
+        }
         this.messageService.add({
           key: 'tst', severity: 'success',
           summary: 'Success',
@@ -166,6 +203,10 @@ export class StaffComponent implements OnInit {
 
     api$.subscribe({
       next: () => {
+        if (this.isUser === 'Doctor' && this.selectedDocuments.length) {
+          this.uploadDoctorDocuments(this.userId!, () => this.showUpdated());
+          return;
+        }
         this.messageService.add({
           key: 'tst', severity: 'success',
           summary: 'Updated',
@@ -225,13 +266,165 @@ export class StaffComponent implements OnInit {
           staffname:      d.staffname ?? d.name ?? d.fullName ?? '',
           email:          d.email ?? '',
           phone:          d.phone ?? d.mobile ?? '',
-          specialization: d.specialization ?? d.speciality ?? ''
+          specialization: d.specialization ?? d.speciality ?? '',
+          registrationNumber: d.registrationNumber ?? d.registrationNo ?? d.medicalRegistrationNumber ?? ''
         });
+        this.loadDoctorDocuments(id);
         this.togglePasswordValidation();
         this.loading = false;
       },
       error: err => this.handleError(err)
     });
+  }
+
+  onDocumentsSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.addDocuments(Array.from(input.files || []));
+    input.value = '';
+  }
+
+  onDocumentsDropped(event: DragEvent): void {
+    event.preventDefault();
+    this.documentsDragOver = false;
+    this.addDocuments(Array.from(event.dataTransfer?.files || []));
+  }
+
+  private addDocuments(files: File[]): void {
+    const allowed = /\.(jpe?g|png|pdf|svg|docx?)$/i;
+    const maxBytes = 24 * 1024 * 1024;
+    const rejected = files.filter(file => !allowed.test(file.name) || file.size > maxBytes);
+    this.documentsError = rejected.length ? 'Use JPG, PNG, PDF, SVG, DOC or DOCX files up to 24 MB.' : '';
+    this.selectedDocuments = [...this.selectedDocuments, ...files
+      .filter(file => allowed.test(file.name) && file.size <= maxBytes)
+      .map(file => ({ file, fileName: file.name }))];
+  }
+
+  updateDocumentFileName(index: number, fileName: string): void {
+    const document = this.selectedDocuments[index];
+    if (document) document.fileName = fileName;
+  }
+
+  removeSelectedDocument(index: number): void {
+    this.selectedDocuments = this.selectedDocuments.filter((_, i) => i !== index);
+  }
+
+  private uploadDoctorDocuments(doctorId: string, done: () => void): void {
+    this.documentsUploading = true;
+    this.documentUploadProgress = 0;
+    this.authService.uploadDoctorAttachments(doctorId, this.selectedDocuments).subscribe({
+      next: event => {
+        if (event.type === HttpEventType.UploadProgress && event.total) {
+          this.documentUploadProgress = Math.round(event.loaded / event.total * 100);
+        }
+        if (event.type === HttpEventType.Response) {
+          this.documentsUploading = false;
+          this.selectedDocuments = [];
+          this.loadDoctorDocuments(doctorId);
+          done();
+        }
+      },
+      error: err => {
+        this.documentsUploading = false;
+        this.handleError(err);
+      }
+    });
+  }
+
+  loadDoctorDocuments(doctorId = this.userId): void {
+    if (!doctorId) return;
+    this.documentsLoading = true;
+    this.documentsListError = '';
+    this.authService.getDoctorAttachments(doctorId).subscribe({
+      next: response => {
+        const list = response?.data?.attachments ?? response?.data?.documents ?? response?.data?.files ??
+          response?.attachments ?? response?.documents ?? response?.files ?? response?.data ?? [];
+        this.uploadedDocuments = Array.isArray(list) ? list : [];
+        this.documentsLoading = false;
+      },
+      error: () => {
+        this.uploadedDocuments = [];
+        this.documentsLoading = false;
+        this.documentsListError = 'Could not load uploaded documents.';
+      }
+    });
+  }
+
+  downloadDoctorDocument(file: any): void {
+    const id = file?._id || file?.id || file?.attachmentId;
+    if (!this.userId || !id) return;
+    this.authService.downloadDoctorAttachment(this.userId, id).subscribe({
+      next: blob => this.saveDownloadedDocument(blob, this.documentName(file)),
+      error: () => this.documentsListError = 'Could not download this document.'
+    });
+  }
+
+  previewDoctorDocument(file: any): void {
+    const id = file?._id || file?.id || file?.attachmentId;
+    if (!this.userId || !id) return;
+    this.previewingDocument = file; this.previewVisible = true; this.previewLoading = true; this.previewError = '';
+    this.authService.downloadDoctorAttachment(this.userId, id).subscribe({
+      next: blob => {
+        this.previewBlob = blob; this.previewKind = this.documentPreviewKind(file, blob.type); this.revokePreviewUrl();
+        this.previewObjectUrl = URL.createObjectURL(blob); this.previewImageUrl = this.previewObjectUrl;
+        this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.previewObjectUrl); this.previewLoading = false;
+      },
+      error: () => { this.previewLoading = false; this.previewError = 'Could not open this document. Try downloading it instead.'; }
+    });
+  }
+
+  closeDocumentPreview(): void {
+    this.previewVisible = false; this.previewingDocument = null; this.previewBlob = null;
+    this.previewUrl = null; this.previewImageUrl = null; this.previewError = ''; this.revokePreviewUrl();
+  }
+
+  downloadPreviewDocument(): void {
+    if (this.previewBlob && this.previewingDocument) this.saveDownloadedDocument(this.previewBlob, this.documentName(this.previewingDocument));
+  }
+
+  documentPreviewKind(file: any, mimeType = ''): 'image' | 'pdf' | 'other' {
+    const mime = String(file?.mimeType || file?.mimetype || mimeType).toLowerCase();
+    const name = this.documentName(file).toLowerCase();
+    if (mime.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/.test(name)) return 'image';
+    if (mime === 'application/pdf' || name.endsWith('.pdf')) return 'pdf';
+    return 'other';
+  }
+
+  private revokePreviewUrl(): void {
+    if (this.previewObjectUrl) URL.revokeObjectURL(this.previewObjectUrl);
+    this.previewObjectUrl = null;
+  }
+
+  documentName(file: any): string {
+    return file?.originalName || file?.originalname || file?.originalFilename ||
+      file?.fileName || file?.filename || file?.name || 'Document';
+  }
+
+  private saveDownloadedDocument(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  documentIcon(file: any): string {
+    const extension = this.documentName(file).split('.').pop()?.toLowerCase();
+    return extension === 'pdf' ? 'pi pi-file-pdf' : ['doc', 'docx'].includes(extension || '') ? 'pi pi-file-word' : 'pi pi-image';
+  }
+
+  formatFileSize(bytes: number): string {
+    return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  private showCreated(): void {
+    this.messageService.add({ key: 'tst', severity: 'success', summary: 'Success', detail: 'Created successfully. Login credentials sent via email and SMS.' });
+    this.afterSave();
+  }
+
+  private showUpdated(): void {
+    this.messageService.add({ key: 'tst', severity: 'success', summary: 'Updated', detail: 'Updated successfully' });
+    this.afterSave();
   }
 
   private unwrapRecord(response: any): any {

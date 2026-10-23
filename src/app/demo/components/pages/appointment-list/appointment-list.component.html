@@ -35,12 +35,6 @@
             <option *ngFor="let status of appointmentStatuses" [value]="status">{{ status | titlecase }}</option>
           </select>
         </label>
-        <label class="doctor-filter status-filter">Filter by period
-          <select [value]="selectedPeriod" (change)="onPeriodFilterChange($event)">
-            <option value="week">This week</option>
-            <option value="month">This month</option>
-          </select>
-        </label>
         <span class="p-input-icon-left pl-search">
           <i class="pi pi-search"></i>
           <input
@@ -169,11 +163,8 @@
 </p-dialog>
 
 <p-dialog header="Invoice adjustments" [(visible)]="showInvoiceDialog" [modal]="true" [closable]="!issuingInvoice" [style]="{ width: 'min(32rem, 92vw)' }" (onHide)="closeInvoiceDialog()">
-  <p class="invoice-dialog-copy">Set the GST and discount for {{ appointmentToInvoice?.patientName || 'this appointment' }}.</p>
+  <p class="invoice-dialog-copy">Set the discount for {{ appointmentToInvoice?.patientName || 'this appointment' }}.</p>
   <div class="invoice-dialog-fields">
-    <label for="appointment-invoice-gst">GST rate</label>
-    <div class="invoice-input-suffix"><input pInputText id="appointment-invoice-gst" type="number" [value]="invoiceGstRate" readonly /><span>%</span></div>
-    <small>GST is fixed at 18% and is calculated after discount.</small>
     <label for="appointment-invoice-discount">Discount amount</label>
     <div class="invoice-input-suffix"><span>₹</span><input pInputText id="appointment-invoice-discount" type="number" min="0" step="0.01" [value]="invoiceDiscountAmount" (input)="invoiceDiscountAmount = +$any($event.target).value" /></div>
   </div>

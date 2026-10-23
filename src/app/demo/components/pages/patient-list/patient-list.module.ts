@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 
 import { PatientListRoutingModule } from './patient-list-routing.module';
 import { PatientListComponent } from './patient-list.component';
+import { PatientVisitHistoryModule } from '../patient-visit-history/patient-visit-history.module';
 
 // PrimeNG
 import { TableModule } from 'primeng/table';
@@ -26,6 +27,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
     CommonModule,
     ListPaginationComponent,
     PatientListRoutingModule,
+    PatientVisitHistoryModule,
 
     // PrimeNG Modules
     TableModule,

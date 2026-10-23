@@ -18,10 +18,9 @@ export class TreatmentRecordComponent implements OnInit {
   treatmentSaved = false;
   treatmentMastersLoading = false;
   treatmentMasters: any[] = [];
+  readonly treatmentDurations = Array.from({ length: 12 }, (_, index) => ({ label: `${index + 1} hour(s)`, value: `${index + 1}` }));
   invoiceError = '';
-  readonly gstRate = 18;
   private savedAppointmentId = '';
-  private savedDiscountAmount = 0;
 
   constructor(
     private fb: FormBuilder,
@@ -34,24 +33,48 @@ export class TreatmentRecordComponent implements OnInit {
   ngOnInit(): void {
     this.form = this.fb.group({
       appointmentId: ['', Validators.required],
-      treatmentMasterIds: [[], Validators.required],
-      discountAmount: [0, [Validators.min(0)]],
+      treatments: this.fb.array([this.createTreatmentCard()]),
       diagnosis: ['', Validators.required],
       notes: [''],
-      followUpDate: [''],
-      medicines: this.fb.array([])
+      followUpDate: ['']
     });
     this.loadAppointments();
     this.loadTreatmentMasters();
   }
 
-  get medicines(): FormArray { return this.form.get('medicines') as FormArray; }
+  get treatments(): FormArray { return this.form.get('treatments') as FormArray; }
 
-  addMedicine(): void {
-    this.medicines.push(this.fb.group({ name: ['', Validators.required], dosage: [''], frequency: [''], duration: [''] }));
+  private createTreatmentCard(): FormGroup {
+    return this.fb.group({ treatmentMasterId: ['', Validators.required], duration: [''], description: [''] });
   }
 
-  removeMedicine(index: number): void { this.medicines.removeAt(index); }
+  addTreatment(): void { this.treatments.push(this.createTreatmentCard()); }
+  removeTreatment(index: number): void {
+    if (this.treatments.length > 1) this.treatments.removeAt(index);
+  }
+
+  treatmentFor(index: number): any {
+    const id = this.treatments.at(index)?.get('treatmentMasterId')?.value;
+    return this.treatmentMasters.find(treatment => treatment._id === id);
+  }
+
+  onTreatmentSelected(index: number): void {
+    const treatment = this.treatmentFor(index);
+    const card = this.treatments.at(index);
+    if (!treatment || !card) return;
+    if (treatment.description) card.patchValue({ description: treatment.description }, { emitEvent: false });
+    const duration = treatment.durationHours ?? treatment.estimatedDuration ?? treatment.duration;
+    if (duration != null && duration !== '') card.patchValue({ duration: String(duration).replace(/\s*hour\(s\)$/i, '') }, { emitEvent: false });
+  }
+
+  treatmentComponents(index: number): any[] {
+    const value = this.treatmentFor(index)?.components;
+    return Array.isArray(value) ? value : [];
+  }
+
+  componentsSummary(index: number): string {
+    return this.treatmentComponents(index).map(component => component?.name || component).join(', ');
+  }
 
   save(): void {
     if (this.form.invalid) {
@@ -59,24 +82,23 @@ export class TreatmentRecordComponent implements OnInit {
       return;
     }
     const value = this.form.getRawValue();
-    const treatmentMasterIds: string[] = Array.isArray(value.treatmentMasterIds) ? value.treatmentMasterIds : [];
-    const discountAmount = Number(value.discountAmount || 0);
-    if (!treatmentMasterIds.length) {
-      this.form.get('treatmentMasterIds')?.markAsTouched();
-      return;
-    }
-    if (discountAmount > this.selectedTreatmentPrice) {
-      this.form.get('discountAmount')?.setErrors({ exceedsSubtotal: true });
-      this.form.get('discountAmount')?.markAsTouched();
+    const treatments = (value.treatments || []).filter((item: any) => item.treatmentMasterId);
+    const treatmentMasterIds: string[] = treatments.map((item: any) => item.treatmentMasterId);
+    if (!treatmentMasterIds.length || this.treatments.invalid) {
+      this.treatments.markAllAsTouched();
       return;
     }
     const payload = {
       appointmentId: value.appointmentId?.value || value.appointmentId,
       treatmentMasterIds,
+      treatments: treatments.map((item: any) => ({
+        treatmentMasterId: item.treatmentMasterId,
+        duration: item.duration,
+        description: item.description
+      })),
       diagnosis: value.diagnosis,
       notes: value.notes,
-      followUpDate: value.followUpDate || undefined,
-      medicines: value.medicines.filter((medicine: any) => medicine.name?.trim())
+      followUpDate: value.followUpDate || undefined
     };
     this.saving = true;
     this.api.createTreatmentRecord(payload).subscribe({
@@ -84,7 +106,6 @@ export class TreatmentRecordComponent implements OnInit {
         this.saving = false;
         this.treatmentSaved = true;
         this.savedAppointmentId = payload.appointmentId;
-        this.savedDiscountAmount = discountAmount;
         this.form.disable();
         this.issueInvoice();
       },
@@ -99,7 +120,7 @@ export class TreatmentRecordComponent implements OnInit {
     if (!this.savedAppointmentId || this.savingInvoice) return;
     this.savingInvoice = true;
     this.invoiceError = '';
-    this.api.createInvoice({ appointmentId: this.savedAppointmentId, gstRate: this.gstRate, discountAmount: this.savedDiscountAmount }).subscribe({
+    this.api.createInvoice({ appointmentId: this.savedAppointmentId, gstRate: 0 }).subscribe({
       next: (response: any) => this.finishInvoice(response?.data),
       error: (error: any) => {
         const existing = error?.error?.data;
@@ -167,32 +188,4 @@ export class TreatmentRecordComponent implements OnInit {
     });
   }
 
-  get selectedTreatmentPrice(): number {
-    return this.selectedTreatments.reduce((sum, treatment) => sum + Number(treatment.price || 0), 0);
-  }
-
-  get selectedTreatments(): any[] {
-    const ids = this.form?.get('treatmentMasterIds')?.value;
-    return Array.isArray(ids) ? this.treatmentMasters.filter(treatment => ids.includes(treatment._id)) : [];
-  }
-
-  get discountAmount(): number {
-    return Math.max(0, Number(this.form?.get('discountAmount')?.value || 0));
-  }
-
-  get taxableAmount(): number {
-    return Math.max(0, this.selectedTreatmentPrice - this.discountAmount);
-  }
-
-  get gstAmount(): number {
-    return this.taxableAmount * this.gstRate / 100;
-  }
-
-  get invoiceTotal(): number {
-    return this.taxableAmount + this.gstAmount;
-  }
-
-  get discountExceedsSubtotal(): boolean {
-    return this.discountAmount > this.selectedTreatmentPrice;
-  }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -48,6 +48,30 @@ export class AuthService {
 
   updateCurrentProfile(data: Record<string, string>): Observable<any> {
     return this.http.put(`${environment.apiUrl}/api/profile`, data);
+  }
+
+  // ================= USERS =================
+
+  getUsers(params: Record<string, string | number> = {}): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/users`, { params });
+  }
+
+  getUser(id: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/users/${encodeURIComponent(id)}`);
+  }
+
+  createUser(data: Record<string, unknown>): Observable<any> {
+    // clinicLogo can be included in the payload when creating a clinic account.
+    return this.http.post(`${environment.apiUrl}/api/users`, data);
+  }
+
+  updateUser(id: string, data: Record<string, unknown>): Observable<any> {
+    // Keep this JSON based so logo data URLs and other profile fields are saved together.
+    return this.http.put(`${environment.apiUrl}/api/users/${encodeURIComponent(id)}`, data);
+  }
+
+  deleteUser(id: string): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}/api/users/${encodeURIComponent(id)}`);
   }
 
   // ================= STAFF =================
@@ -255,9 +279,9 @@ export class AuthService {
     );
   }
 
-  uploadAppointmentAttachments(appointmentId: string, files: File[]): Observable<any> {
+  uploadAppointmentAttachments(appointmentId: string, files: { file: File; fileName: string }[]): Observable<any> {
     const body = new FormData();
-    files.forEach(file => body.append('files', file));
+    files.forEach(({ file, fileName }) => { body.append('files', file); body.append('fileName', fileName.trim() || file.name); });
     return this.http.post(`${environment.apiUrl}/api/appointments/${appointmentId}/attachments`, body);
   }
   getAppointmentAttachments(appointmentId: string): Observable<any> {
@@ -302,9 +326,9 @@ export class AuthService {
     return this.http.put(`${environment.apiUrl}/api/treatments/${id}`, data);
   }
   deleteTreatmentRecord(id: string): Observable<any> { return this.http.delete(`${environment.apiUrl}/api/treatments/${id}`); }
-  uploadTreatmentAttachments(treatmentId: string, files: File[]): Observable<any> {
+  uploadTreatmentAttachments(treatmentId: string, files: { file: File; fileName: string }[]): Observable<any> {
     const body = new FormData();
-    files.forEach(file => body.append('files', file));
+    files.forEach(({ file, fileName }) => { body.append('files', file); body.append('fileName', fileName.trim() || file.name); });
     return this.http.post(`${environment.apiUrl}/api/treatments/${treatmentId}/attachments`, body);
   }
   getTreatmentAttachments(treatmentId: string): Observable<any> {
@@ -315,6 +339,33 @@ export class AuthService {
   }
   deleteTreatmentAttachment(treatmentId: string, attachmentId: string): Observable<any> {
     return this.http.delete(`${environment.apiUrl}/api/treatments/${treatmentId}/attachments/${attachmentId}`);
+  }
+
+  uploadPatientAttachments(patientId: string, files: { file: File; fileName: string }[]): Observable<HttpEvent<any>> {
+    const body = new FormData();
+    files.forEach(({ file, fileName }) => { body.append('files', file); body.append('fileName', fileName.trim() || file.name); });
+    return this.http.post(`${environment.apiUrl}/api/patients/${patientId}/attachments`, body, { reportProgress: true, observe: 'events' });
+  }
+  getPatientAttachments(patientId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/patients/${patientId}/attachments`);
+  }
+  downloadPatientAttachment(patientId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/api/patients/${patientId}/attachments/${attachmentId}`, { responseType: 'blob' });
+  }
+
+  uploadDoctorAttachments(doctorId: string, files: { file: File; fileName: string }[]): Observable<HttpEvent<any>> {
+    const body = new FormData();
+    files.forEach(({ file, fileName }) => {
+      body.append('files', file);
+      body.append('fileName', fileName.trim() || file.name);
+    });
+    return this.http.post(`${environment.apiUrl}/api/doctors/${doctorId}/attachments`, body, { reportProgress: true, observe: 'events' });
+  }
+  getDoctorAttachments(doctorId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/doctors/${doctorId}/attachments`);
+  }
+  downloadDoctorAttachment(doctorId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/api/doctors/${doctorId}/attachments/${attachmentId}`, { responseType: 'blob' });
   }
 
   // ================= PLANS AND PAYMENTS =================

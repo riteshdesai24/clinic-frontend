@@ -16,7 +16,6 @@ export class AppointmentListComponent implements OnInit {
   readonly pageSize = 10;
   page = 1;
   selectedStatus = 'ALL';
-  selectedPeriod: 'week' | 'month' = 'week';
   readonly appointmentStatuses = ['PENDING', 'CONFIRMED', 'SCHEDULED', 'COMPLETED', 'CANCELLED'];
   loading = false;
   isAdmin = false;
@@ -33,7 +32,6 @@ export class AppointmentListComponent implements OnInit {
   cancelling = false;
   showInvoiceDialog = false;
   issuingInvoice = false;
-  readonly invoiceGstRate = 18;
   invoiceDiscountAmount = 0;
   appointmentToInvoice: any = null;
 
@@ -105,7 +103,7 @@ export class AppointmentListComponent implements OnInit {
   loadAppointments(): void {
     this.loading = true;
 
-    this.api.getAppointmentList({ period: this.selectedPeriod }).subscribe({
+    this.api.getAppointmentList().subscribe({
       next: (res: any) => {
         const records = Array.isArray(res?.data) ? res.data : res?.data?.appointments || [];
         this.appointmentList = records.map((appointment: any) => this.toListItem(appointment));
@@ -169,11 +167,6 @@ export class AppointmentListComponent implements OnInit {
     this.applyFilters();
   }
 
-  onPeriodFilterChange(event: Event): void {
-    this.selectedPeriod = (event.target as HTMLSelectElement).value === 'month' ? 'month' : 'week';
-    this.loadAppointments();
-  }
-
   changePage(page: number): void {
     this.page = page;
     this.updateVisibleAppointments();
@@ -224,19 +217,21 @@ export class AppointmentListComponent implements OnInit {
 
   createAppointment(): void {
     if (this.isDoctor) return;
-    this.router.navigate(['/pages/appointment']);
+    this.router.navigate(['/pages/appointment'], {
+      queryParams: { returnUrl: this.router.url }
+    });
   }
 
   editAppointment(item: any): void {
     if (this.isDoctor) return;
     this.router.navigate(['/pages/appointment'], {
-      queryParams: { id: item._id }
+      queryParams: { id: item._id, returnUrl: this.router.url }
     });
   }
 
   viewAppointment(item: any): void {
     this.router.navigate(['/pages/appointment'], {
-      queryParams: { view: true, id: item._id }
+      queryParams: { view: true, id: item._id, returnUrl: this.router.url }
     });
   }
 
@@ -255,7 +250,7 @@ export class AppointmentListComponent implements OnInit {
   confirmIssueInvoice(): void {
     if (!this.appointmentToInvoice || this.issuingInvoice || !Number.isFinite(Number(this.invoiceDiscountAmount)) || Number(this.invoiceDiscountAmount) < 0) return;
     this.issuingInvoice = true;
-    this.api.createInvoice({ appointmentId: this.appointmentToInvoice._id, gstRate: this.invoiceGstRate, discountAmount: Number(this.invoiceDiscountAmount) }).subscribe({
+    this.api.createInvoice({ appointmentId: this.appointmentToInvoice._id, gstRate: 0, discountAmount: Number(this.invoiceDiscountAmount) }).subscribe({
       next: (response: any) => {
         this.issuingInvoice = false;
         this.showInvoiceDialog = false;

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 
 import { PatientRoutingModule } from './patient-routing.module';
 import { PatientComponent } from './patient.component';
+import { PatientProfileComponent } from './patient-profile.component';
+import { PatientVisitHistoryModule } from '../patient-visit-history/patient-visit-history.module';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -22,7 +24,8 @@ import { AppointmentSharedModule } from '../appointment/shared/appointment-share
 
 @NgModule({
   declarations: [
-    PatientComponent
+    PatientComponent,
+    PatientProfileComponent
   ],
   imports: [
     CommonModule,
@@ -35,6 +38,7 @@ import { AppointmentSharedModule } from '../appointment/shared/appointment-share
     DialogModule,
     AutoCompleteModule,
     AppointmentSharedModule,
+    PatientVisitHistoryModule,
 
     DropdownModule,
     InputTextModule,

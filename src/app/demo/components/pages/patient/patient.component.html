@@ -1,3 +1,11 @@
+<app-patient-profile
+  *ngIf="isView; else patientFormView"
+  [patient]="patientForm.getRawValue()"
+  [patientId]="patientId"
+  [recordLoading]="loading">
+</app-patient-profile>
+
+<ng-template #patientFormView>
 <div class="grid">
   <div class="col-12">
     <div class="pf-card">
@@ -11,6 +19,7 @@
           <h5 class="pf-title">{{ isEdit ? 'Edit Patient' : 'Create Patient' }}</h5>
           <p class="pf-sub">Create the patient record now. Booking an appointment is optional.</p>
         </div>
+        <app-patient-visit-history *ngIf="patientId" class="patient-form-history" [patientId]="patientId" [patientName]="patientDisplayName"></app-patient-visit-history>
       </div>
 
       <form [formGroup]="patientForm" (ngSubmit)="onSubmit()">
@@ -451,6 +460,63 @@
             </div>
           </p-tabPanel>
 
+          <p-tabPanel header="Documents" leftIcon="pi pi-fw pi-file">
+            <section class="document-upload" aria-label="Patient document upload">
+              <header class="document-upload-heading"><div><h5>Upload Files</h5><p>Select documents here; they upload when you save the patient record.</p></div></header>
+              <div class="document-upload-grid">
+                <div class="document-dropzone" *ngIf="!isView" [class.drag-over]="documentsDragOver"
+                  (dragover)="$event.preventDefault(); documentsDragOver = true"
+                  (dragleave)="documentsDragOver = false" (drop)="onDocumentsDropped($event)">
+                  <i class="pi pi-cloud-upload" aria-hidden="true"></i>
+                  <strong>Drag files to upload</strong><span>or select files from your device</span>
+                  <label class="choose-file-button">Choose Files<input type="file" multiple accept=".jpg,.jpeg,.png,.pdf,.svg,.doc,.docx" (change)="onDocumentsSelected($event)" /></label>
+                </div>
+                <div class="document-queue">
+                  <div class="document-queue-heading"><i [class]="documentsUploading ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"></i><strong>{{ documentsUploading ? 'Uploading…' : 'Files' }}</strong></div>
+                  <div class="document-empty" *ngIf="!selectedDocuments.length">No files selected yet.</div>
+                  <div class="document-file-row" *ngFor="let file of selectedDocuments; let i = index">
+                    <i class="document-file-icon" [ngClass]="documentIcon(file.file)" aria-hidden="true"></i>
+                    <div class="document-file-info"><div class="document-file-meta"><span [title]="file.file.name">{{ file.file.name }}</span><small>{{ formatFileSize(file.file.size) }}</small>
+                      <button type="button" aria-label="Remove file" (click)="removeSelectedDocument(i)" [disabled]="documentsUploading"><i class="pi pi-times"></i></button></div>
+                      <label class="document-filename-field">File name
+                        <input type="text" [ngModel]="file.fileName" (ngModelChange)="updateDocumentFileName(i, $event)"
+                          [ngModelOptions]="{ standalone: true }" [disabled]="documentsUploading" aria-label="File name to save" />
+                      </label>
+                      <div class="document-progress"><span [class.complete]="!documentsUploading" [style.width.%]="documentsUploading ? documentUploadProgress : 0"></span></div>
+                      <small class="document-file-status">{{ documentsUploading ? documentUploadProgress + '%' : 'Ready to upload on save' }}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <small class="document-upload-hint">Supported: JPG, PNG, PDF, SVG, DOC, DOCX · Maximum file size: 24 MB</small>
+              <small class="p-error document-upload-error" *ngIf="documentsError">{{ documentsError }}</small>
+            </section>
+            <section class="uploaded-documents" aria-label="Uploaded patient documents">
+              <header><div><h5>Uploaded Documents</h5><p>Documents already saved to this patient record.</p></div><span>{{ uploadedDocuments.length }}</span></header>
+              <div class="uploaded-documents-state" *ngIf="documentsLoading"><i class="pi pi-spin pi-spinner"></i> Loading documents…</div>
+              <div class="uploaded-documents-state error" *ngIf="!documentsLoading && documentsListError">{{ documentsListError }} <button type="button" (click)="loadPatientDocuments()">Retry</button></div>
+              <div class="uploaded-documents-state" *ngIf="!documentsLoading && !documentsListError && !uploadedDocuments.length">No documents uploaded yet.</div>
+              <ul *ngIf="!documentsLoading && uploadedDocuments.length">
+                <li *ngFor="let file of uploadedDocuments">
+                  <i class="document-file-icon" [ngClass]="documentIcon(file)" aria-hidden="true"></i>
+                  <button type="button" class="uploaded-document-name" (click)="previewPatientDocument(file)" [title]="documentName(file)">{{ documentName(file) }}</button>
+                  <small>{{ formatFileSize(file.size || file.fileSize || 0) }}</small>
+                  <small *ngIf="file.uploadedAt || file.createdAt">{{ (file.uploadedAt || file.createdAt) | date:'dd MMM yyyy' }}</small>
+                  <button type="button" class="uploaded-document-download" aria-label="Preview document" title="Preview document" (click)="previewPatientDocument(file)"><i class="pi pi-eye"></i></button>
+                  <button type="button" class="uploaded-document-download" aria-label="Download document" (click)="downloadPatientDocument(file)"><i class="pi pi-download"></i></button>
+                </li>
+              </ul>
+            </section>
+          </p-tabPanel>
+
+          <p-tabPanel *ngIf="patientId" header="Appointments" leftIcon="pi pi-fw pi-calendar">
+            <section class="patient-appointments" aria-label="Patient visit history">
+              <h5>Appointment and treatment history</h5>
+              <p>View each appointment with its recorded treatments and clinical details.</p>
+              <app-patient-visit-history [patientId]="patientId" [patientName]="patientDisplayName"></app-patient-visit-history>
+            </section>
+          </p-tabPanel>
+
         </p-tabView>
 
         <!-- Messages -->
@@ -506,6 +572,19 @@
           (close)="hideAppointmentDialog()">
         </app-appointment>
       </p-dialog>
+      <div class="document-preview-backdrop" *ngIf="previewVisible" (click)="closeDocumentPreview()">
+        <section class="document-preview-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+          <header><div><strong>{{ documentName(previewingDocument) }}</strong><small>Document preview</small></div><div class="document-preview-actions"><button type="button" (click)="downloadPreviewDocument()"><i class="pi pi-download"></i> Download</button><button type="button" class="preview-close" aria-label="Close preview" (click)="closeDocumentPreview()"><i class="pi pi-times"></i></button></div></header>
+          <div class="document-preview-content">
+            <div class="document-preview-state" *ngIf="previewLoading"><i class="pi pi-spin pi-spinner"></i> Loading preview…</div>
+            <div class="document-preview-state error" *ngIf="!previewLoading && previewError">{{ previewError }}</div>
+            <img *ngIf="!previewLoading && !previewError && previewKind === 'image' && previewImageUrl" [src]="previewImageUrl" [alt]="documentName(previewingDocument)" />
+            <iframe *ngIf="!previewLoading && !previewError && previewKind === 'pdf' && previewUrl" [src]="previewUrl" [title]="documentName(previewingDocument)"></iframe>
+            <div class="preview-unavailable" *ngIf="!previewLoading && !previewError && previewKind === 'other'"><i class="pi pi-file"></i><strong>Preview is not available for this file type.</strong><span>Download the file to open it.</span><button type="button" (click)="downloadPreviewDocument()"><i class="pi pi-download"></i> Download document</button></div>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 </div>
+</ng-template>
