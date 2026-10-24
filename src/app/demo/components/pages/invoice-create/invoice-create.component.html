@@ -1,0 +1,33 @@
+<div class="invoice-create-page">
+  <div class="page-heading"><button pButton type="button" icon="pi pi-arrow-left" class="p-button-outlined back-button" aria-label="Back to invoices" (click)="cancel()"></button><div><h1>Create Invoice</h1><p>Create a new invoice for a patient.</p></div></div>
+  <div class="invoice-layout">
+    <section class="invoice-card invoice-details">
+      <header><h2>Invoice Details</h2><p>Enter the details for the new invoice.</p></header>
+      <div class="basic-fields">
+        <label>Invoice Date<input pInputText type="date" [(ngModel)]="invoiceDate"></label>
+        <label>Invoice Type<p-dropdown [options]="[{label:'Standard Invoice',value:'STANDARD'},{label:'Consultation',value:'CONSULTATION'},{label:'Treatment',value:'TREATMENT'}]" [(ngModel)]="invoiceType" optionLabel="label" optionValue="value" styleClass="w-full"></p-dropdown></label>
+        <label>Appointment<p-autoComplete [(ngModel)]="selectedAppointment" [suggestions]="filteredAppointments" (completeMethod)="filterAppointments($event)" [dropdown]="true" [forceSelection]="true" field="label" [disabled]="!patientId(selectedPatient)" placeholder="Search appointments..." styleClass="w-full" inputStyleClass="w-full"><ng-template let-appointment pTemplate="item"><div class="autocomplete-option"><strong>{{ appointmentLabel(appointment) }}</strong><span>{{ appointment.type || appointment.appointmentType || 'Appointment' }}</span></div></ng-template></p-autoComplete></label>
+      </div>
+      <section class="items-section">
+        <div class="section-heading"><h3>Items &amp; Services</h3><button pButton type="button" icon="pi pi-plus" label="Add Item" class="invoice-primary" (click)="addLine()"></button></div>
+        <div class="items-table-wrap"><table class="items-table"><thead><tr><th>Description</th><th>Price</th><th>Total</th><th aria-label="Delete"></th></tr></thead><tbody>
+          <tr *ngFor="let line of lines; let i = index"><td><p-autoComplete [ngModel]="line.treatment" (ngModelChange)="setTreatment(i, $event)" [suggestions]="filteredTreatments" (completeMethod)="searchTreatments($event)" [dropdown]="true" dropdownMode="blank" [appendTo]="'body'" [forceSelection]="true" field="label" placeholder="Search treatments..." styleClass="w-full" inputStyleClass="w-full"><ng-template let-treatment pTemplate="item"><div class="autocomplete-option"><strong>{{ treatmentLabel(treatment) }}</strong><span>{{ treatment.description || '' }}</span></div></ng-template><ng-template let-treatment pTemplate="selectedItem">{{ treatmentLabel(treatment) }}</ng-template></p-autoComplete></td><td><div class="price-field"><span>₹</span><input pInputText type="number" min="0" step="0.01" [(ngModel)]="line.price" aria-label="Treatment price"></div></td><td class="line-total">{{ money(line.price) }}</td><td><button pButton type="button" icon="pi pi-trash" class="delete-line" aria-label="Delete item" (click)="removeLine(i)"></button></td></tr>
+        </tbody></table></div>
+        <div class="invoice-total"><span>Total</span><strong>{{ money(subtotal) }}</strong></div>
+      </section>
+      <footer class="form-actions"><button pButton type="button" label="Cancel" class="p-button-outlined" (click)="cancel()"></button><button pButton type="button" label="Create Invoice" icon="pi pi-check" class="invoice-primary" [loading]="saving" (click)="saveInvoice()"></button></footer>
+    </section>
+
+    <aside class="invoice-card patient-card">
+      <header><h2>Patient Information</h2><p>Select a patient for this invoice.</p></header>
+      <p-autoComplete [(ngModel)]="selectedPatient" [suggestions]="filteredPatients" (completeMethod)="searchPatients($event)" (onSelect)="onPatientSelected($event.value)" [dropdown]="true" [forceSelection]="true" field="label" placeholder="Search patients..." styleClass="w-full" inputStyleClass="w-full"><ng-template let-patient pTemplate="item"><div class="autocomplete-option"><strong>{{ patientName(patient) }}</strong><span>{{ patient.email || patient.phone || '' }}</span></div></ng-template><ng-template let-patient pTemplate="selectedItem">{{ patientName(patient) }}</ng-template></p-autoComplete>
+      <div class="selected-patient" *ngIf="selectedPatient; else noPatient">
+        <div class="patient-identity"><img *ngIf="selectedPatient.profilePhoto || selectedPatient.photo" [src]="selectedPatient.profilePhoto || selectedPatient.photo" alt=""><span *ngIf="!(selectedPatient.profilePhoto || selectedPatient.photo)" class="patient-avatar">{{ patientName(selectedPatient).charAt(0) }}</span><div><strong>{{ patientName(selectedPatient) }}</strong><small>{{ selectedPatient.age || '—' }}<span *ngIf="selectedPatient.gender"> • {{ selectedPatient.gender }}</span><span *ngIf="selectedPatient.patientId || selectedPatient.medicalRecordNumber"> • ID: {{ selectedPatient.patientId || selectedPatient.medicalRecordNumber }}</span></small></div></div>
+        <p *ngIf="selectedPatient.email">Email: {{ selectedPatient.email }}</p><p *ngIf="selectedPatient.phone">Phone: {{ selectedPatient.phone }}</p>
+        <p class="patient-address" *ngIf="selectedPatient.address || selectedPatient.address1">Address: {{ selectedPatient.address || selectedPatient.address1 }}<span *ngIf="selectedPatient.city">, {{ selectedPatient.city }}</span><span *ngIf="selectedPatient.state">, {{ selectedPatient.state }}</span><span *ngIf="selectedPatient.pincode"> {{ selectedPatient.pincode }}</span></p>
+        <button type="button" class="patient-detail-link" (click)="viewPatient()">View patient details</button>
+      </div>
+      <ng-template #noPatient><div class="patient-placeholder"><i class="pi pi-user"></i><span>Choose a patient to see their information here.</span></div></ng-template>
+    </aside>
+  </div>
+</div>

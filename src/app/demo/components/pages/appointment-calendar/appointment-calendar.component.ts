@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { CalendarOptions, DatesSetArg, EventClickArg } from '@fullcalendar/core';
+import { FullCalendarComponent } from '@fullcalendar/angular';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { catchError, forkJoin, of } from 'rxjs';
 import { AuthService } from 'src/app/demo/service/auth.service';
@@ -12,28 +14,36 @@ import { AuthService } from 'src/app/demo/service/auth.service';
     styleUrls: ['./appointment-calendar.component.scss'],
 })
 export class AppointmentCalendarComponent {
+    @ViewChild('calendar') calendarComponent?: FullCalendarComponent;
     appointments: any[] = [];
     todayAppointments: any[] = [];
     todayAppointmentsLoading = false;
     calendarLoadError: string | null = null;
     activeStatusFilter = 'ALL';
+    activeDoctorId = '';
+    activeView: 'timeGridDay' | 'timeGridWeek' | 'dayGridMonth' = 'timeGridDay';
+    calendarTitle = '';
+    doctorOptions: { label: string; value: string }[] = [];
     private calendarEvents: any[] = [];
     private calendarRequestId = 0;
 
     calendarOptions: CalendarOptions = {
-        plugins: [dayGridPlugin, interactionPlugin],
-        initialView: 'dayGridMonth',
-        headerToolbar: {
-            left: 'prev,next',
-            center: 'title',
-            right: '',
-        },
+        plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+        initialView: 'timeGridDay',
+        headerToolbar: false,
         weekends: true,
         selectable: true,
         editable: false,
         dayMaxEvents: true,
-        displayEventTime: false,
+        displayEventTime: true,
         eventDisplay: 'block',
+        allDaySlot: false,
+        slotMinTime: '08:00:00',
+        slotMaxTime: '20:00:00',
+        slotDuration: '01:00:00',
+        scrollTime: '08:00:00',
+        height: 'auto',
+        nowIndicator: true,
         events: [],
         dateClick: this.onDateClick.bind(this),
         eventClick: this.onEventClick.bind(this),
@@ -50,12 +60,41 @@ export class AppointmentCalendarComponent {
             ].filter(Boolean).join('\n');
         },
         datesSet: this.onDatesSet.bind(this),
+        eventContent: (arg) => this.renderCalendarEvent(arg),
     };
 
     constructor(
         private api: AuthService,
         private router: Router,
-    ) {}
+    ) {
+        this.api.getDoctorList().subscribe({
+            next: (response: any) => {
+                const doctors = this.asRecords(response?.data);
+                this.doctorOptions = doctors.map((doctor: any) => ({
+                    label: doctor.staffname || doctor.name || [doctor.firstName, doctor.lastName].filter(Boolean).join(' ') || 'Doctor',
+                    value: this.idOf(doctor),
+                })).filter((doctor: any) => doctor.value);
+            },
+        });
+    }
+
+    setCalendarView(view: 'timeGridDay' | 'timeGridWeek' | 'dayGridMonth'): void {
+        this.activeView = view;
+        this.calendarComponent?.getApi().changeView(view);
+    }
+
+    moveCalendar(direction: -1 | 1): void {
+        const calendar = this.calendarComponent?.getApi();
+        if (!calendar) return;
+        direction < 0 ? calendar.prev() : calendar.next();
+    }
+
+    goToToday(): void { this.calendarComponent?.getApi().today(); }
+
+    setDoctorFilter(doctorId: string): void {
+        this.activeDoctorId = doctorId;
+        this.applyStatusFilter();
+    }
 
     openNewAppointment(date?: Date): void {
         if (date && this.isBeforeToday(date)) return;
@@ -83,14 +122,17 @@ export class AppointmentCalendarComponent {
     }
 
     private applyStatusFilter(): void {
-        this.calendarOptions.events = this.activeStatusFilter === 'ALL'
-            ? [...this.calendarEvents]
-            : this.calendarEvents.filter((event) =>
-                String(event.extendedProps?.status || '').toUpperCase() === this.activeStatusFilter,
-            );
+        this.calendarOptions.events = this.calendarEvents.filter((event) => {
+            const matchesStatus = this.activeStatusFilter === 'ALL' ||
+                String(event.extendedProps?.status || '').toUpperCase() === this.activeStatusFilter;
+            const matchesDoctor = !this.activeDoctorId || String(event.extendedProps?.doctorId || '') === this.activeDoctorId;
+            return matchesStatus && matchesDoctor;
+        });
     }
 
     private onDatesSet(arg: DatesSetArg): void {
+        this.calendarTitle = arg.view.title;
+        this.activeView = arg.view.type as 'timeGridDay' | 'timeGridWeek' | 'dayGridMonth';
         const requestId = ++this.calendarRequestId;
         this.todayAppointmentsLoading = true;
         const months = this.getCalendarMonths(arg.start, arg.end);
@@ -175,14 +217,16 @@ export class AppointmentCalendarComponent {
                             id: appointment._id,
                             title: `${this.formatTime12(time)} • Patient: ${patientName} • Dr: ${doctorName}`,
                             start: this.normalizeDate(date, time),
-                            end: this.normalizeDate(date, time),
+                            end: this.appointmentEnd(date, time, appointment.durationMinutes || appointment.duration || relatedAppointment.durationMinutes || 30),
                             backgroundColor: statusColor,
                             borderColor: statusColor,
-                            textColor: '#ffffff',
+                            textColor: '#262626',
                             extendedProps: {
                                 status: appointment.status,
                                 doctor: doctorName,
+                                doctorId: this.idOf(appointment.doctorId || appointment.doctor || relatedAppointment.doctorId || relatedAppointment.doctor),
                                 patient: patientName,
+                                appointmentType: appointment.type || appointment.appointmentType || relatedAppointment.type || relatedAppointment.appointmentType || 'Appointment',
                                 time: this.formatTime12(time),
                                 treatment:
                                     appointment.treatmentName ||
@@ -323,6 +367,49 @@ export class AppointmentCalendarComponent {
         return `${datePart}T${time}:00`;
     }
 
+    private appointmentEnd(dateValue: any, timeValue: any, duration: number): string {
+        const start = new Date(this.normalizeDate(dateValue, this.to24HourTime(timeValue)));
+        start.setMinutes(start.getMinutes() + Math.max(15, Number(duration) || 30));
+        const year = start.getFullYear();
+        const month = String(start.getMonth() + 1).padStart(2, '0');
+        const day = String(start.getDate()).padStart(2, '0');
+        const hours = String(start.getHours()).padStart(2, '0');
+        const minutes = String(start.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:00`;
+    }
+
+    private to24HourTime(value: any): string {
+        const match = String(value || '').trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+        if (!match) return '09:00';
+        let hour = Number(match[1]);
+        if (match[3]?.toUpperCase() === 'PM' && hour < 12) hour += 12;
+        if (match[3]?.toUpperCase() === 'AM' && hour === 12) hour = 0;
+        return `${String(hour).padStart(2, '0')}:${match[2]}`;
+    }
+
+    private renderCalendarEvent(arg: any): { domNodes: HTMLElement[] } {
+        const details = arg.event.extendedProps as Record<string, any>;
+        const event = document.createElement('div');
+        event.className = `clinic-calendar-event clinic-calendar-event-${String(details['status'] || 'pending').toLowerCase()}`;
+        const heading = document.createElement('div');
+        heading.className = 'clinic-calendar-event-heading';
+        const patient = document.createElement('strong');
+        patient.textContent = String(details['patient'] || 'Patient');
+        heading.appendChild(patient);
+        const status = document.createElement('span');
+        status.className = 'clinic-calendar-event-status';
+        status.textContent = String(details['status'] || 'Scheduled').replaceAll('_', ' ');
+        heading.appendChild(status);
+        const time = document.createElement('small');
+        time.textContent = String(details['time'] || arg.timeText || '');
+        const doctor = document.createElement('small');
+        doctor.textContent = String(details['doctor'] || '');
+        const type = document.createElement('small');
+        type.textContent = String(details['appointmentType'] || 'Appointment');
+        event.append(heading, time, doctor, type);
+        return { domNodes: [event] };
+    }
+
     getPatientName(appointment: any): string {
         const possibleNames = [
             appointment.patientName,
@@ -413,16 +500,16 @@ export class AppointmentCalendarComponent {
     private getStatusColor(status: string): string {
         switch (String(status || '').toUpperCase()) {
             case 'CONFIRMED':
-                return '#0d78ad';
+                return '#eaf1ff';
             case 'SCHEDULED':
-                return '#0ea5e9';
+                return '#eaf1ff';
             case 'COMPLETED':
-                return '#16a34a';
+                return '#eaf8ee';
             case 'CANCELLED':
-                return '#ef4444';
+                return '#fff0f0';
             case 'PENDING':
             default:
-                return '#f59e0b';
+                return '#fff6e9';
         }
     }
 

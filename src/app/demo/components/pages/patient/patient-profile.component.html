@@ -71,8 +71,7 @@
       </section>
 
       <section class="profile-card appointments-card" id="appointments">
-        <header class="section-card-heading"><div><span>Care history</span><h2>Appointments and treatments</h2></div></header>
-        <app-patient-visit-history [patientId]="patientId" [patientName]="fullName"></app-patient-visit-history>
+        <app-patient-visit-history class="history-inline" [inline]="true" [patientId]="patientId" [patientName]="fullName"></app-patient-visit-history>
       </section>
 
       <section class="profile-card insurance-card" id="insurance">

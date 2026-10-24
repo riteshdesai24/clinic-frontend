@@ -16,31 +16,19 @@
           <i class="pi pi-user-plus"></i>
         </div>
         <div>
-          <h5 class="pf-title">{{ isEdit ? 'Edit Patient' : 'Create Patient' }}</h5>
-          <p class="pf-sub">Create the patient record now. Booking an appointment is optional.</p>
+          <h5 class="pf-title">{{ isEdit ? 'Edit Patient' : 'Add Patient' }}</h5>
+          <p class="pf-sub">{{ isEdit ? 'Update the patient record.' : 'Register a new patient in your clinic.' }}</p>
         </div>
         <app-patient-visit-history *ngIf="patientId" class="patient-form-history" [patientId]="patientId" [patientName]="patientDisplayName"></app-patient-visit-history>
       </div>
 
       <form [formGroup]="patientForm" (ngSubmit)="onSubmit()">
 
-        <!-- Clinic -->
-        <p class="section-label">Clinic</p>
-        <div class="field-grid g1 mb-section">
-          <div class="pf-field">
-            <label>Clinic Name</label>
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-building"></i>
-              <input pInputText class="w-full" [value]="clinicData.clinicName" disabled />
-            </span>
-          </div>
-        </div>
-
         <!-- Tabs -->
         <p-tabView [(activeIndex)]="activeTab" (onChange)="onTabChange($event)" styleClass="mb-section">
 
           <!-- Tab 1: Personal Info -->
-          <p-tabPanel header="Personal Info" leftIcon="pi pi-fw pi-user" [headerStyleClass]="hasTabErrors(0) ? 'p-invalid-tab' : ''">
+          <p-tabPanel header="Personal Information" leftIcon="pi pi-fw pi-user" [headerStyleClass]="hasTabErrors(0) ? 'p-invalid-tab' : ''">
             <div class="field-grid g3 mb-section">
 
               <div class="pf-field">
@@ -142,6 +130,11 @@
                 </p-dropdown>
               </div>
 
+              <div class="pf-field">
+                <label>Profile Photo</label>
+                <label class="patient-photo-upload"><i class="pi pi-upload"></i> Upload Photo<input type="file" accept="image/png,image/jpeg,image/gif" (change)="onDocumentsSelected($event)" /></label>
+              </div>
+
             </div>
           </p-tabPanel>
 
@@ -180,6 +173,11 @@
               </div>
 
               <div class="pf-field">
+                <label>Alternative Phone (Optional)</label>
+                <input pInputText formControlName="alternatePhone" class="w-full" placeholder="Enter alternative phone" />
+              </div>
+
+              <div class="pf-field">
                 <label>Work / Other Email</label>
                 <span class="p-input-icon-left w-full">
                   <i class="pi pi-envelope"></i>
@@ -199,6 +197,13 @@
 
             </div>
 
+            <p class="section-label">Preferred Contact Method</p>
+            <div class="contact-preference-options">
+              <label><input type="radio" formControlName="preferredContactMethod" value="PHONE" /> Phone</label>
+              <label><input type="radio" formControlName="preferredContactMethod" value="EMAIL" /> Email</label>
+              <label><input type="radio" formControlName="preferredContactMethod" value="SMS" /> SMS</label>
+            </div>
+
             <p class="section-label">Other Contacts</p>
             <div class="field-grid g2 mb-section">
 
@@ -208,8 +213,18 @@
               </div>
 
               <div class="pf-field">
-                <label>Emergency Contact Number</label>
+                <label>Relationship</label>
+                <input pInputText formControlName="emergencyRelationship" class="w-full" placeholder="Enter relationship" />
+              </div>
+
+              <div class="pf-field">
+                <label>Emergency Contact Phone</label>
                 <input pInputText formControlName="emergencyContactNumber" class="w-full" />
+              </div>
+
+              <div class="pf-field">
+                <label>Emergency Contact Email (Optional)</label>
+                <input pInputText type="email" formControlName="emergencyContactEmail" class="w-full" />
               </div>
 
               <div class="pf-field">
@@ -285,7 +300,13 @@
           </p-tabPanel>
 
           <!-- Tab 4: Medical -->
-          <p-tabPanel header="Medical" leftIcon="pi pi-fw pi-heart" [headerStyleClass]="hasTabErrors(3) ? 'p-invalid-tab' : ''">
+          <p-tabPanel header="Medical Information" leftIcon="pi pi-fw pi-heart" [headerStyleClass]="hasTabErrors(3) ? 'p-invalid-tab' : ''">
+
+            <div class="field-grid g3 mb-section">
+              <div class="pf-field"><label>Blood Type</label><p-dropdown [options]="bloodGroups" optionLabel="label" optionValue="value" formControlName="bloodGroup" placeholder="Select blood type" styleClass="w-full"></p-dropdown></div>
+              <div class="pf-field"><label>Height (cm)</label><input pInputText type="number" min="0" formControlName="height" placeholder="Enter height" /></div>
+              <div class="pf-field"><label>Weight (kg)</label><input pInputText type="number" min="0" formControlName="weight" placeholder="Enter weight" /></div>
+            </div>
 
             <p class="section-label">Medical Conditions</p>
             <div class="field-grid g1 mb-section">
@@ -320,7 +341,7 @@
             <div class="field-grid g1 mb-section">
               <div class="pf-field">
                 <label>Current Medications</label>
-                <input pInputText formControlName="currentMedications" class="w-full" />
+                <textarea pInputTextarea rows="3" formControlName="currentMedications" class="w-full" placeholder="List current medications"></textarea>
               </div>
 
               <div class="pf-field">
@@ -342,11 +363,27 @@
                 <label>Habits</label>
                 <input pInputText formControlName="habits" class="w-full" placeholder="e.g. Smoking, Alcohol" />
               </div>
+
+              <div class="pf-field"><label>Chronic Conditions</label><textarea pInputTextarea rows="3" formControlName="chronicConditions" class="w-full" placeholder="List chronic conditions"></textarea></div>
+            </div>
+
+            <p class="section-label">Medical History</p>
+            <div class="field-grid g1 mb-section">
+              <div class="pf-field"><label>Past Surgeries</label><textarea pInputTextarea rows="3" formControlName="pastSurgeries" class="w-full" placeholder="List any past surgeries with dates"></textarea></div>
+              <div class="pf-field"><label>Previous Hospitalizations</label><textarea pInputTextarea rows="3" formControlName="previousHospitalizations" class="w-full" placeholder="List previous hospitalizations with dates"></textarea></div>
+              <div class="pf-field"><label>Family Medical History</label><textarea pInputTextarea rows="3" formControlName="familyHistory" class="w-full" placeholder="Enter family medical history"></textarea></div>
+            </div>
+            <p class="section-label">Lifestyle Information</p>
+            <div class="field-grid g2 mb-section">
+              <div class="pf-field"><label>Smoking Status</label><p-dropdown [options]="[{label:'Never',value:'NEVER'},{label:'Former',value:'FORMER'},{label:'Current',value:'CURRENT'}]" formControlName="smokingStatus" placeholder="Select status" styleClass="w-full"></p-dropdown></div>
+              <div class="pf-field"><label>Alcohol Consumption</label><p-dropdown [options]="[{label:'None',value:'NONE'},{label:'Occasional',value:'OCCASIONAL'},{label:'Regular',value:'REGULAR'}]" formControlName="alcoholConsumption" placeholder="Select consumption" styleClass="w-full"></p-dropdown></div>
+              <div class="pf-field"><label>Exercise Frequency</label><p-dropdown [options]="[{label:'Never',value:'NEVER'},{label:'1–2 times weekly',value:'WEEKLY_1_2'},{label:'3+ times weekly',value:'WEEKLY_3_PLUS'}]" formControlName="exerciseFrequency" placeholder="Select frequency" styleClass="w-full"></p-dropdown></div>
+              <div class="pf-field"><label>Dietary Habits</label><textarea pInputTextarea rows="3" formControlName="dietaryHabits" class="w-full" placeholder="Describe dietary habits"></textarea></div>
             </div>
           </p-tabPanel>
 
           <!-- Tab 5: Insurance -->
-          <p-tabPanel header="Insurance" leftIcon="pi pi-fw pi-shield" [headerStyleClass]="hasTabErrors(4) ? 'p-invalid-tab' : ''">
+          <p-tabPanel header="Insurance & Billing" leftIcon="pi pi-fw pi-shield" [headerStyleClass]="hasTabErrors(4) ? 'p-invalid-tab' : ''">
             <p class="section-label">Primary Insurance</p>
             <div class="field-grid g2 mb-section">
 
@@ -380,7 +417,17 @@
                 <input pInputText formControlName="insuranceIdNumber" class="w-full" />
               </div>
 
+              <div class="pf-field"><label>Group Number</label><input pInputText formControlName="insuranceGroupNumber" placeholder="Enter group number" /></div>
+              <div class="pf-field"><label>Policy Holder Name</label><input pInputText formControlName="policyHolderName" placeholder="Enter policy holder name" /></div>
+              <div class="pf-field"><label>Relationship to Patient</label><p-dropdown [options]="[{label:'Self',value:'SELF'},{label:'Spouse',value:'SPOUSE'},{label:'Parent',value:'PARENT'},{label:'Other',value:'OTHER'}]" formControlName="insuranceRelationship" placeholder="Select relationship" styleClass="w-full"></p-dropdown></div>
+              <div class="pf-field"><label>Insurance Phone Number</label><input pInputText formControlName="insurancePhone" placeholder="Enter insurance phone number" /></div>
+
             </div>
+            <p class="section-label">Secondary Insurance</p>
+            <div class="field-grid g2 mb-section"><div class="pf-field"><label>Insurance Provider</label><input pInputText formControlName="secondaryInsuranceProvider" placeholder="Enter insurance provider" /></div><div class="pf-field"><label>Policy Number</label><input pInputText formControlName="secondaryInsurancePolicy" placeholder="Enter policy number" /></div></div>
+            <p class="section-label">Billing Preferences</p>
+            <div class="field-grid g1 mb-section"><div class="pf-field"><label>Preferred Billing Method</label><p-dropdown [options]="[{label:'Insurance',value:'INSURANCE'},{label:'Self-pay',value:'SELF_PAY'},{label:'Other',value:'OTHER'}]" formControlName="billingMethod" placeholder="Select method" styleClass="w-full"></p-dropdown></div></div>
+            <div class="payment-preference-options"><label><input type="checkbox" formControlName="paymentCreditCard" /> Credit Card</label><label><input type="checkbox" formControlName="paymentDebitCard" /> Debit Card</label><label><input type="checkbox" formControlName="paymentCash" /> Cash</label><label><input type="checkbox" formControlName="paymentCheck" /> Check</label><label><input type="checkbox" formControlName="paymentOnline" /> Online Payment</label></div>
           </p-tabPanel>
 
           <!-- Tab 6: Demographics -->
@@ -460,7 +507,11 @@
             </div>
           </p-tabPanel>
 
-          <p-tabPanel header="Documents" leftIcon="pi pi-fw pi-file">
+          <p-tabPanel header="Consent & Documents" leftIcon="pi pi-fw pi-file">
+            <p class="section-label">Required Consent Forms</p>
+            <div class="consent-form-row" *ngFor="let consent of ['HIPAA Consent Form','Treatment Consent','Financial Agreement']"><div><strong>{{ consent }}</strong><small>{{ consent === 'HIPAA Consent Form' ? 'Patient consent for use and disclosure of health information' : consent === 'Treatment Consent' ? 'Consent to receive medical treatment' : 'Agreement to pay for services' }}</small></div><label class="choose-file-button">Upload<input type="file" accept=".pdf,.jpg,.jpeg,.png" (change)="onDocumentsSelected($event)" /></label></div>
+            <p class="section-label">Communication Preferences</p>
+            <div class="communication-preferences"><label><input type="checkbox" formControlName="communicationReminders" /> Receive appointment reminders</label><label><input type="checkbox" formControlName="communicationLabResults" /> Receive lab result notifications</label><label><input type="checkbox" formControlName="communicationPrescriptions" /> Receive prescription notifications</label><label><input type="checkbox" formControlName="communicationNewsletter" /> Receive clinic newsletter and updates</label></div>
             <section class="document-upload" aria-label="Patient document upload">
               <header class="document-upload-heading"><div><h5>Upload Files</h5><p>Select documents here; they upload when you save the patient record.</p></div></header>
               <div class="document-upload-grid">
@@ -511,9 +562,7 @@
 
           <p-tabPanel *ngIf="patientId" header="Appointments" leftIcon="pi pi-fw pi-calendar">
             <section class="patient-appointments" aria-label="Patient visit history">
-              <h5>Appointment and treatment history</h5>
-              <p>View each appointment with its recorded treatments and clinical details.</p>
-              <app-patient-visit-history [patientId]="patientId" [patientName]="patientDisplayName"></app-patient-visit-history>
+              <app-patient-visit-history class="history-inline" [inline]="true" [patientId]="patientId" [patientName]="patientDisplayName"></app-patient-visit-history>
             </section>
           </p-tabPanel>
 

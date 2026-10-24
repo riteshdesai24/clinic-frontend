@@ -14,6 +14,9 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { TagModule } from 'primeng/tag';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { DropdownModule } from 'primeng/dropdown';
+import { FormsModule } from '@angular/forms';
 
 // Services
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -25,6 +28,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 
   imports: [
     CommonModule,
+    FormsModule,
     ListPaginationComponent,
     PatientListRoutingModule,
     PatientVisitHistoryModule,
@@ -36,7 +40,9 @@ import { ConfirmationService, MessageService } from 'primeng/api';
     TooltipModule,
     ConfirmDialogModule,
     ToastModule,
-    TagModule
+    TagModule,
+    OverlayPanelModule,
+    DropdownModule
   ],
 
   providers: [

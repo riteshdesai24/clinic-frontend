@@ -372,6 +372,22 @@ export class AuthService {
     return this.http.get(`${environment.apiUrl}/api/doctors/${doctorId}/attachments/${attachmentId}`, { responseType: 'blob' });
   }
 
+  uploadStaffAttachments(staffId: string, files: { file: File; fileName: string; documentType?: string }[]): Observable<HttpEvent<any>> {
+    const body = new FormData();
+    files.forEach(({ file, fileName, documentType }) => {
+      body.append('files', file);
+      body.append('fileName', fileName.trim() || file.name);
+      body.append('documentType', documentType || 'Other');
+    });
+    return this.http.post(`${environment.apiUrl}/api/staff/${staffId}/attachments`, body, { reportProgress: true, observe: 'events' });
+  }
+  getStaffAttachments(staffId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/staff/${staffId}/attachments`);
+  }
+  downloadStaffAttachment(staffId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/api/staff/${staffId}/attachments/${attachmentId}`, { responseType: 'blob' });
+  }
+
   // ================= PLANS AND PAYMENTS =================
 
   getPlans(): Observable<any> { return this.http.get(`${environment.apiUrl}/api/plans`); }

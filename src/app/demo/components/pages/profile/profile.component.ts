@@ -20,6 +20,8 @@ export class ProfileComponent implements OnInit {
   loading = true;
   saving = false;
   savingPassword = false;
+  editingProfile = false;
+  editingPassword = false;
   clinicLogo = '';
   logoError = '';
   countries: any[] = [];
@@ -102,6 +104,7 @@ export class ProfileComponent implements OnInit {
         this.profile = { ...this.profile, ...changes, ...(response?.data || {}) };
         this.persistProfile();
         this.saving = false;
+        this.editingProfile = false;
         this.msg.add({ severity: 'success', summary: 'Saved', detail: 'Your profile has been updated.' });
       },
       error: (error: any) => {
@@ -154,6 +157,100 @@ export class ProfileComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
+  fullName(): string {
+    return this.profile?.fullName || this.profile?.name ||
+      [this.profile?.firstName, this.profile?.middleName, this.profile?.lastName].filter(Boolean).join(' ') ||
+      this.profile?.staffname || this.profile?.clinicName || 'Account';
+  }
+
+  initials(): string {
+    return this.fullName().split(/\s+/).filter(Boolean).slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase();
+  }
+
+  roleLabel(): string {
+    const role = String(this.profile?.role || 'User').toUpperCase();
+    return role === 'ADMIN' ? 'System Administrator' : role === 'DOCTOR' ? 'Doctor' : role === 'STAFF' ? 'Staff Member' : role;
+  }
+
+  roleBadgeLabel(): string {
+    const role = String(this.profile?.role || 'User').toUpperCase();
+    return role === 'ADMIN' ? 'Admin' : role === 'DOCTOR' ? 'Doctor' : role === 'STAFF' ? 'Staff' : role;
+  }
+
+  displayValue(value: any): string {
+    if (!value) return '';
+    return typeof value === 'object' ? value.name || value.label || '' : String(value);
+  }
+
+  locationLabel(): string {
+    const city = this.masterName(this.profile?.city ?? this.profile?.cityId, this.cityRecords);
+    const state = this.masterName(this.profile?.state ?? this.profile?.stateId, this.stateRecords);
+    const country = this.masterName(this.profile?.country ?? this.profile?.countryId, this.countries);
+    const parts = [city, state, country].filter(Boolean);
+    if (parts.length) return parts.join(', ');
+    const location = this.displayValue(this.profile?.location);
+    return location && !/^[a-f\d]{24}$/i.test(location) ? location : '—';
+  }
+
+  private masterName(value: any, records: any[]): string {
+    if (!value) return '';
+    if (typeof value === 'object') return this.displayValue(value);
+    const key = String(value).toLowerCase();
+    const match = records.find(record => [record?._id, record?.id, record?.name].some(item => String(item ?? '').toLowerCase() === key));
+    if (match?.name) return String(match.name);
+    return /^[a-f\d]{24}$/i.test(key) ? '' : String(value);
+  }
+
+  departmentLabel(): string {
+    return this.displayValue(this.profile?.department) || this.displayValue(this.profile?.specialization) || '—';
+  }
+
+  twoFactorLabel(): string {
+    const enabled = this.profile?.twoFactorEnabled ?? this.profile?.twoFAEnabled ?? this.profile?.isTwoFactorEnabled;
+    return enabled === true ? 'Enabled' : enabled === false ? 'Disabled' : 'Not configured';
+  }
+
+  passwordChangedLabel(): string {
+    const value = this.profile?.passwordChangedAt || this.profile?.lastPasswordChange;
+    if (!value) return 'Not available';
+    const changedAt = new Date(value);
+    if (Number.isNaN(changedAt.getTime())) return 'Not available';
+    const days = Math.max(0, Math.floor((Date.now() - changedAt.getTime()) / 86400000));
+    return days === 0 ? 'Today' : `${days} day${days === 1 ? '' : 's'} ago`;
+  }
+
+  securityScore(): string {
+    const score = this.profile?.securityScore;
+    return score !== undefined && score !== null && score !== '' && Number.isFinite(Number(score)) ? `${Number(score)}/100` : 'Not available';
+  }
+
+  startProfileEdit(): void { this.editingProfile = true; }
+
+  cancelProfileEdit(): void {
+    this.editingProfile = false;
+    this.profileForm.reset();
+    this.fields.forEach(field => this.profileForm.get(field)?.setValue(this.profile?.[field] || ''));
+    this.normalizeLocationValues();
+    this.updateLocationOptions(this.profileForm.get('country')?.value || '');
+  }
+
+  startPasswordEdit(): void { this.editingPassword = true; }
+
+  cancelPasswordEdit(): void {
+    this.passwordForm.reset();
+    this.editingPassword = false;
+  }
+
+  downloadData(): void {
+    const payload = JSON.stringify(this.profile || {}, null, 2);
+    const url = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'profile-data.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   changePassword(): void {
     if (this.passwordForm.invalid) {
       this.passwordForm.markAllAsTouched();
@@ -169,6 +266,7 @@ export class ProfileComponent implements OnInit {
       next: () => {
         this.savingPassword = false;
         this.passwordForm.reset();
+        this.editingPassword = false;
         this.msg.add({ severity: 'success', summary: 'Password updated', detail: 'Your password has been changed.' });
       },
       error: (error: any) => {

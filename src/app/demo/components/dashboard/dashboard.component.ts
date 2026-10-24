@@ -58,6 +58,12 @@ export class DashboardComponent implements OnInit {
   selectedDoctorId = '';
   currentDoctorId = '';
   monthlyIncome = Array(12).fill(0);
+  overviewRevenue = 0;
+  overviewBilledRevenue = 0;
+  overviewPatientCount = 0;
+  overviewActivePatientCount = 0;
+  overviewStaffCount = 0;
+  overviewStaffNewThisMonth = 0;
   incomeYears: number[] = [];
   selectedIncomeYear: number | 'ALL' = new Date().getFullYear();
   incomeYearDate = new Date();
@@ -66,6 +72,8 @@ export class DashboardComponent implements OnInit {
   monthlyIncomeError = '';
   monthlyIncomeChart: any;
   monthlyIncomeChartOptions: any;
+  appointmentStatusChart: any;
+  appointmentStatusChartOptions: any;
   private treatmentNameByAppointment = new Map<string, string>();
   private patientById = new Map<string, any>();
   invoiceLoading = false;
@@ -93,6 +101,23 @@ export class DashboardComponent implements OnInit {
     week: this.emptySummary(),
     month: this.emptySummary()
   };
+
+  get overviewRevenuePercent(): number {
+    return this.overviewBilledRevenue ? Math.min(100, Math.round(this.overviewRevenue / this.overviewBilledRevenue * 100)) : 0;
+  }
+
+  get overviewAppointmentCompletionPercent(): number {
+    const summary = this.appointmentSummaries.month;
+    return summary.all ? Math.min(100, Math.round(summary.completed / summary.all * 100)) : 0;
+  }
+
+  get overviewActivePatientPercent(): number {
+    return this.overviewPatientCount ? Math.min(100, Math.round(this.overviewActivePatientCount / this.overviewPatientCount * 100)) : 0;
+  }
+
+  get overviewStaffNewPercent(): number {
+    return this.overviewStaffCount ? Math.min(100, Math.round(this.overviewStaffNewThisMonth / this.overviewStaffCount * 100)) : 0;
+  }
 
   constructor(private api: AuthService, private router: Router, private membershipAccess: MembershipAccessService) {}
 
@@ -122,6 +147,7 @@ export class DashboardComponent implements OnInit {
     this.loadTodayAppointments();
     this.loadTreatmentNames();
     this.loadPatientNames();
+    this.loadOverviewStaff();
     this.loadWeeklyInvoices();
     this.loadInvoiceAmountCards();
     if (this.isAdmin) this.loadMonthlyIncome();
@@ -246,11 +272,13 @@ export class DashboardComponent implements OnInit {
           completed: Number(counts.COMPLETED || 0),
           cancelled: Number(counts.CANCELLED || 0)
         };
+        if (period === 'month') this.refreshAppointmentStatusChart();
         remaining -= 1;
         if (!remaining) this.loading = false;
       },
       error: () => {
         this.appointmentSummaries[period] = this.emptySummary();
+        if (period === 'month') this.refreshAppointmentStatusChart();
         this.errorMessage = 'Could not load all appointment counts. Please try again.';
         remaining -= 1;
         if (!remaining) this.loading = false;
@@ -331,6 +359,21 @@ export class DashboardComponent implements OnInit {
           staffname: doctor.staffname || doctor.name || [doctor.firstName, doctor.lastName].filter(Boolean).join(' ') || 'Doctor'
         })).filter((doctor: any) => doctor._id);
       }
+    });
+  }
+
+  private loadOverviewStaff(): void {
+    this.api.getStaffList(undefined, 1000).subscribe({
+      next: (response: any) => {
+        const staff = Array.isArray(response?.data) ? response.data : response?.data?.staff || [];
+        this.overviewStaffCount = Number(response?.count ?? staff.length);
+        const now = new Date();
+        this.overviewStaffNewThisMonth = staff.filter((person: any) => {
+          const created = new Date(person.createdAt || person.createdDate || person.joiningDate);
+          return !Number.isNaN(created.getTime()) && created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+        }).length;
+      },
+      error: () => { this.overviewStaffCount = 0; this.overviewStaffNewThisMonth = 0; }
     });
   }
 
@@ -568,6 +611,8 @@ export class DashboardComponent implements OnInit {
     this.api.getPatientList().subscribe({
       next: (response: any) => {
         const patients = Array.isArray(response?.data) ? response.data : response?.data?.patients || [];
+        this.overviewPatientCount = Number(response?.count ?? patients.length);
+        this.overviewActivePatientCount = patients.filter((patient: any) => String(patient.status || (patient.isActive === false ? 'Inactive' : 'Active')).toLowerCase() === 'active').length;
         patients.forEach((patient: any) => {
           const id = this.recordId(patient);
           if (id) this.patientById.set(id, patient);
@@ -648,6 +693,27 @@ export class DashboardComponent implements OnInit {
         y: { beginAtZero: true, ticks: { callback: (value: number) => `₹${Number(value).toLocaleString('en-IN')}` } }
       }
     };
+    this.appointmentStatusChart = {
+      labels: ['Completed', 'Confirmed', 'Pending', 'Cancelled'],
+      datasets: [{
+        data: [0, 0, 0, 0],
+        backgroundColor: ['#168bff', '#00bfa5', '#ffb81c', '#ff7547'],
+        hoverBackgroundColor: ['#0878e8', '#00a98f', '#eda900', '#ed6034'],
+        borderColor: '#fff',
+        borderWidth: 2
+      }]
+    };
+    this.appointmentStatusChartOptions = {
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, padding: 16 } } }
+    };
+  }
+
+  private refreshAppointmentStatusChart(): void {
+    if (!this.appointmentStatusChart) return;
+    const summary = this.appointmentSummaries.month;
+    this.appointmentStatusChart.datasets[0].data = [summary.completed, summary.confirmed, summary.pending, summary.cancelled];
+    this.appointmentStatusChart = { ...this.appointmentStatusChart, datasets: [...this.appointmentStatusChart.datasets] };
   }
 
   loadMonthlyIncome(): void {
@@ -656,6 +722,8 @@ export class DashboardComponent implements OnInit {
     this.api.getInvoices({ page: 1, limit: 1000 }).subscribe({
       next: (response: any) => {
         this.incomeInvoices = Array.isArray(response?.data) ? response.data : response?.data?.invoices || [];
+        this.overviewRevenue = this.incomeInvoices.reduce((sum: number, invoice: any) => sum + this.invoicePaidAmount(invoice), 0);
+        this.overviewBilledRevenue = this.incomeInvoices.reduce((sum: number, invoice: any) => sum + this.invoiceAmount(invoice), 0);
         this.incomeYears = this.collectIncomeYears(this.incomeInvoices);
         this.rebuildMonthlyIncome();
         this.monthlyIncomeLoading = false;

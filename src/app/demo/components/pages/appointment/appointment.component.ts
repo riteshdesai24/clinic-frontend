@@ -62,11 +62,19 @@ export class AppointmentComponent implements OnInit {
     filteredDoctors: any[] = [];
     patients: any[] = [];
     filteredPatients: any[] = [];
-    clinicData: any = {};
     statuses = [
         { label: 'Confirmed', value: 'CONFIRMED' },
         { label: 'Pending', value: 'PENDING' },
     ];
+    appointmentTypes = [
+        { label: 'Consultation', value: 'CONSULTATION' },
+        { label: 'Check-up', value: 'CHECK_UP' },
+        { label: 'Follow-up', value: 'FOLLOW_UP' },
+        { label: 'Procedure', value: 'PROCEDURE' },
+        { label: 'Vaccination', value: 'VACCINATION' },
+        { label: 'Other', value: 'OTHER' },
+    ];
+    appointmentDurations = [15, 20, 30, 45, 60, 90].map(minutes => ({ label: `${minutes} minutes`, value: minutes }));
 
     constructor(
         private fb: FormBuilder,
@@ -87,12 +95,6 @@ export class AppointmentComponent implements OnInit {
         } catch {
             this.isDoctor = false;
         }
-        this.clinicData = JSON.parse(
-            localStorage.getItem('clinic') ||
-                sessionStorage.getItem('clinic') ||
-                '{}',
-        );
-
         this.defaultDate =
             this.route.snapshot.queryParamMap.get('date') || this.defaultDate;
         const requestedReturnUrl =
@@ -129,6 +131,9 @@ export class AppointmentComponent implements OnInit {
             ],
             patientId: [this.patientId || ''],
             doctorId: [null, Validators.required],
+            appointmentType: ['CONSULTATION'],
+            durationMinutes: [30],
+            reason: [''],
             date: [
                 initialDate && !isNaN(initialDate.getTime()) ? initialDate : '',
                 dateValidators,
@@ -265,6 +270,10 @@ export class AppointmentComponent implements OnInit {
         this.isEdit ? this.updateAppointment() : this.createAppointment();
     }
 
+    registerNewPatient(): void {
+        this.router.navigate(['/pages/patient']);
+    }
+
     createAppointment(): void {
         if (this.isDoctor) return;
         const dateControl = this.appointmentForm.get('date');
@@ -282,7 +291,11 @@ export class AppointmentComponent implements OnInit {
                 this.patientId || raw.patientName?.value || raw.patientId,
             date: raw.date,
             time: this.formatTime(raw.time),
-            status: raw.status,
+            status: raw.status === 'WAITLIST' ? 'PENDING' : raw.status,
+            waitlist: raw.status === 'WAITLIST',
+            type: raw.appointmentType,
+            durationMinutes: raw.durationMinutes,
+            reason: raw.reason,
             notes: raw.notes,
         };
 
@@ -314,7 +327,11 @@ export class AppointmentComponent implements OnInit {
             patientId: raw.patientName?.value || raw.patientId,
             date: raw.date,
             time: this.formatTime(raw.time),
-            status: raw.status,
+            status: raw.status === 'WAITLIST' ? 'PENDING' : raw.status,
+            waitlist: raw.status === 'WAITLIST',
+            type: raw.appointmentType,
+            durationMinutes: raw.durationMinutes,
+            reason: raw.reason,
             notes: raw.notes,
         };
 
@@ -387,7 +404,10 @@ export class AppointmentComponent implements OnInit {
                             appt.time || appt.appointmentTime || '',
                         ),
                         notes: appt.notes || appt.reason || '',
-                        status: appt.status || '',
+                        appointmentType: appt.type || appt.appointmentType || 'CONSULTATION',
+                        durationMinutes: appt.durationMinutes || appt.duration || 30,
+                        reason: appt.reason || '',
+                        status: appt.waitlist ? 'WAITLIST' : (appt.status || ''),
                     });
                 }
                 if (this.isView) this.appointmentForm.disable();

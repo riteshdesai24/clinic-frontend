@@ -2,6 +2,7 @@
   <header class="invoice-heading">
     <div class="invoice-mark"><i class="pi pi-file-pdf" aria-hidden="true"></i></div>
     <div><span class="eyebrow">Billing</span><h1>Invoices</h1><p>Review issued invoices and record collected payments.</p></div>
+    <button type="button" class="create-invoice-button" (click)="startInvoiceCreation()"><i class="pi pi-plus"></i> Create Invoice</button>
     <button type="button" class="refresh-button" (click)="loadInvoices()" [disabled]="loading"><i class="pi pi-refresh"></i> Refresh</button>
   </header>
 

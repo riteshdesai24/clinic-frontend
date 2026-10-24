@@ -1,129 +1,51 @@
 <div class="grid">
   <div class="col-12">
-    <div class="pl-card">
+    <div class="pl-page-heading">
+      <div><h1>Patients</h1><p>Manage your patients and their medical records.</p></div>
+      <button pButton icon="pi pi-plus" label="Add Patient" class="pl-primary" (click)="createPatient()"></button>
+    </div>
 
-      <!-- Header -->
-      <div class="pl-header">
-        <div class="pl-header-left">
-          <div class="pl-icon">
-            <i class="pi pi-users"></i>
-          </div>
-          <div>
-            <h5 class="pl-title">Patient List</h5>
-            <p class="pl-sub">{{ filteredPatientList.length }} patients found</p>
-          </div>
+    <section class="pl-card">
+      <div class="pl-card-heading">
+        <div><h2>Patients List</h2><p>A list of all patients in your clinic with their details.</p></div>
+        <div class="pl-toolbar">
+          <span class="p-input-icon-left pl-search"><i class="pi pi-search"></i><input pInputText type="search" [value]="searchTerm" (input)="onSearch($event)" placeholder="Search patients..." aria-label="Search patients" /></span>
+          <button pButton type="button" icon="pi pi-filter" label="Filters" class="p-button-outlined pl-filter-button" (click)="filterPanel.toggle($event)"></button>
+          <button pButton type="button" icon="pi pi-download" class="p-button-outlined pl-icon-button" aria-label="Export patients" pTooltip="Export patients" (click)="exportPatients()"></button>
         </div>
-        <button
-          pButton
-          icon="pi pi-plus"
-          label="Add Patient"
-          class="pl-add-btn"
-          (click)="createPatient()">
-        </button>
       </div>
 
-      <!-- Search -->
-      <div class="pl-search-wrap">
-        <span class="p-input-icon-left pl-search">
-          <i class="pi pi-search"></i>
-          <input
-            pInputText
-            type="text"
-            (input)="onSearch($event)"
-            placeholder="Search by name, phone or email..." />
-        </span>
-      </div>
+      <p-overlayPanel #filterPanel styleClass="patient-filter-panel" [showCloseIcon]="false">
+        <div class="filter-panel-content">
+          <div class="filter-panel-heading"><h3>Filters</h3><div><button type="button" class="filter-reset" (click)="resetFilters()">Reset</button><button type="button" class="filter-close" aria-label="Close filters" (click)="filterPanel.hide()">×</button></div></div>
+          <div class="filter-section"><label for="patient-status">Status</label><p-dropdown inputId="patient-status" [options]="[{label:'All',value:'All'},{label:'Active',value:'Active'},{label:'Inactive',value:'Inactive'}]" [(ngModel)]="statusFilter" optionLabel="label" optionValue="value" (onChange)="applyFilters()" styleClass="w-full"></p-dropdown></div>
+          <div class="filter-section"><span class="filter-label">Gender</span>
+            <label class="filter-check"><input type="checkbox" [checked]="selectedGenders.includes('Male')" (change)="toggleValue(selectedGenders, 'Male', $any($event.target).checked)"> Male</label>
+            <label class="filter-check"><input type="checkbox" [checked]="selectedGenders.includes('Female')" (change)="toggleValue(selectedGenders, 'Female', $any($event.target).checked)"> Female</label>
+            <label class="filter-check"><input type="checkbox" [checked]="selectedGenders.includes('Other')" (change)="toggleValue(selectedGenders, 'Other', $any($event.target).checked)"> Other</label>
+          </div>
+          <div class="filter-section"><div class="age-label"><span class="filter-label">Age Range</span><span>{{ minAge }} - {{ maxAge }} years</span></div><div class="age-inputs"><input type="number" min="0" [max]="maxAge" [(ngModel)]="minAge" (ngModelChange)="applyFilters()" aria-label="Minimum age"><span>to</span><input type="number" [min]="minAge" max="100" [(ngModel)]="maxAge" (ngModelChange)="applyFilters()" aria-label="Maximum age"></div><input class="age-range" type="range" min="0" max="100" [(ngModel)]="maxAge" (ngModelChange)="applyFilters()" aria-label="Maximum age range"></div>
+          <div class="filter-section filter-scroll"><span class="filter-label">Conditions</span><label class="filter-check" *ngFor="let condition of conditions"><input type="checkbox" [checked]="selectedConditions.includes(condition)" (change)="toggleValue(selectedConditions, condition, $any($event.target).checked)"> {{ condition }}</label><span class="filter-empty" *ngIf="!conditions.length">No conditions available</span></div>
+          <div class="filter-section filter-scroll"><span class="filter-label">Doctors</span><label class="filter-check" *ngFor="let doctor of doctors"><input type="checkbox" [checked]="selectedDoctors.includes(doctor.id)" (change)="toggleValue(selectedDoctors, doctor.id, $any($event.target).checked)"> {{ doctor.name }}</label><span class="filter-empty" *ngIf="!doctors.length">No doctors available</span></div>
+        </div>
+      </p-overlayPanel>
 
-      <!-- Table -->
-      <p-table
-        [value]="visiblePatientList"
-        [loading]="loading"
-        responsiveLayout="scroll"
-        [paginator]="false"
-        styleClass="pl-table">
-
-        <!-- Header -->
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Patient</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Gender</th>
-            <th class="text-right">Actions</th>
-          </tr>
-        </ng-template>
-
-        <!-- Body -->
+      <p-table [value]="visiblePatientList" [loading]="loading" responsiveLayout="scroll" [paginator]="false" styleClass="pl-table">
+        <ng-template pTemplate="header"><tr><th>Name</th><th>Age/Gender</th><th>Status</th><th>Last Visit</th><th>Condition</th><th>Doctor</th><th class="actions-heading">Actions</th></tr></ng-template>
         <ng-template pTemplate="body" let-p>
           <tr>
-            <td>
-              <div class="patient-cell">
-                <div class="patient-avatar">
-                  {{ p.firstName?.charAt(0) }}{{ p.lastName?.charAt(0) }}
-                </div>
-                <div>
-                  <p class="patient-name">{{ p.firstName }} {{ p.lastName }}</p>
-                  <p class="patient-age" *ngIf="p.age">Age {{ p.age }}</p>
-                </div>
-              </div>
-            </td>
-            <td>
-              <span class="cell-text">
-                <i class="pi pi-phone cell-icon"></i> {{ p.phone }}
-              </span>
-            </td>
-            <td>
-              <span class="cell-text">{{ p.email || '—' }}</span>
-            </td>
-            <td>
-              <span class="gender-badge" [ngClass]="'gender-' + p.gender?.toLowerCase()">
-                {{ p.gender }}
-              </span>
-            </td>
-            <td>
-              <div class="action-row">
-                <app-patient-visit-history [patientId]="p._id" [patientName]="(p.firstName || '') + ' ' + (p.lastName || '')" buttonClass="action-btn" [compact]="true"></app-patient-visit-history>
-                <button
-                  pButton
-                  icon="pi pi-eye"
-                  class="action-btn action-view"
-                  pTooltip="View"
-                  (click)="viewPatient(p)">
-                </button>
-                <button
-                  pButton
-                  icon="pi pi-pencil"
-                  class="action-btn action-edit"
-                  pTooltip="Edit"
-                  (click)="editPatient(p)">
-                </button>
-                <button
-                  pButton
-                  icon="pi pi-trash"
-                  class="action-btn action-delete"
-                  pTooltip="Delete"
-                  (click)="deletePatient(p)">
-                </button>
-              </div>
-            </td>
+            <td><button type="button" class="patient-name-button" (click)="viewPatient(p)"><img *ngIf="p.profilePhoto || p.photo || p.avatar" [src]="p.profilePhoto || p.photo || p.avatar" alt=""><span *ngIf="!(p.profilePhoto || p.photo || p.avatar)" class="patient-avatar">{{ p.firstName?.charAt(0) }}{{ p.lastName?.charAt(0) }}</span><strong>{{ p.firstName }} {{ p.lastName }}</strong></button></td>
+            <td>{{ patientAge(p) ?? '—' }} <span *ngIf="patientAge(p) !== null && p.gender">•</span> {{ p.gender || '—' }}</td>
+            <td><span class="status-pill" [class.inactive]="(p.status || (p.isActive === false ? 'Inactive' : 'Active')).toLowerCase() === 'inactive'">{{ p.status || (p.isActive === false ? 'Inactive' : 'Active') }}</span></td>
+            <td>{{ p.lastVisit || p.lastVisitDate ? (p.lastVisit || p.lastVisitDate | date:'yyyy-MM-dd') : '—' }}</td>
+            <td>{{ patientConditions(p).join(', ') || p.condition || '—' }}</td>
+            <td>{{ displayName(p.doctor || p.primaryDoctor || p.generalPractitioner || p.doctorName) || '—' }}</td>
+            <td><div class="action-row"><app-patient-visit-history [patientId]="p._id" [patientName]="(p.firstName || '') + ' ' + (p.lastName || '')" buttonClass="action-btn" [compact]="true"></app-patient-visit-history><button pButton icon="pi pi-eye" class="action-btn" pTooltip="View" (click)="viewPatient(p)"></button><button pButton icon="pi pi-pencil" class="action-btn" pTooltip="Edit" (click)="editPatient(p)"></button><button pButton icon="pi pi-trash" class="action-btn action-delete" pTooltip="Delete" (click)="deletePatient(p)"></button></div></td>
           </tr>
         </ng-template>
-
-        <!-- Empty -->
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="5">
-              <div class="empty-state">
-                <i class="pi pi-users"></i>
-                <p>No patients found</p>
-                <span>Try adjusting your search or add a new patient</span>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-
+        <ng-template pTemplate="emptymessage"><tr><td colspan="7"><div class="empty-state"><i class="pi pi-users"></i><p>No patients found</p><span>Try adjusting your search or filters, or add a new patient.</span></div></td></tr></ng-template>
       </p-table>
       <app-list-pagination [totalRecords]="filteredPatientList.length" [currentPage]="page" [rows]="pageSize" [showPagination]="!loading" (pageChange)="changePage($event)"></app-list-pagination>
-    </div>
+    </section>
   </div>
 </div>

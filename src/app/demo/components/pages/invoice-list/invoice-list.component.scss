@@ -4,7 +4,9 @@
 .eyebrow { color: var(--text-color-secondary); font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
 .invoice-heading h1 { margin: .2rem 0; font-size: 1.6rem; }
 .invoice-heading p { margin: 0; color: var(--text-color-secondary); }
-.refresh-button { margin-left: auto; padding: .65rem .9rem; border: 1px solid var(--surface-border); border-radius: 8px; color: var(--text-color); background: var(--surface-card); cursor: pointer; }
+.refresh-button { margin-left: 0; padding: .65rem .9rem; border: 1px solid var(--surface-border); border-radius: 8px; color: var(--text-color); background: var(--surface-card); cursor: pointer; }
+.create-invoice-button { display: inline-flex; align-items: center; gap: .45rem; min-height: 2.5rem; margin-left: auto; padding: .6rem .85rem; border: 1px solid #171717; border-radius: 6px; color: #fff; background: #171717; cursor: pointer; font: inherit; font-size: .82rem; font-weight: 600; }
+.create-invoice-button:hover { background: #333; }
 .invoice-card { box-sizing: border-box; overflow: hidden; padding: 1.5rem; border: 1px solid var(--surface-border); border-radius: 12px; background: var(--surface-card); }
 .invoice-filter { display: flex; align-items: center; gap: .65rem; padding: .85rem 1rem; border-bottom: 1px solid var(--surface-border); color: var(--text-color-secondary); font-size: .85rem; }
 .invoice-filter select { min-width: 12rem; padding: .55rem .65rem; border: 1px solid var(--surface-border); border-radius: 7px; color: var(--text-color); background: var(--surface-card); }

@@ -9,3 +9,10 @@
         </a>
     </li> -->
 </ul>
+<div class="clinic-sidebar-account">
+    <span class="clinic-account-avatar">{{ (user?.firstName || user?.name || 'U').charAt(0) }}{{ user?.lastName ? user.lastName.charAt(0) : '' }}</span>
+    <span class="clinic-account-copy">
+        <strong>{{ user?.name || ((user?.firstName || '') + ' ' + (user?.lastName || '')).trim() || 'Clinic user' }}</strong>
+        <small>{{ user?.role || 'Staff' }}</small>
+    </span>
+</div>

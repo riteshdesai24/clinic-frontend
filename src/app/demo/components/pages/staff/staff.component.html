@@ -9,7 +9,7 @@
         </div>
         <div>
           <h5 class="pf-title">
-            {{ isEdit ? (isUser === 'Doctor' ? 'Edit Doctor' : 'Edit Staff') : isview ? (isUser === 'Doctor' ? 'View Doctor' : 'View Staff') : (isUser === 'Doctor' ? 'Create Doctor' : 'Create Staff') }}
+            {{ isEdit ? (isUser === 'Doctor' ? 'Edit Doctor' : 'Edit Staff') : isview ? (isUser === 'Doctor' ? 'View Doctor' : 'View Staff') : (isUser === 'Doctor' ? 'Add Doctor' : 'Add New Staff') }}
           </h5>
           <p class="pf-sub">
             {{ isview ? 'Details (read-only)' : 'Fill in the details below' }}
@@ -19,39 +19,27 @@
 
       <form [formGroup]="staffForm" (ngSubmit)="onSubmit()">
 
-        <!-- Clinic -->
-        <p class="section-label">Clinic</p>
-        <div class="field-grid g1 mb-section">
-          <div class="pf-field">
-            <label>Clinic Name</label>
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-building"></i>
-              <input pInputText class="w-full" [value]="clinicname" disabled />
-            </span>
-          </div>
-        </div>
-
-        <div class="doctor-tabs" *ngIf="isUser === 'Doctor'" role="tablist" aria-label="Doctor form sections">
-          <button type="button" role="tab" [attr.aria-selected]="activeDoctorTab === 'details'" [class.active]="activeDoctorTab === 'details'" (click)="activeDoctorTab = 'details'"><i class="pi pi-user"></i> Doctor details</button>
-          <button type="button" role="tab" [attr.aria-selected]="activeDoctorTab === 'documents'" [class.active]="activeDoctorTab === 'documents'" (click)="activeDoctorTab = 'documents'"><i class="pi pi-file"></i> Documents</button>
-        </div>
+        <nav class="doctor-tabs" role="tablist" [attr.aria-label]="isUser === 'Doctor' ? 'Doctor profile sections' : 'Staff profile sections'">
+          <button type="button" role="tab" [attr.aria-selected]="activeFormTab === 'personal'" [class.active]="activeFormTab === 'personal'" (click)="activeFormTab = 'personal'">{{ isUser === 'Doctor' ? 'Personal Information' : 'Personal Info' }}</button>
+          <button type="button" role="tab" [attr.aria-selected]="activeFormTab === 'professional'" [class.active]="activeFormTab === 'professional'" (click)="activeFormTab = 'professional'">{{ isUser === 'Doctor' ? 'Professional Details' : 'Professional' }}</button>
+          <button *ngIf="isUser !== 'Doctor'" type="button" role="tab" [attr.aria-selected]="activeFormTab === 'employment'" [class.active]="activeFormTab === 'employment'" (click)="activeFormTab = 'employment'">Employment</button>
+          <button type="button" role="tab" [attr.aria-selected]="activeFormTab === 'access'" [class.active]="activeFormTab === 'access'" (click)="activeFormTab = 'access'">{{ isUser === 'Doctor' ? 'Account Settings' : 'Access & Roles' }}</button>
+        </nav>
 
         <!-- Info -->
-        <div *ngIf="isUser !== 'Doctor' || activeDoctorTab === 'details'">
-        <p class="section-label">{{ isUser === 'Doctor' ? 'Doctor Info' : 'Staff Info' }}</p>
-        <div class="field-grid g3 mb-section">
-
-          <div class="pf-field">
-            <label>{{ isUser === 'Doctor' ? 'Doctor Name' : 'Staff Name' }} <span class="req">*</span></label>
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-user"></i>
-              <input pInputText formControlName="staffname"
-                [placeholder]="isUser === 'Doctor' ? 'Doctor name' : 'Staff name'"
-                class="w-full" />
-            </span>
-            <small class="p-error" *ngIf="f['staffname'].touched && f['staffname'].errors?.['required']">Name is required.</small>
-            <small class="p-error" *ngIf="f['staffname'].touched && f['staffname'].errors?.['minlength']">Minimum {{ f['staffname'].errors?.['minlength'].requiredLength }} characters.</small>
+        <div *ngIf="activeFormTab === 'personal'">
+        <div class="profile-photo-row">
+          <div class="pf-field profile-photo-field">
+            <label>Profile Photo</label>
+            <label class="profile-photo-upload"><i class="pi pi-upload"></i><span>Upload Photo</span><input type="file" accept="image/png,image/jpeg,image/gif" (change)="onDocumentsSelected($event)" /></label>
           </div>
+        </div>
+        <div class="field-grid g3 staff-personal-grid mb-section">
+          <div class="pf-field"><label>First Name <span class="req">*</span></label><input pInputText formControlName="firstName" placeholder="Enter first name" class="w-full" /><small class="p-error" *ngIf="f['firstName'].touched && f['firstName'].invalid">Enter a first name.</small></div>
+          <div class="pf-field"><label>Last Name <span class="req">*</span></label><input pInputText formControlName="lastName" placeholder="Enter last name" class="w-full" /><small class="p-error" *ngIf="f['lastName'].touched && f['lastName'].invalid">Enter a last name.</small></div>
+
+          <div class="pf-field"><label>Date of Birth</label><p-calendar formControlName="dateOfBirth" [showIcon]="true" dateFormat="dd/mm/yy" styleClass="w-full" inputStyleClass="w-full"></p-calendar></div>
+          <div class="pf-field"><label>Gender</label><p-dropdown [options]="genderOptions" formControlName="gender" placeholder="Select gender" styleClass="w-full"></p-dropdown></div>
 
           <div class="pf-field">
             <label>Email <span class="req">*</span></label>
@@ -73,7 +61,7 @@
           </div>
 
           <!-- Specialization — only for Doctor -->
-          <div class="pf-field" *ngIf="isUser === 'Doctor'">
+          <div class="pf-field" *ngIf="false">
             <label>Specialization <span class="req">*</span></label>
             <span class="p-input-icon-left w-full">
               <i class="pi pi-star"></i>
@@ -82,7 +70,7 @@
             <small class="p-error" *ngIf="f['specialization'].touched && f['specialization'].errors?.['required']">Specialization is required.</small>
           </div>
 
-          <div class="pf-field" *ngIf="isUser === 'Doctor'">
+          <div class="pf-field" *ngIf="false">
             <label>Registration Number</label>
             <span class="p-input-icon-left w-full">
               <i class="pi pi-id-card"></i>
@@ -91,7 +79,7 @@
           </div>
 
           <!-- Role — only for Staff -->
-          <div class="pf-field" *ngIf="isUser !== 'Doctor'">
+          <div class="pf-field" *ngIf="false">
             <label>Role <span class="req">*</span></label>
             <p-dropdown
               [options]="roles"
@@ -134,7 +122,89 @@
           </div> -->
 
         </div>
+        <p class="section-label">Address</p>
+        <div class="field-grid g3 mb-section">
+          <div class="pf-field full-span"><label>Street Address</label><textarea pInputTextarea rows="2" formControlName="address" class="w-full" placeholder="Enter address"></textarea></div>
+          <div class="pf-field"><label>City</label><input pInputText formControlName="city" placeholder="Enter city" /></div>
+          <div class="pf-field"><label>State/Province</label><input pInputText formControlName="state" placeholder="Enter state or province" /></div>
+          <div class="pf-field"><label>Postal Code</label><input pInputText formControlName="postalCode" placeholder="Enter postal code" /></div>
+          <div class="pf-field"><label>Country</label><p-dropdown [options]="countryOptions" formControlName="country" placeholder="Select country" styleClass="w-full"></p-dropdown></div>
         </div>
+        <p class="section-label">Emergency Contact</p>
+        <div class="field-grid g3 mb-section"><div class="pf-field"><label>Contact Name</label><input pInputText formControlName="emergencyContactName" placeholder="Contact name" /></div><div class="pf-field"><label>Contact Phone</label><input pInputText formControlName="emergencyContactPhone" placeholder="Contact phone" /></div><div class="pf-field"><label>Relationship</label><input pInputText formControlName="emergencyRelationship" placeholder="Relationship" /></div></div>
+        </div>
+
+        <section *ngIf="activeFormTab === 'professional'" aria-label="Professional Information">
+          <p class="section-label">{{ isUser === 'Doctor' ? 'Professional Details' : 'Professional Information' }}</p>
+          <div class="field-grid g2 mb-section">
+            <div class="pf-field"><label>Profession</label><input pInputText formControlName="profession" placeholder="e.g. Doctor, Nurse, etc." /></div>
+            <div class="pf-field" *ngIf="isUser === 'Doctor'"><label>Primary Specialization <span class="req">*</span></label><input pInputText formControlName="specialization" placeholder="Select specialization" /></div>
+            <div class="pf-field" *ngIf="isUser === 'Doctor'"><label>Secondary Specialization (Optional)</label><input pInputText formControlName="secondarySpecialization" placeholder="Select specialization" /></div>
+            <div class="pf-field" *ngIf="isUser === 'Doctor'"><label>Medical License Number</label><input pInputText formControlName="registrationNumber" placeholder="Enter license number" /></div>
+            <div class="pf-field" *ngIf="isUser === 'Doctor'"><label>License Expiry Date</label><p-calendar formControlName="licenseExpiryDate" [showIcon]="true" dateFormat="dd/mm/yy" styleClass="w-full" inputStyleClass="w-full"></p-calendar></div>
+            <div class="pf-field"><label>Qualifications & Degrees</label><textarea pInputTextarea rows="3" formControlName="qualifications" placeholder="Enter qualifications (MD, PhD, etc.)"></textarea></div>
+            <div class="pf-field"><label>Years of Experience</label><input pInputText type="number" min="0" formControlName="yearsExperience" placeholder="Enter years of experience" /></div>
+            <div class="pf-field full-span"><label>Education & Training</label><textarea pInputTextarea rows="3" formControlName="education" placeholder="Enter education details"></textarea></div>
+            <div class="pf-field full-span"><label>Certifications</label><textarea pInputTextarea rows="3" formControlName="certifications" placeholder="Enter certifications"></textarea></div>
+            <div class="pf-field"><label>Department</label><input pInputText formControlName="department" placeholder="Select department" /></div>
+            <div class="pf-field"><label>Position</label><input pInputText formControlName="position" placeholder="Select position" /></div>
+            <div class="pf-field" *ngIf="isUser === 'Doctor'"><label>Consultation Fee</label><input pInputText type="number" min="0" formControlName="consultationFee" placeholder="Enter consultation fee" /></div>
+            <div class="pf-field full-span"><label>Professional Bio</label><textarea pInputTextarea rows="4" formControlName="professionalBio" placeholder="Enter professional biography and experience"></textarea></div>
+          </div>
+          <section class="doctor-documents" *ngIf="isUser === 'Doctor'" aria-label="Doctor documents">
+            <div class="document-upload"><header class="document-upload-heading"><div><h5>Licenses & Documents</h5><p>Upload qualifications, registration certificates, and other professional documents.</p></div></header>
+              <div class="document-upload-grid"><div class="document-dropzone" *ngIf="!isview" [class.drag-over]="documentsDragOver" (dragover)="$event.preventDefault(); documentsDragOver = true" (dragleave)="documentsDragOver = false" (drop)="onDocumentsDropped($event)"><i class="pi pi-cloud-upload"></i><strong>Drag files to upload</strong><span>or select files from your device</span><label class="choose-file-button">Choose Files<input type="file" multiple accept=".jpg,.jpeg,.png,.pdf,.svg,.doc,.docx" (change)="onDocumentsSelected($event)" /></label></div><div class="document-queue"><div class="document-empty" *ngIf="!selectedDocuments.length">No files selected yet.</div><div class="document-file-row" *ngFor="let file of selectedDocuments; let i = index"><span>{{ file.file.name }}</span><button type="button" (click)="removeSelectedDocument(i)"><i class="pi pi-times"></i></button></div></div></div>
+            </div>
+          </section>
+        </section>
+
+        <section *ngIf="activeFormTab === 'employment'" aria-label="Employment Information">
+          <p class="section-label">Employment Details</p>
+          <div class="field-grid g2 mb-section"><div class="pf-field"><label>Employment Type</label><p-dropdown [options]="['FULL_TIME','PART_TIME','CONTRACT','TEMPORARY']" formControlName="employmentType" placeholder="Select employment type" styleClass="w-full"></p-dropdown></div><div class="pf-field"><label>Joining Date</label><p-calendar formControlName="joiningDate" [showIcon]="true" dateFormat="dd/mm/yy" styleClass="w-full" inputStyleClass="w-full"></p-calendar></div><div class="pf-field"><label>Employee ID</label><input pInputText formControlName="employeeId" placeholder="Enter employee ID" /></div><div class="pf-field"><label>Employment Status</label><p-dropdown [options]="['ACTIVE','ON_LEAVE','INACTIVE']" formControlName="employmentStatus" styleClass="w-full"></p-dropdown></div></div>
+          <section class="staff-documents" aria-label="Staff documents">
+            <div class="document-upload">
+              <header class="document-upload-heading"><div><h5>Upload Documents</h5><p>Select a document type and upload one or more files for this staff member.</p></div></header>
+              <div class="staff-document-type pf-field">
+                <label for="staff-document-type">Document Type <span class="req">*</span></label>
+                <p-dropdown inputId="staff-document-type" [options]="staffDocumentTypes" [(ngModel)]="staffDocumentType" [ngModelOptions]="{ standalone: true }" placeholder="Select document type" styleClass="w-full" [disabled]="isview || documentsUploading"></p-dropdown>
+              </div>
+              <div class="document-upload-grid">
+                <div class="document-dropzone" *ngIf="!isview" [class.drag-over]="documentsDragOver" (dragover)="$event.preventDefault(); documentsDragOver = true" (dragleave)="documentsDragOver = false" (drop)="onDocumentsDropped($event)">
+                  <i class="pi pi-cloud-upload" aria-hidden="true"></i><strong>Drag files to upload</strong><span>or select files from your device</span>
+                  <label class="choose-file-button">Choose Files<input type="file" multiple accept=".jpg,.jpeg,.png,.pdf,.svg,.doc,.docx" (change)="onDocumentsSelected($event)" [disabled]="!staffDocumentType || documentsUploading" /></label>
+                </div>
+                <div class="document-queue">
+                  <div class="document-queue-heading"><i [class]="documentsUploading ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle'"></i><strong>{{ documentsUploading ? 'Uploading…' : 'Selected files' }}</strong></div>
+                  <div class="document-empty" *ngIf="!selectedDocuments.length">No files selected yet.</div>
+                  <div class="document-file-row" *ngFor="let file of selectedDocuments; let i = index">
+                    <i class="document-file-icon" [ngClass]="documentIcon(file.file)" aria-hidden="true"></i>
+                    <div class="document-file-info"><div class="document-file-meta"><span [title]="file.file.name">{{ file.file.name }}</span><small>{{ formatFileSize(file.file.size) }}</small><button type="button" aria-label="Remove file" (click)="removeSelectedDocument(i)" [disabled]="documentsUploading"><i class="pi pi-times"></i></button></div>
+                      <small class="staff-document-type-label">{{ file.documentType }}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <small class="document-upload-hint">Supported: JPG, PNG, PDF, SVG, DOC, DOCX · Maximum file size: 24 MB. Files upload when you save the staff profile.</small>
+              <small class="p-error document-upload-error" *ngIf="documentsError">{{ documentsError }}</small>
+            </div>
+            <section class="uploaded-documents" aria-label="Previously uploaded staff documents" *ngIf="isEdit || isview">
+              <header><div><h5>Uploaded Documents</h5><p>Documents saved to this staff profile.</p></div><span>{{ uploadedDocuments.length }}</span></header>
+              <div class="uploaded-documents-state" *ngIf="documentsLoading"><i class="pi pi-spin pi-spinner"></i> Loading documents…</div>
+              <div class="uploaded-documents-state error" *ngIf="!documentsLoading && documentsListError">{{ documentsListError }} <button type="button" (click)="loadStaffDocuments()">Retry</button></div>
+              <div class="uploaded-documents-state" *ngIf="!documentsLoading && !documentsListError && !uploadedDocuments.length">No documents uploaded yet.</div>
+              <ul *ngIf="!documentsLoading && uploadedDocuments.length"><li *ngFor="let file of uploadedDocuments">
+                <i class="document-file-icon" [ngClass]="documentIcon(file)" aria-hidden="true"></i><span class="uploaded-document-name">{{ documentName(file) }}</span>
+                <small>{{ file.documentType || 'Document' }}</small><small>{{ formatFileSize(file.size || file.fileSize || 0) }}</small>
+                <button type="button" class="uploaded-document-download" aria-label="Download document" (click)="downloadStaffDocument(file)"><i class="pi pi-download"></i></button>
+              </li></ul>
+            </section>
+          </section>
+        </section>
+
+        <section *ngIf="activeFormTab === 'access'" aria-label="Access and Account Settings">
+          <p class="section-label">{{ isUser === 'Doctor' ? 'Account Settings' : 'Access & Roles' }}</p>
+          <div class="field-grid g2 mb-section"><div class="pf-field" *ngIf="isUser !== 'Doctor'"><label>Role <span class="req">*</span></label><p-dropdown [options]="roles" formControlName="role" placeholder="Select role" styleClass="w-full"></p-dropdown></div><div class="pf-field"><label>Username</label><input pInputText formControlName="username" placeholder="Enter username" /></div><div class="pf-field"><label>Account Status</label><p-dropdown [options]="['ACTIVE','PENDING','INACTIVE']" formControlName="accountStatus" styleClass="w-full"></p-dropdown></div><div class="pf-field"><label>Access Level</label><p-dropdown [options]="['STANDARD','ADMINISTRATOR','LIMITED']" formControlName="accessLevel" styleClass="w-full"></p-dropdown></div><label class="access-checkbox"><input type="checkbox" formControlName="sendInvite" /> Send account invitation by email</label></div>
+        </section>
 
         <section class="doctor-documents" *ngIf="isUser === 'Doctor' && activeDoctorTab === 'documents'" aria-label="Doctor documents">
           <div class="document-upload">

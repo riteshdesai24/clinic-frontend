@@ -1,24 +1,43 @@
-<button type="button" class="visit-history-trigger" [ngClass]="buttonClass" [attr.aria-label]="'View visit history for ' + patientName" [title]="'Visit history for ' + patientName" [disabled]="!patientId" (click)="open()">
-  <i class="pi pi-history" aria-hidden="true"></i><ng-content></ng-content><span *ngIf="!compact">Visit history</span>
-</button>
-<div class="visit-history-backdrop" *ngIf="visible" (click)="close()">
+<ng-container *ngIf="inline; else historyTrigger">
+  <section class="inline-history-card" aria-label="Patient treatment timeline">
+    <header class="inline-history-heading"><div><h2>Patient Treatment Timeline</h2><p>Recent treatment history</p></div></header>
+    <ng-container *ngTemplateOutlet="historyContent"></ng-container>
+    <button type="button" class="history-complete-button" (click)="toggleHistory()">{{ showAll ? 'Show Recent History' : 'View Complete History' }}</button>
+  </section>
+</ng-container>
+
+<ng-template #historyTrigger>
+  <button type="button" class="visit-history-trigger" [ngClass]="buttonClass" [attr.aria-label]="'View visit history for ' + patientName" [title]="'Visit history for ' + patientName" [disabled]="!patientId" (click)="open()">
+    <i class="pi pi-history" aria-hidden="true"></i><ng-content></ng-content><span *ngIf="!compact">Visit history</span>
+  </button>
+</ng-template>
+
+<div class="visit-history-backdrop" *ngIf="visible && !inline" (click)="close()">
   <section class="visit-history-dialog" role="dialog" aria-modal="true" [attr.aria-label]="patientName + ' visit history'" (click)="$event.stopPropagation()">
-    <header class="visit-history-header"><div><span>Patient record</span><h2>Visit history</h2><p>{{ patientName }}</p></div><button type="button" aria-label="Close visit history" (click)="close()"><i class="pi pi-times"></i></button></header>
-    <div class="visit-history-body">
-      <div class="visit-history-state" *ngIf="loading"><i class="pi pi-spin pi-spinner"></i> Loading visit history…</div>
-      <div class="visit-history-state error" *ngIf="!loading && error">{{ error }} <button type="button" (click)="loadHistory()">Retry</button></div>
-      <div class="visit-history-state" *ngIf="!loading && !error && !visits.length">No visits recorded for this patient.</div>
-      <article class="visit-card" *ngFor="let visit of visits; let i = index">
-        <header><div><strong>Visit #{{ visits.length - i }}</strong><span>{{ visitDate(visit) ? (visitDate(visit) | date:'dd MMM yyyy') : 'Date not recorded' }} · {{ visitTime(visit) }}</span></div><span class="visit-status">{{ visit.status || 'Visit' }}</span></header>
-        <div class="visit-meta"><div><small>Doctor</small><strong>{{ doctorName(visit) }}</strong></div><div><small>Reason</small><strong>{{ visit.reason || visit.purpose || '—' }}</strong></div></div>
-        <section class="visit-treatment" *ngFor="let treatment of visit.visitTreatments; let treatmentIndex = index">
-          <h3>{{ treatment.treatmentName || treatment.name || treatmentNames(treatment).join(', ') || ('Treatment ' + (treatmentIndex + 1)) }}</h3>
-          <div class="treatment-detail-grid"><div *ngFor="let field of detailFields(treatment)"><small>{{ field.label }}</small><span>{{ field.value }}</span></div></div>
-          <div class="visit-medicines" *ngIf="treatment.medicines?.length"><strong>Medicines</strong><ul><li *ngFor="let medicine of treatment.medicines">{{ medicine.name || medicine }}<span *ngIf="medicine.dosage"> · {{ medicine.dosage }}</span><span *ngIf="medicine.frequency"> · {{ medicine.frequency }}</span><span *ngIf="medicine.duration"> · {{ medicine.duration }}</span></li></ul></div>
-        </section>
-        <div class="visit-no-treatment" *ngIf="!visit.visitTreatments?.length">No treatment was recorded for this appointment.</div>
-        <p class="visit-notes" *ngIf="visit.notes"><strong>Appointment notes:</strong> {{ visit.notes }}</p>
-      </article>
-    </div>
+    <header class="visit-history-header"><div><span>Patient record</span><h2>Patient Treatment Timeline</h2><p>{{ patientName }} · Recent treatment history</p></div><button type="button" aria-label="Close visit history" (click)="close()"><i class="pi pi-times"></i></button></header>
+    <ng-container *ngTemplateOutlet="historyContent"></ng-container>
+    <button type="button" class="history-complete-button modal-history-button" (click)="toggleHistory()">{{ showAll ? 'Show Recent History' : 'View Complete History' }}</button>
   </section>
 </div>
+
+<ng-template #historyContent>
+  <div class="visit-history-body">
+    <div class="visit-history-state" *ngIf="loading"><i class="pi pi-spin pi-spinner"></i> Loading visit history…</div>
+    <div class="visit-history-state error" *ngIf="!loading && error">{{ error }} <button type="button" (click)="loadHistory()">Retry</button></div>
+    <div class="visit-history-state" *ngIf="!loading && !error && !visits.length">No visits recorded for this patient.</div>
+    <div class="treatment-timeline" *ngIf="!loading && !error && visits.length">
+      <article class="timeline-entry" *ngFor="let visit of visibleVisits; let i = index" [class.latest]="i === 0">
+        <span class="timeline-marker" aria-hidden="true"></span>
+        <h3>{{ timelineTitle(visit) }}</h3>
+        <time>{{ visitDate(visit) ? (visitDate(visit) | date:'d MMM yyyy') : 'Date not recorded' }}<ng-container *ngIf="visitTime(visit) !== '—'">, {{ visitTime(visit) }}</ng-container></time>
+        <p class="timeline-description" *ngIf="visit.reason || visit.purpose">{{ visit.reason || visit.purpose }}</p>
+        <section class="timeline-treatment" *ngFor="let treatment of visit.visitTreatments">
+          <p *ngFor="let field of detailFields(treatment)"><strong>{{ field.label }}:</strong> {{ field.value }}</p>
+          <div class="visit-medicines" *ngIf="treatment.medicines?.length"><strong>Medicines:</strong> <span *ngFor="let medicine of treatment.medicines; let last = last">{{ medicine.name || medicine }}<ng-container *ngIf="medicine.dosage"> · {{ medicine.dosage }}</ng-container><ng-container *ngIf="!last">, </ng-container></span></div>
+        </section>
+        <p class="timeline-description" *ngIf="visit.notes">{{ visit.notes }}</p>
+        <small class="timeline-doctor" *ngIf="doctorName(visit) !== '—'">{{ doctorName(visit) }}</small>
+      </article>
+    </div>
+  </div>
+</ng-template>

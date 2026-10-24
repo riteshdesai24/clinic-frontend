@@ -1,175 +1,54 @@
-<div class="grid">
-  <div class="col-12">
-    <div class="pl-card">
-
-      <div class="pl-header">
-        <div class="pl-header-left">
-          <div class="pl-icon">
-            <i class="pi pi-calendar"></i>
-          </div>
-          <div>
-            <h5 class="pl-title">Appointment List</h5>
-            <p class="pl-sub">{{ filteredAppointmentList.length }} records found</p>
-          </div>
-        </div>
-        <button
-          *ngIf="!isDoctor"
-          pButton
-          icon="pi pi-plus"
-          label="Add Appointment"
-          class="pl-add-btn"
-          (click)="createAppointment()">
-        </button>
-      </div>
-
-      <div class="pl-search-wrap">
-        <label class="doctor-filter" *ngIf="isAdmin">Filter by doctor
-          <select [value]="selectedDoctorId" (change)="onDoctorFilterChange($event)">
-            <option value="">All doctors</option>
-            <option *ngFor="let doctor of doctorOptions" [value]="doctor.value">{{ doctor.label }}</option>
-          </select>
-        </label>
-        <label class="doctor-filter status-filter">Filter by status
-          <select [value]="selectedStatus" (change)="onStatusFilterChange($event)">
-            <option value="ALL">All statuses</option>
-            <option *ngFor="let status of appointmentStatuses" [value]="status">{{ status | titlecase }}</option>
-          </select>
-        </label>
-        <span class="p-input-icon-left pl-search">
-          <i class="pi pi-search"></i>
-          <input
-            pInputText
-            type="text"
-            (input)="onSearch($event)"
-            placeholder="Search by patient, doctor or status..." />
-        </span>
-      </div>
-
-      <p-table
-        [value]="visibleAppointmentList"
-        [loading]="loading"
-        responsiveLayout="scroll"
-        [paginator]="false"
-        styleClass="pl-table">
-
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Patient</th>
-            <th>Doctor</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Status</th>
-            <th class="text-right">Actions</th>
-          </tr>
-        </ng-template>
-
-        <ng-template pTemplate="body" let-item>
-          <tr>
-            <td>
-              <div class="patient-cell">
-                <div class="patient-avatar">
-                  {{ item.patientName?.charAt(0) }}
-                </div>
-                <div>
-                  <p class="patient-name">{{ item.patientName }}</p>
-                  <p class="patient-age">{{ item.date | date:'shortDate' }}</p>
-                </div>
-              </div>
-            </td>
-            <td>
-              <span class="cell-text">{{ item.doctor }}</span>
-            </td>
-            <td>
-              <span class="cell-text">{{ item.appointmentDate | date:'dd MMM yyyy' }}</span>
-            </td>
-            <td>
-              <span class="cell-text">{{ formatTime12(item.appointmentTime) }}</span>
-            </td>
-            <td>
-              <span class="status-badge" [ngClass]="'status-' + item.status?.toLowerCase()">
-                {{ item.status }}
-              </span>
-            </td>
-            <td>
-              <div class="action-row">
-                <button
-                  pButton
-                  icon="pi pi-eye"
-                  class="action-btn action-view"
-                  pTooltip="View"
-                  (click)="viewAppointment(item)">
-                </button>
-                <button
-                  pButton
-                  *ngIf="!isDoctor && !item.treatmentId && item.status !== 'CANCELLED'"
-                  icon="pi pi-file-edit"
-                  class="action-btn action-edit"
-                  pTooltip="Record treatment"
-                  (click)="addTreatment(item)">
-                </button>
-                <button
-                  pButton
-                  *ngIf="!isDoctor && item.treatmentId"
-                  icon="pi pi-file-pdf"
-                  class="action-btn action-edit"
-                  pTooltip="Issue or open invoice"
-                  (click)="issueInvoice(item)">
-                </button>
-                <button
-                  pButton
-                  *ngIf="!isDoctor && item.status !== 'CANCELLED' && !item.treatmentId"
-                  icon="pi pi-pencil"
-                  class="action-btn action-edit"
-                  pTooltip="Edit"
-                  (click)="editAppointment(item)">
-                </button>
-                <button
-                  pButton
-                  *ngIf="isAdmin && item.status !== 'CANCELLED' && item.status !== 'COMPLETED' && !item.treatmentId"
-                  icon="pi pi-ban"
-                  class="action-btn action-delete"
-                  pTooltip="Cancel appointment"
-                  (click)="deleteAppointment(item)">
-                </button>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="6">
-              <div class="empty-state">
-                <i class="pi pi-calendar"></i>
-                <p>No appointments found</p>
-                <span>Add a new appointment or adjust your search.</span>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-      <app-list-pagination [totalRecords]="filteredAppointmentList.length" [currentPage]="page" [rows]="pageSize" [showPagination]="!loading" (pageChange)="changePage($event)"></app-list-pagination>
-    </div>
+<div class="grid"><div class="col-12">
+  <div class="appointment-page-heading">
+    <div><h1>Appointments</h1><p>Manage your clinic's appointments and schedules.</p></div>
+    <div class="appointment-page-actions"><button pButton type="button" icon="pi pi-calendar" label="Calendar View" class="p-button-outlined" (click)="openCalendar()"></button><button *ngIf="!isDoctor" pButton type="button" icon="pi pi-plus" label="New Appointment" class="appointment-primary" (click)="createAppointment()"></button></div>
   </div>
-</div>
+  <nav class="appointment-tabs" aria-label="Appointment status filters">
+    <button type="button" [class.active]="selectedStatus === 'ALL'" (click)="setStatusTab('ALL')">All Appointments</button>
+    <button type="button" [class.active]="selectedStatus === 'UPCOMING'" (click)="setStatusTab('UPCOMING')">Upcoming</button>
+    <button type="button" [class.active]="selectedStatus === 'TODAY'" (click)="setStatusTab('TODAY')">Today</button>
+    <button type="button" [class.active]="selectedStatus === 'COMPLETED'" (click)="setStatusTab('COMPLETED')">Completed</button>
+    <button type="button" [class.active]="selectedStatus === 'CANCELLED'" (click)="setStatusTab('CANCELLED')">Cancelled</button>
+  </nav>
+  <section class="appointment-card">
+    <div class="appointment-card-heading">
+      <div><h2>{{ selectedStatus === 'ALL' ? 'All Appointments' : (selectedStatus | titlecase) }}</h2><p>View and manage all scheduled appointments.</p></div>
+      <div class="appointment-toolbar">
+        <span class="p-input-icon-left appointment-search"><i class="pi pi-search"></i><input pInputText type="search" [value]="searchQuery" (input)="onSearch($event)" placeholder="Search appointments..." aria-label="Search appointments"></span>
+        <button pButton type="button" icon="pi pi-filter" class="p-button-outlined appointment-icon-button" aria-label="Filters" pTooltip="Filters" (click)="filterPanel.toggle($event)"></button>
+        <button pButton type="button" icon="pi pi-download" class="p-button-outlined appointment-icon-button" aria-label="Export appointments" pTooltip="Export appointments" (click)="exportAppointments()"></button>
+      </div>
+    </div>
+
+    <p-overlayPanel #filterPanel styleClass="appointment-filter-panel" [showCloseIcon]="false">
+      <div class="filter-panel-content">
+        <div class="filter-panel-heading"><h3>Filters</h3><button type="button" class="filter-reset" (click)="resetFilters()">Reset</button></div>
+        <section class="filter-section"><h4>Status</h4><label class="filter-check" *ngFor="let status of appointmentStatuses"><input type="checkbox" [checked]="selectedFilterStatuses.includes(status)" (change)="toggleFilterStatus(status, $any($event.target).checked)"><span class="status-badge" [ngClass]="'status-' + status.toLowerCase()">{{ statusLabel(status) }}</span></label></section>
+        <section class="filter-section doctor-filter-list" *ngIf="!isDoctor"><h4>Doctors</h4><label class="filter-check" *ngFor="let doctor of doctorOptions"><input type="checkbox" [checked]="selectedDoctorId === doctor.value" (change)="toggleFilterDoctor(doctor.value, $any($event.target).checked)"> {{ doctor.label }}</label><span class="filter-empty" *ngIf="!doctorOptions.length">No doctors available</span></section>
+      </div>
+    </p-overlayPanel>
+
+    <p-table [value]="visibleAppointmentList" [loading]="loading" responsiveLayout="scroll" [paginator]="false" styleClass="appointment-table">
+      <ng-template pTemplate="header"><tr><th>Patient</th><th>Doctor</th><th>Date &amp; Time</th><th>Status</th><th>Type</th><th>Duration</th><th class="actions-heading">Actions</th></tr></ng-template>
+      <ng-template pTemplate="body" let-item><tr>
+        <td><div class="patient-cell"><img *ngIf="item.patientPhoto" class="patient-photo" [src]="item.patientPhoto" alt=""><span *ngIf="!item.patientPhoto" class="patient-avatar">{{ item.patientName?.charAt(0) }}</span><strong>{{ item.patientName }}</strong></div></td>
+        <td>{{ item.doctor }}</td>
+        <td><div class="date-time-cell"><strong>{{ item.appointmentDate | date:'yyyy-MM-dd' }}</strong><span>{{ formatTime12(item.appointmentTime) }}</span></div></td>
+        <td><span class="status-badge" [ngClass]="'status-' + item.status?.toLowerCase()">{{ statusLabel(item.status) }}</span></td>
+        <td>{{ item.type || item.appointmentType || '—' }}</td><td>{{ item.duration ? item.duration + ' min' : '—' }}</td>
+        <td><div class="action-row"><button pButton icon="pi pi-eye" class="action-btn" pTooltip="View" (click)="viewAppointment(item)"></button><button pButton *ngIf="!isDoctor && !item.treatmentId && item.status !== 'CANCELLED'" icon="pi pi-file-edit" class="action-btn" pTooltip="Record treatment" (click)="addTreatment(item)"></button><button pButton *ngIf="!isDoctor && item.treatmentId" icon="pi pi-file-pdf" class="action-btn" pTooltip="Issue or open invoice" (click)="issueInvoice(item)"></button><button pButton *ngIf="!isDoctor && item.status !== 'CANCELLED' && !item.treatmentId" icon="pi pi-pencil" class="action-btn" pTooltip="Edit" (click)="editAppointment(item)"></button><button pButton *ngIf="isAdmin && item.status !== 'CANCELLED' && item.status !== 'COMPLETED' && !item.treatmentId" icon="pi pi-ban" class="action-btn action-delete" pTooltip="Cancel appointment" (click)="deleteAppointment(item)"></button></div></td>
+      </tr></ng-template>
+      <ng-template pTemplate="emptymessage"><tr><td colspan="7"><div class="empty-state"><i class="pi pi-calendar"></i><p>No appointments found</p><span>Add a new appointment or adjust your filters.</span></div></td></tr></ng-template>
+    </p-table>
+    <app-list-pagination [totalRecords]="filteredAppointmentList.length" [currentPage]="page" [rows]="pageSize" [showPagination]="!loading" (pageChange)="changePage($event)"></app-list-pagination>
+  </section>
+</div></div>
 
 <p-dialog header="Cancellation reason" [(visible)]="showCancellationDialog" [modal]="true" [closable]="!cancelling" [style]="{ width: 'min(32rem, 92vw)' }" (onHide)="closeCancellation()">
-  <p>Please provide a reason for cancelling this appointment.</p>
-  <textarea pInputTextarea rows="4" class="w-full" maxlength="500" [value]="cancellationReason" (input)="cancellationReason = $any($event.target).value"></textarea>
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Keep appointment" class="p-button-text" (click)="closeCancellation()" [disabled]="cancelling"></button>
-    <button pButton type="button" label="Confirm cancellation" icon="pi pi-ban" class="p-button-danger" (click)="confirmCancellation()" [loading]="cancelling" [disabled]="!cancellationReason.trim() || cancelling"></button>
-  </ng-template>
+  <p>Please provide a reason for cancelling this appointment.</p><textarea pInputTextarea rows="4" class="w-full" maxlength="500" [value]="cancellationReason" (input)="cancellationReason = $any($event.target).value"></textarea>
+  <ng-template pTemplate="footer"><button pButton type="button" label="Keep appointment" class="p-button-text" (click)="closeCancellation()" [disabled]="cancelling"></button><button pButton type="button" label="Confirm cancellation" icon="pi pi-ban" class="p-button-danger" (click)="confirmCancellation()" [loading]="cancelling" [disabled]="!cancellationReason.trim() || cancelling"></button></ng-template>
 </p-dialog>
-
 <p-dialog header="Invoice adjustments" [(visible)]="showInvoiceDialog" [modal]="true" [closable]="!issuingInvoice" [style]="{ width: 'min(32rem, 92vw)' }" (onHide)="closeInvoiceDialog()">
-  <p class="invoice-dialog-copy">Set the discount for {{ appointmentToInvoice?.patientName || 'this appointment' }}.</p>
-  <div class="invoice-dialog-fields">
-    <label for="appointment-invoice-discount">Discount amount</label>
-    <div class="invoice-input-suffix"><span>₹</span><input pInputText id="appointment-invoice-discount" type="number" min="0" step="0.01" [value]="invoiceDiscountAmount" (input)="invoiceDiscountAmount = +$any($event.target).value" /></div>
-  </div>
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Cancel" class="p-button-text" (click)="closeInvoiceDialog()" [disabled]="issuingInvoice"></button>
-    <button pButton type="button" label="Issue invoice" icon="pi pi-file-pdf" (click)="confirmIssueInvoice()" [loading]="issuingInvoice" [disabled]="invoiceDiscountAmount < 0 || issuingInvoice"></button>
-  </ng-template>
+  <p class="invoice-dialog-copy">Set the discount for {{ appointmentToInvoice?.patientName || 'this appointment' }}.</p><div class="invoice-dialog-fields"><label for="appointment-invoice-discount">Discount amount</label><div class="invoice-input-suffix"><span>₹</span><input pInputText id="appointment-invoice-discount" type="number" min="0" step="0.01" [value]="invoiceDiscountAmount" (input)="invoiceDiscountAmount = +$any($event.target).value"></div></div>
+  <ng-template pTemplate="footer"><button pButton type="button" label="Cancel" class="p-button-text" (click)="closeInvoiceDialog()" [disabled]="issuingInvoice"></button><button pButton type="button" label="Issue invoice" icon="pi pi-file-pdf" (click)="confirmIssueInvoice()" [loading]="issuingInvoice" [disabled]="invoiceDiscountAmount < 0 || issuingInvoice"></button></ng-template>
 </p-dialog>

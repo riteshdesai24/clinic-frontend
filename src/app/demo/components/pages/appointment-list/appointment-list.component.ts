@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { OverlayPanel } from 'primeng/overlaypanel';
 import { AuthService } from 'src/app/demo/service/auth.service';
 
 @Component({
@@ -10,19 +11,22 @@ import { AuthService } from 'src/app/demo/service/auth.service';
 })
 export class AppointmentListComponent implements OnInit {
 
+  @ViewChild('filterPanel') filterPanel!: OverlayPanel;
+
   appointmentList: any[] = [];
   filteredAppointmentList: any[] = [];
   visibleAppointmentList: any[] = [];
   readonly pageSize = 10;
   page = 1;
   selectedStatus = 'ALL';
-  readonly appointmentStatuses = ['PENDING', 'CONFIRMED', 'SCHEDULED', 'COMPLETED', 'CANCELLED'];
+  selectedFilterStatuses: string[] = [];
+  readonly appointmentStatuses = ['CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
   loading = false;
   isAdmin = false;
   isDoctor = false;
   doctorOptions: { label: string; value: string }[] = [];
   selectedDoctorId = '';
-  private searchQuery = '';
+  searchQuery = '';
   private currentUser: any = {};
   private currentDoctorIds = new Set<string>();
   private patientById = new Map<string, any>();
@@ -57,7 +61,7 @@ export class AppointmentListComponent implements OnInit {
       this.isAdmin = false;
       this.isDoctor = false;
     }
-    if (this.isAdmin || this.isDoctor) this.loadDoctors();
+    if (!this.isDoctor) this.loadDoctors();
     this.loadPatientNames();
     this.loadAppointments();
   }
@@ -127,6 +131,7 @@ export class AppointmentListComponent implements OnInit {
     return {
       ...appointment,
       patientName: patientName || 'Patient',
+      patientPhoto: patient.profilePhoto || patient.photo || savedPatient.profilePhoto || savedPatient.photo || '',
       patientPhone: patient.phone || savedPatient.phone || appointment.patientPhone || '',
       doctor: doctorName || 'Doctor',
       doctorIdValue: this.idOf(appointment.doctorId || appointment.doctor),
@@ -167,6 +172,49 @@ export class AppointmentListComponent implements OnInit {
     this.applyFilters();
   }
 
+  setStatusTab(status: string): void {
+    this.selectedStatus = status;
+    this.applyFilters();
+  }
+
+  toggleFilterStatus(status: string, checked: boolean): void {
+    const index = this.selectedFilterStatuses.indexOf(status);
+    if (checked && index < 0) this.selectedFilterStatuses.push(status);
+    if (!checked && index >= 0) this.selectedFilterStatuses.splice(index, 1);
+    this.applyFilters();
+  }
+
+  toggleFilterDoctor(id: string, checked: boolean): void {
+    const index = this.selectedDoctorId ? [this.selectedDoctorId].indexOf(id) : -1;
+    if (checked) this.selectedDoctorId = id;
+    else if (index >= 0) this.selectedDoctorId = '';
+    this.applyFilters();
+  }
+
+  resetFilters(): void {
+    this.selectedFilterStatuses = [];
+    this.selectedDoctorId = '';
+    this.applyFilters();
+  }
+
+  statusLabel(status: string): string {
+    const labels: Record<string, string> = { SCHEDULED: 'Confirmed', CONFIRMED: 'Confirmed', IN_PROGRESS: 'In Progress', PENDING: 'Pending', CANCELLED: 'Cancelled', COMPLETED: 'Completed' };
+    return labels[String(status || '').toUpperCase()] || status || 'Unknown';
+  }
+
+  openCalendar(): void { this.router.navigate(['/pages/appointment-calendar']); }
+
+  exportAppointments(): void {
+    const columns = ['Patient', 'Doctor', 'Date', 'Time', 'Status', 'Type', 'Duration'];
+    const rows = this.filteredAppointmentList.map(item => [item.patientName, item.doctor, item.appointmentDate || '', this.formatTime12(item.appointmentTime), this.statusLabel(item.status), item.type || item.appointmentType || '', item.duration || '']);
+    const csv = [columns, ...rows].map(row => row.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    link.download = 'appointments.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
   changePage(page: number): void {
     this.page = page;
     this.updateVisibleAppointments();
@@ -174,13 +222,19 @@ export class AppointmentListComponent implements OnInit {
 
   private applyFilters(): void {
     this.filteredAppointmentList = this.appointmentList.filter(item => {
-      const matchesStatus = this.selectedStatus === 'ALL' || String(item.status || '').toUpperCase() === this.selectedStatus;
-      const matchesDoctor = this.isAdmin
-        ? !this.selectedDoctorId || item.doctorIdValue === this.selectedDoctorId
-        : !this.isDoctor || this.belongsToCurrentDoctor(item);
+      const rawStatus = String(item.status || '').toUpperCase();
+      const matchesTab = this.selectedStatus === 'ALL' ||
+        (this.selectedStatus === 'UPCOMING' && ['PENDING', 'SCHEDULED', 'CONFIRMED'].includes(rawStatus) && new Date(item.appointmentDate).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)) ||
+        (this.selectedStatus === 'TODAY' && new Date(item.appointmentDate).toDateString() === new Date().toDateString()) ||
+        (this.selectedStatus === 'COMPLETED' && rawStatus === 'COMPLETED') ||
+        (this.selectedStatus === 'CANCELLED' && rawStatus === 'CANCELLED');
+      const matchesStatus = !this.selectedFilterStatuses.length || this.selectedFilterStatuses.includes(rawStatus);
+      const matchesDoctor = this.isDoctor
+        ? this.belongsToCurrentDoctor(item)
+        : !this.selectedDoctorId || item.doctorIdValue === this.selectedDoctorId;
       const matchesSearch = !this.searchQuery || [item.patientName, item.doctor, item.status]
         .some(value => String(value || '').toLowerCase().includes(this.searchQuery));
-      return matchesStatus && matchesDoctor && matchesSearch;
+      return matchesTab && matchesStatus && matchesDoctor && matchesSearch;
     });
     this.page = 1;
     this.updateVisibleAppointments();

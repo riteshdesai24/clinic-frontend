@@ -1,14 +1,12 @@
 <div class="layout-topbar">
     <a class="layout-topbar-logo">
-        <button #menubutton class="p-link layout-menu-button layout-topbar-button"
-            (click)="layoutService.onMenuToggle()">
-            <i class="pi pi-bars"></i>
-        </button>
-
         <img *ngIf="clinicLogo" class="clinic-nav-logo" [src]="clinicLogo" [alt]="clinicName + ' logo'">
         <span *ngIf="!clinicLogo">{{clinicName}}</span>
     </a>
-
+    <button #menubutton class="p-link layout-menu-button layout-topbar-button" aria-label="Toggle navigation"
+        (click)="layoutService.onMenuToggle()">
+        <i class="pi pi-bars"></i>
+    </button>
 
     <button #topbarmenubutton class="p-link layout-topbar-menu-button layout-topbar-button"
         (click)="layoutService.showProfileSidebar()">
@@ -22,9 +20,5 @@
             <span>Profile</span>
         </button>
         <p-menu #menu [popup]="true" [model]="menuItems"></p-menu>
-        <button class="p-link layout-topbar-button">
-            <!-- <i class="pi pi-calendar"></i>
-            <span>Calendar</span> -->
-        </button>
     </div>
 </div>

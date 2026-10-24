@@ -101,9 +101,9 @@ export class AppMenuComponent implements OnInit {
                             routerLink: ['/pages/membership'],
                         },
                         {
-                            label: 'Patient',
+                            label: 'Patients',
                             icon: 'pi pi-fw pi-user',
-                            routerLink: ['/pages/patient-list'],
+                            routerLink: ['/patient-list'],
                         },
                         {
                             label: 'Calendar',
@@ -150,9 +150,9 @@ export class AppMenuComponent implements OnInit {
                         routerLink: ['/pages/doctor-list'],
                     },
                     {
-                        label: 'Patient',
+                        label: 'Patients',
                         icon: 'pi pi-fw pi-user',
-                        routerLink: ['/pages/patient-list'],
+                        routerLink: ['/patient-list'],
                     },
                     {
                         label: 'Calendar',

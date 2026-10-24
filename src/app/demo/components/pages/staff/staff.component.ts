@@ -32,7 +32,9 @@ export class StaffComponent implements OnInit, OnDestroy {
   isview = false;
 
   userId: string | null = null;
-  selectedDocuments: { file: File; fileName: string }[] = [];
+  selectedDocuments: { file: File; fileName: string; documentType?: string }[] = [];
+  staffDocumentType = '';
+  readonly staffDocumentTypes = ['Aadhar Card', 'PanCard', 'Driving License', 'Passport', 'Other'];
   documentsUploading = false;
   documentUploadProgress = 0;
   documentsDragOver = false;
@@ -50,6 +52,9 @@ export class StaffComponent implements OnInit, OnDestroy {
   documentsLoading = false;
   documentsListError = '';
   activeDoctorTab: 'details' | 'documents' = 'details';
+  activeFormTab: 'personal' | 'professional' | 'employment' | 'access' = 'personal';
+  genderOptions = ['Female', 'Male', 'Non-binary', 'Prefer not to say'];
+  countryOptions = ['India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Other'];
   clinic: any = {};
 
   constructor(
@@ -80,13 +85,44 @@ export class StaffComponent implements OnInit, OnDestroy {
 
     this.staffForm = this.fb.group({
       clinicName:     [{ value: this.clinicname, disabled: true }],
-      staffname:      ['', [Validators.required, Validators.minLength(3)]],
+      staffname:      [''],
+      firstName:      ['', [Validators.required, Validators.minLength(2)]],
+      lastName:       ['', [Validators.required, Validators.minLength(2)]],
+      dateOfBirth:    [''],
+      gender:         [''],
       email:          ['', [Validators.required, Validators.email]],
       phone:          ['', Validators.required],
+      address:        [''],
+      city:           [''],
+      state:          [''],
+      postalCode:     [''],
+      country:        [''],
+      emergencyContactName: [''],
+      emergencyContactPhone: [''],
+      emergencyRelationship: [''],
       // password:       [''],
       role:           ['STAFF', Validators.required],
       specialization: [''],
-      registrationNumber: ['']
+      registrationNumber: [''],
+      secondarySpecialization: [''],
+      licenseExpiryDate: [''],
+      qualifications: [''],
+      yearsExperience: [''],
+      education: [''],
+      certifications: [''],
+      profession: [''],
+      department: [''],
+      position: [''],
+      consultationFee: [''],
+      professionalBio: [''],
+      employmentType: ['FULL_TIME'],
+      joiningDate: [''],
+      employeeId: [''],
+      employmentStatus: ['ACTIVE'],
+      username: [''],
+      accessLevel: ['STANDARD'],
+      accountStatus: ['ACTIVE'],
+      sendInvite: [true]
     });
 
     if (this.isUser === 'Doctor') {
@@ -140,6 +176,10 @@ export class StaffComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.staffForm.invalid) {
       this.staffForm.markAllAsTouched();
+      const personalInvalid = ['firstName', 'lastName', 'email', 'phone'].some(name => this.staffForm.get(name)?.invalid);
+      this.activeFormTab = personalInvalid ? 'personal'
+        : this.isUser === 'Doctor' && this.staffForm.get('specialization')?.invalid ? 'professional'
+        : 'access';
       return;
     }
     this.isEdit ? this.updateUser() : this.createUser();
@@ -148,8 +188,10 @@ export class StaffComponent implements OnInit, OnDestroy {
   createUser(): void {
     this.loading = true;
     const formData = this.staffForm.getRawValue();
+    const fullName = [formData.firstName, formData.lastName].filter(Boolean).join(' ').trim();
     const data: any = {
-      staffname: formData.staffname,
+      ...formData,
+      staffname: fullName || formData.staffname,
       email:     formData.email,
       phone:     formData.phone,
       role:      formData.role
@@ -171,13 +213,15 @@ export class StaffComponent implements OnInit, OnDestroy {
     api$.subscribe({
       next: (res: any) => {
         const doctorId = res?.data?.doctor?._id || res?.data?._id || res?.doctor?._id || res?._id;
-        if (this.isUser === 'Doctor' && this.selectedDocuments.length && doctorId) {
-          this.uploadDoctorDocuments(doctorId, () => this.showCreated());
+        if (this.selectedDocuments.length && doctorId) {
+          this.isUser === 'Doctor'
+            ? this.uploadDoctorDocuments(doctorId, () => this.showCreated())
+            : this.uploadStaffDocuments(doctorId, () => this.showCreated());
           return;
         }
-        if (this.isUser === 'Doctor' && this.selectedDocuments.length && !doctorId) {
+        if (this.selectedDocuments.length && !doctorId) {
           this.loading = false;
-          this.error = 'Doctor saved, but the server did not return a doctor ID for document upload.';
+          this.error = 'Profile saved, but the server did not return an ID for document upload.';
           return;
         }
         this.messageService.add({
@@ -195,6 +239,7 @@ export class StaffComponent implements OnInit, OnDestroy {
     if (!this.userId) return;
     this.loading = true;
     const data = this.staffForm.getRawValue();
+    data.staffname = [data.firstName, data.lastName].filter(Boolean).join(' ').trim() || data.staffname;
     if (!data.password) delete data.password;
 
     const api$ = this.isUser === 'Doctor'
@@ -203,8 +248,10 @@ export class StaffComponent implements OnInit, OnDestroy {
 
     api$.subscribe({
       next: () => {
-        if (this.isUser === 'Doctor' && this.selectedDocuments.length) {
-          this.uploadDoctorDocuments(this.userId!, () => this.showUpdated());
+        if (this.selectedDocuments.length) {
+          this.isUser === 'Doctor'
+            ? this.uploadDoctorDocuments(this.userId!, () => this.showUpdated())
+            : this.uploadStaffDocuments(this.userId!, () => this.showUpdated());
           return;
         }
         this.messageService.add({
@@ -247,9 +294,16 @@ export class StaffComponent implements OnInit, OnDestroy {
         const s = this.unwrapRecord(res);
         this.staffForm.patchValue({
           staffname: s.staffname ?? s.name ?? s.fullName ?? '',
+          firstName: s.firstName ?? String(s.staffname ?? s.name ?? s.fullName ?? '').trim().split(/\s+/)[0] ?? '',
+          lastName: s.lastName ?? String(s.staffname ?? s.name ?? s.fullName ?? '').trim().split(/\s+/).slice(1).join(' ') ?? '',
+          dateOfBirth: s.dateOfBirth ?? s.dob ?? '',
+          gender: s.gender ?? '',
           email:     s.email ?? '',
-          phone:     s.phone ?? s.mobile ?? ''
+          phone:     s.phone ?? s.mobile ?? '',
+          address: s.address ?? '', city: s.city ?? '', state: s.state ?? '', postalCode: s.postalCode ?? s.pincode ?? '', country: s.country ?? '',
+          emergencyContactName: s.emergencyContactName ?? '', emergencyContactPhone: s.emergencyContactPhone ?? '', emergencyRelationship: s.emergencyRelationship ?? ''
         });
+        this.loadStaffDocuments(id);
         this.togglePasswordValidation();
         this.loading = false;
       },
@@ -264,10 +318,20 @@ export class StaffComponent implements OnInit, OnDestroy {
         const d = this.unwrapRecord(res);
         this.staffForm.patchValue({
           staffname:      d.staffname ?? d.name ?? d.fullName ?? '',
+          firstName: d.firstName ?? String(d.staffname ?? d.name ?? d.fullName ?? '').trim().split(/\s+/)[0] ?? '',
+          lastName: d.lastName ?? String(d.staffname ?? d.name ?? d.fullName ?? '').trim().split(/\s+/).slice(1).join(' ') ?? '',
+          dateOfBirth: d.dateOfBirth ?? d.dob ?? '',
+          gender: d.gender ?? '',
           email:          d.email ?? '',
           phone:          d.phone ?? d.mobile ?? '',
           specialization: d.specialization ?? d.speciality ?? '',
-          registrationNumber: d.registrationNumber ?? d.registrationNo ?? d.medicalRegistrationNumber ?? ''
+          registrationNumber: d.registrationNumber ?? d.registrationNo ?? d.medicalRegistrationNumber ?? '',
+          secondarySpecialization: d.secondarySpecialization ?? '',
+          licenseExpiryDate: d.licenseExpiryDate ?? '',
+          qualifications: d.qualifications ?? '', yearsExperience: d.yearsExperience ?? '', education: d.education ?? '', certifications: d.certifications ?? '',
+          profession: d.profession ?? '', department: d.department ?? '', position: d.position ?? '', consultationFee: d.consultationFee ?? '', professionalBio: d.professionalBio ?? '',
+          address: d.address ?? '', city: d.city ?? '', state: d.state ?? '', postalCode: d.postalCode ?? d.pincode ?? '', country: d.country ?? '',
+          emergencyContactName: d.emergencyContactName ?? '', emergencyContactPhone: d.emergencyContactPhone ?? '', emergencyRelationship: d.emergencyRelationship ?? ''
         });
         this.loadDoctorDocuments(id);
         this.togglePasswordValidation();
@@ -294,9 +358,13 @@ export class StaffComponent implements OnInit, OnDestroy {
     const maxBytes = 24 * 1024 * 1024;
     const rejected = files.filter(file => !allowed.test(file.name) || file.size > maxBytes);
     this.documentsError = rejected.length ? 'Use JPG, PNG, PDF, SVG, DOC or DOCX files up to 24 MB.' : '';
+    if (this.isUser !== 'Doctor' && files.length && !this.staffDocumentType) {
+      this.documentsError = 'Select a document type before choosing files.';
+      return;
+    }
     this.selectedDocuments = [...this.selectedDocuments, ...files
       .filter(file => allowed.test(file.name) && file.size <= maxBytes)
-      .map(file => ({ file, fileName: file.name }))];
+      .map(file => ({ file, fileName: file.name, documentType: this.isUser === 'Doctor' ? undefined : this.staffDocumentType }))];
   }
 
   updateDocumentFileName(index: number, fileName: string): void {
@@ -327,6 +395,49 @@ export class StaffComponent implements OnInit, OnDestroy {
         this.documentsUploading = false;
         this.handleError(err);
       }
+    });
+  }
+
+  private uploadStaffDocuments(staffId: string, done: () => void): void {
+    this.documentsUploading = true;
+    this.documentUploadProgress = 0;
+    this.authService.uploadStaffAttachments(staffId, this.selectedDocuments).subscribe({
+      next: event => {
+        if (event.type === HttpEventType.UploadProgress && event.total) {
+          this.documentUploadProgress = Math.round(event.loaded / event.total * 100);
+        }
+        if (event.type === HttpEventType.Response) {
+          this.documentsUploading = false;
+          this.selectedDocuments = [];
+          this.loadStaffDocuments(staffId);
+          done();
+        }
+      },
+      error: err => { this.documentsUploading = false; this.handleError(err); }
+    });
+  }
+
+  loadStaffDocuments(staffId = this.userId): void {
+    if (!staffId) return;
+    this.documentsLoading = true;
+    this.documentsListError = '';
+    this.authService.getStaffAttachments(staffId).subscribe({
+      next: response => {
+        const list = response?.data?.attachments ?? response?.data?.documents ?? response?.data?.files ??
+          response?.attachments ?? response?.documents ?? response?.files ?? response?.data ?? [];
+        this.uploadedDocuments = Array.isArray(list) ? list : [];
+        this.documentsLoading = false;
+      },
+      error: () => { this.uploadedDocuments = []; this.documentsLoading = false; this.documentsListError = 'Could not load staff documents.'; }
+    });
+  }
+
+  downloadStaffDocument(file: any): void {
+    const id = file?._id || file?.id || file?.attachmentId;
+    if (!this.userId || !id) return;
+    this.authService.downloadStaffAttachment(this.userId, id).subscribe({
+      next: blob => this.saveDownloadedDocument(blob, this.documentName(file)),
+      error: () => this.documentsListError = 'Could not download this document.'
     });
   }
 

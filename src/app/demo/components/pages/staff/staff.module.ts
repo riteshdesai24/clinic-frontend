@@ -11,6 +11,8 @@ import { PasswordModule } from 'primeng/password';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
+import { CalendarModule } from 'primeng/calendar';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 
 // Services
 import { MessageService } from 'primeng/api';
@@ -27,6 +29,8 @@ import { MessageService } from 'primeng/api';
     DropdownModule,
     ToastModule,
     TooltipModule,
+    CalendarModule,
+    InputTextareaModule,
   ],
   declarations: [StaffComponent],
   providers: [MessageService]

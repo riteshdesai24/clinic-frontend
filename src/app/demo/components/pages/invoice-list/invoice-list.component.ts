@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MessageService } from 'primeng/api';
+import { Router } from '@angular/router';
 import { AuthService } from 'src/app/demo/service/auth.service';
 
 interface InvoicePaymentDraft {
@@ -41,7 +42,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
   private currentDoctorIds = new Set<string>();
   private patientById = new Map<string, any>();
 
-  constructor(private api: AuthService, private messages: MessageService, private sanitizer: DomSanitizer) {}
+  constructor(private api: AuthService, private messages: MessageService, private sanitizer: DomSanitizer, private router: Router) {}
 
   ngOnInit(): void {
     try {
@@ -119,6 +120,10 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
   viewPdf(invoice: any): void {
     if (!invoice) return;
     this.previewInvoice = invoice;
+  }
+
+  startInvoiceCreation(): void {
+    this.router.navigate(['/pages/invoice-create']);
   }
 
   closeInvoicePreview(): void { this.previewInvoice = null; }

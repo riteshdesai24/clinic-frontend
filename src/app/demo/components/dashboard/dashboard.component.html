@@ -1,8 +1,40 @@
 <main class="dashboard">
+  <section class="overview-stat-grid" aria-label="Clinic overview">
+    <article class="overview-stat-card revenue">
+      <h2>Total Revenue</h2>
+      <i class="pi pi-dollar" aria-hidden="true"></i>
+      <strong>{{ isAdmin ? (overviewRevenue | currency:'INR':'symbol':'1.0-2') : '—' }}</strong>
+      <div class="overview-progress" role="progressbar" aria-label="Collected share of invoiced revenue" [attr.aria-valuenow]="overviewRevenuePercent" aria-valuemin="0" aria-valuemax="100"><span [style.width.%]="overviewRevenuePercent"></span></div>
+      <p *ngIf="isAdmin">{{ overviewRevenuePercent }}% of {{ overviewBilledRevenue | currency:'INR':'symbol':'1.0-0' }} billed collected</p>
+      <p *ngIf="!isAdmin">Available to administrators</p>
+    </article>
+    <article class="overview-stat-card appointments">
+      <h2>Appointment Completion</h2>
+      <i class="pi pi-calendar" aria-hidden="true"></i>
+      <strong>{{ overviewAppointmentCompletionPercent }}%</strong>
+      <div class="overview-progress" role="progressbar" aria-label="Appointments completed this month" [attr.aria-valuenow]="overviewAppointmentCompletionPercent" aria-valuemin="0" aria-valuemax="100"><span [style.width.%]="overviewAppointmentCompletionPercent"></span></div>
+      <p>{{ appointmentSummaries.month.completed }} of {{ appointmentSummaries.month.all }} appointments completed</p>
+    </article>
+    <article class="overview-stat-card patients">
+      <h2>Patients</h2>
+      <i class="pi pi-user" aria-hidden="true"></i>
+      <strong>{{ overviewPatientCount | number }}</strong>
+      <div class="overview-progress" role="progressbar" aria-label="Active patient records" [attr.aria-valuenow]="overviewActivePatientPercent" aria-valuemin="0" aria-valuemax="100"><span [style.width.%]="overviewActivePatientPercent"></span></div>
+      <p>{{ overviewActivePatientCount | number }} active patient records</p>
+    </article>
+    <article class="overview-stat-card staff">
+      <h2>Staff</h2>
+      <i class="pi pi-users" aria-hidden="true"></i>
+      <strong>{{ overviewStaffCount | number }}</strong>
+      <div class="overview-progress" role="progressbar" aria-label="New staff added this month" [attr.aria-valuenow]="overviewStaffNewPercent" aria-valuemin="0" aria-valuemax="100"><span [style.width.%]="overviewStaffNewPercent"></span></div>
+      <p>{{ overviewStaffNewThisMonth }} new this month</p>
+    </article>
+  </section>
+
   <section class="welcome-card">
     <div>
-      <span class="eyebrow">{{ clinicName || 'Clinic workspace' }}</span>
-      <h1>{{ userName ? 'Welcome, ' + userName : 'Clinic dashboard' }}</h1>
+      <span class="eyebrow">Clinic workspace</span>
+      <h1>{{ clinicName || (userName ? 'Welcome, ' + userName : 'Clinic dashboard') }}</h1>
       <p>Appointment activity and clinic performance at a glance.</p>
       <span class="welcome-date"><i class="pi pi-calendar" aria-hidden="true"></i>{{ invoiceCardDate | date:'EEEE, MMMM d, y' }}</span>
     </div>
@@ -123,19 +155,27 @@
     </article>
   </section>
 
-  <section class="panel monthly-income-panel" *ngIf="isAdmin">
-    <div class="panel-heading">
-      <div><span class="panel-kicker">Collected income</span><h2>Monthly income · {{ selectedIncomeYearLabel }}</h2></div>
-      <div class="income-year-filter">
-        <label for="income-year-picker">Year</label>
-        <p-calendar inputId="income-year-picker" [ngModel]="incomeYearDate" (onSelect)="onIncomeYearChange($event)" view="year" dateFormat="yy" [readonlyInput]="true" [showIcon]="true" styleClass="income-year-picker"></p-calendar>
-        <button type="button" class="all-years-button" [class.active]="selectedIncomeYear === 'ALL'" (click)="showAllIncomeYears()">All years</button>
+  <section class="dashboard-insights-grid" [class.finance-unavailable]="!isAdmin" aria-label="Monthly finance and appointment status">
+    <article class="panel monthly-income-panel" *ngIf="isAdmin">
+      <div class="panel-heading">
+        <div><span class="panel-kicker">Collected payments by month</span><h2>Monthly Financials · {{ selectedIncomeYearLabel }}</h2></div>
+        <div class="income-year-filter">
+          <label for="income-year-picker">Year</label>
+          <p-calendar inputId="income-year-picker" [ngModel]="incomeYearDate" (onSelect)="onIncomeYearChange($event)" view="year" dateFormat="yy" [readonlyInput]="true" [showIcon]="true" styleClass="income-year-picker"></p-calendar>
+          <button type="button" class="all-years-button" [class.active]="selectedIncomeYear === 'ALL'" (click)="showAllIncomeYears()">All years</button>
+        </div>
       </div>
-      <span class="panel-icon"><i class="pi pi-chart-bar"></i></span>
-    </div>
-    <div class="pending-loading" *ngIf="monthlyIncomeLoading"><i class="pi pi-spin pi-spinner"></i> Loading monthly income…</div>
-    <div class="pending-error" *ngIf="!monthlyIncomeLoading && monthlyIncomeError"><span>{{ monthlyIncomeError }}</span><button type="button" (click)="loadMonthlyIncome()">Retry</button></div>
-    <div class="income-chart" *ngIf="!monthlyIncomeLoading && !monthlyIncomeError"><p-chart type="bar" [data]="monthlyIncomeChart" [options]="monthlyIncomeChartOptions"></p-chart></div>
+      <div class="pending-loading" *ngIf="monthlyIncomeLoading"><i class="pi pi-spin pi-spinner"></i> Loading monthly income…</div>
+      <div class="pending-error" *ngIf="!monthlyIncomeLoading && monthlyIncomeError"><span>{{ monthlyIncomeError }}</span><button type="button" (click)="loadMonthlyIncome()">Retry</button></div>
+      <div class="income-chart" *ngIf="!monthlyIncomeLoading && !monthlyIncomeError"><p-chart type="bar" [data]="monthlyIncomeChart" [options]="monthlyIncomeChartOptions"></p-chart></div>
+    </article>
+
+    <article class="panel appointment-status-panel">
+      <div class="panel-heading">
+        <div><span class="panel-kicker">Distribution of appointment statuses</span><h2>Appointment Status · This month</h2></div>
+      </div>
+      <div class="status-chart"><p-chart type="pie" [data]="appointmentStatusChart" [options]="appointmentStatusChartOptions"></p-chart></div>
+    </article>
   </section>
 
   <section class="dashboard-activity-grid">
@@ -144,10 +184,10 @@
         <div><span class="panel-kicker">Frequently used</span><h2>Quick actions</h2></div>
       </div>
       <section class="quick-actions" aria-label="Clinic actions">
-        <a class="action-card" routerLink="/pages/patient"><span class="action-icon patients"><i class="pi pi-user-plus"></i></span><span><strong>Add patient</strong><small>Create a patient record</small></span><i class="pi pi-angle-right"></i></a>
-        <a class="action-card" routerLink="/pages/appointment-list"><span class="action-icon appointments"><i class="pi pi-calendar"></i></span><span><strong>Appointments</strong><small>Review the schedule</small></span><i class="pi pi-angle-right"></i></a>
-        <a class="action-card" routerLink="/pages/invoice-list"><span class="action-icon schedule"><i class="pi pi-file-pdf"></i></span><span><strong>Invoices</strong><small>Review invoices and payments</small></span><i class="pi pi-angle-right"></i></a>
-        <a class="action-card" routerLink="/pages/patient-list"><span class="action-icon records"><i class="pi pi-users"></i></span><span><strong>Patients</strong><small>Find and manage records</small></span><i class="pi pi-angle-right"></i></a>
+        <a class="action-card action-patient" routerLink="/pages/patient"><span class="action-icon"><i class="pi pi-user-plus"></i></span><strong>Add Patient</strong><small>Create a patient record</small><span class="action-cta">Add Patient</span></a>
+        <a class="action-card action-appointments" routerLink="/pages/appointment-list"><span class="action-icon"><i class="pi pi-calendar"></i></span><strong>Appointments</strong><small>Review the clinic schedule</small><span class="action-cta">View Appointments</span></a>
+        <a class="action-card action-invoices" routerLink="/pages/invoice-list"><span class="action-icon"><i class="pi pi-file-pdf"></i></span><strong>Invoices</strong><small>Review invoices and payments</small><span class="action-cta">View Invoices</span></a>
+        <a class="action-card action-records" routerLink="/pages/patient-list"><span class="action-icon"><i class="pi pi-users"></i></span><strong>Patients</strong><small>Find and manage records</small><span class="action-cta">View Patients</span></a>
       </section>
     </article>
 

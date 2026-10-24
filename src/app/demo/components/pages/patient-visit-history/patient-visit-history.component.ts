@@ -11,16 +11,18 @@ export class PatientVisitHistoryComponent implements OnChanges {
   @Input() patientName = 'Patient';
   @Input() buttonClass = '';
   @Input() compact = false;
+  @Input() inline = false;
 
   visible = false;
   loading = false;
   error = '';
   visits: any[] = [];
+  showAll = false;
 
   constructor(private api: AuthService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['patientId'] && this.visible) this.loadHistory();
+    if (changes['patientId'] && (this.visible || this.inline)) this.loadHistory();
   }
 
   open(): void {
@@ -30,10 +32,14 @@ export class PatientVisitHistoryComponent implements OnChanges {
 
   close(): void { this.visible = false; }
 
+  get visibleVisits(): any[] { return this.showAll ? this.visits : this.visits.slice(0, 4); }
+  toggleHistory(): void { this.showAll = !this.showAll; }
+
   loadHistory(): void {
     if (!this.patientId) return;
     this.loading = true;
     this.error = '';
+    this.showAll = false;
     this.api.getAppointmentList({ patientId: this.patientId, page: 1, limit: 500 }).subscribe({
       next: (response: any) => {
         const appointments = this.records(response);
@@ -73,6 +79,12 @@ export class PatientVisitHistoryComponent implements OnChanges {
     const values = treatment.treatments || treatment.treatmentMasterIds || treatment.treatmentMasterId || treatment.treatment;
     const list = Array.isArray(values) ? values : values ? [values] : [];
     return list.map((item: any) => typeof item === 'string' ? item : item?.name || item?.treatmentName).filter(Boolean);
+  }
+  timelineTitle(visit: any): string {
+    const treatments = (visit.visitTreatments || []).map((treatment: any) =>
+      treatment.treatmentName || treatment.name || this.treatmentNames(treatment).join(', ')
+    ).filter(Boolean);
+    return treatments.join(', ') || visit.reason || visit.purpose || visit.appointmentType || visit.type || 'Appointment';
   }
   detailFields(treatment: any): { label: string; value: string }[] {
     const known = ['diagnosis', 'description', 'duration', 'notes', 'followUpDate', 'followupDate', 'components', 'medicines'];

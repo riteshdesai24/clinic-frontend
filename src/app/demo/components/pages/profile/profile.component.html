@@ -1,79 +1,73 @@
-<div class="grid">
-  <div class="col-12">
-    <div class="profile-card">
-      <div class="profile-heading">
-        <div class="profile-icon"><i class="pi pi-user"></i></div>
-        <div>
-          <h2>Account</h2>
-          <p>Manage your clinic and account details.</p>
-        </div>
+<main class="profile-page">
+  <header class="page-heading"><h1>Profile</h1><p>Manage your profile settings and account preferences.</p></header>
+  <p-progressSpinner *ngIf="loading" styleClass="profile-spinner"></p-progressSpinner>
+
+  <ng-container *ngIf="!loading && profileForm">
+    <div class="profile-content-grid">
+    <section class="profile-card">
+      <div class="profile-hero">
+        <img *ngIf="profile?.profilePhoto || profile?.photoUrl || profile?.avatar" [src]="profile.profilePhoto || profile.photoUrl || profile.avatar" alt="Profile photo" class="profile-photo">
+        <span *ngIf="!(profile?.profilePhoto || profile?.photoUrl || profile?.avatar)" class="profile-avatar">{{ initials() }}</span>
+        <div class="profile-identity"><div class="identity-line"><h2>{{ fullName() }}</h2><span class="role-badge">{{ roleBadgeLabel() }}</span></div><p>{{ roleLabel() }}</p></div>
       </div>
 
-      <p-progressSpinner *ngIf="loading" styleClass="profile-spinner"></p-progressSpinner>
-
-      <ng-container *ngIf="!loading && profileForm">
-        <div class="profile-meta">
-          <span><i class="pi pi-id-card"></i> {{ profile.role }}</span>
-          <span *ngIf="profile.clinicName"><i class="pi pi-building"></i> {{ profile.clinicName }}</span>
+      <section class="profile-section">
+        <div class="section-heading"><h3><i class="pi pi-user"></i> Basic Information</h3><button *ngIf="editingProfile" pButton type="button" label="Save" [loading]="saving" [disabled]="saving" (click)="save()"></button></div>
+        <div *ngIf="!editingProfile" class="information-list">
+          <div class="information-row"><span class="information-label"><i class="pi pi-envelope"></i>Email</span><strong>{{ profile.email || '—' }}</strong></div>
+          <div class="information-row"><span class="information-label"><i class="pi pi-phone"></i>Phone</span><strong>{{ profile.phone || '—' }}</strong></div>
+          <div class="information-row"><span class="information-label"><i class="pi pi-map-marker"></i>Location</span><strong>{{ locationLabel() }}</strong></div>
+          <div class="information-row"><span class="information-label"><i class="pi pi-building"></i>Department</span><strong>{{ departmentLabel() }}</strong></div>
         </div>
-
-        <form [formGroup]="profileForm" (ngSubmit)="save()">
-          <section class="clinic-logo-section" aria-label="Clinic logo">
-            <div class="clinic-logo-preview"><img *ngIf="clinicLogo" [src]="clinicLogo" alt="Clinic logo preview" (error)="removeClinicLogo()" /><i *ngIf="!clinicLogo" class="pi pi-building" aria-hidden="true"></i></div>
-            <div class="clinic-logo-controls">
-              <strong>Clinic Logo</strong>
-              <div class="clinic-logo-buttons">
-                <label class="logo-upload-button"><i class="pi pi-cloud-upload"></i> Upload Image<input type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,.svg" (change)="onClinicLogoSelected($event)" /></label>
-                <button pButton type="button" label="Remove" class="p-button-outlined p-button-secondary" (click)="removeClinicLogo()" [disabled]="!clinicLogo"></button>
-              </div>
-              <small>SVG, PNG, JPEG, GIF, or WebP under 10 MB</small>
-              <small class="p-error" *ngIf="logoError">{{ logoError }}</small>
-            </div>
-          </section>
-          <section class="form-section" *ngIf="detailsFields.length">
-            <div class="section-heading"><span class="section-icon"><i class="pi pi-id-card"></i></span><div><h3>Profile details</h3><p>Your contact and account information</p></div></div>
-            <div class="field-grid">
-            <div class="field" *ngFor="let field of detailsFields">
-              <label [for]="field">{{ label(field) }}</label>
-              <span class="input-wrap"><i [class]="field === 'email' ? 'pi pi-envelope' : field === 'phone' ? 'pi pi-phone' : field === 'clinicName' ? 'pi pi-building' : 'pi pi-user'"></i><input pInputText [id]="field" [type]="field === 'email' ? 'email' : 'text'" [formControlName]="field" /></span>
-              <small class="p-error" *ngIf="profileForm.get(field)?.touched && profileForm.get(field)?.invalid">
-                {{ field === 'email' && profileForm.get(field)?.hasError('email') ? 'Enter a valid email address.' : 'This field is required.' }}
-              </small>
-            </div>
+        <form *ngIf="editingProfile" [formGroup]="profileForm" (ngSubmit)="save()" class="profile-edit-form">
+          <div class="edit-field" *ngFor="let field of detailsFields"><label [for]="field">{{ label(field) }}</label><input pInputText [id]="field" [type]="field === 'email' ? 'email' : 'text'" [formControlName]="field"><small class="p-error" *ngIf="profileForm.get(field)?.touched && profileForm.get(field)?.invalid">{{ field === 'email' && profileForm.get(field)?.hasError('email') ? 'Enter a valid email address.' : 'This field is required.' }}</small></div>
+          <div class="edit-field" *ngFor="let field of addressFields"><label [for]="field">{{ label(field) }}</label>
+            <p-autoComplete *ngIf="field === 'country'" [inputId]="field" formControlName="country" [suggestions]="filteredCountries" (completeMethod)="searchCountries($event)" (onSelect)="onCountryChange($event.value)" field="name" [dropdown]="true" [forceSelection]="true" placeholder="Search country" styleClass="w-full" inputStyleClass="w-full"></p-autoComplete>
+            <p-autoComplete *ngIf="field === 'state'" [inputId]="field" formControlName="state" [suggestions]="filteredStates" (completeMethod)="searchStates($event)" (onSelect)="onStateChange($event.value)" field="name" [dropdown]="true" [forceSelection]="true" placeholder="Search state" styleClass="w-full" inputStyleClass="w-full"></p-autoComplete>
+            <p-autoComplete *ngIf="field === 'city'" [inputId]="field" formControlName="city" [suggestions]="filteredCities" (completeMethod)="searchCities($event)" field="name" [dropdown]="true" [forceSelection]="true" placeholder="Search city" styleClass="w-full" inputStyleClass="w-full"></p-autoComplete>
+            <input *ngIf="!['country','state','city'].includes(field)" pInputText [id]="field" [formControlName]="field">
           </div>
-          </section>
-
-          <section class="form-section address-section" *ngIf="addressFields.length">
-            <div class="section-heading"><span class="section-icon"><i class="pi pi-map-marker"></i></span><div><h3>Address</h3><p>Where your clinic or account is located</p></div></div>
-            <div class="field-grid">
-              <div class="field" *ngFor="let field of addressFields">
-                <label [for]="field">{{ label(field) }}</label>
-                <p-autoComplete *ngIf="field === 'country'" [inputId]="field" formControlName="country" [suggestions]="filteredCountries" (completeMethod)="searchCountries($event)" (onSelect)="onCountryChange($event.value)" field="name" [dropdown]="true" [forceSelection]="true" placeholder="Search Country Master" styleClass="w-full" inputStyleClass="w-full"></p-autoComplete>
-                <p-autoComplete *ngIf="field === 'state'" [inputId]="field" formControlName="state" [suggestions]="filteredStates" (completeMethod)="searchStates($event)" (onSelect)="onStateChange($event.value)" field="name" [dropdown]="true" [forceSelection]="true" placeholder="Select a country first" styleClass="w-full" inputStyleClass="w-full"></p-autoComplete>
-                <p-autoComplete *ngIf="field === 'city'" [inputId]="field" formControlName="city" [suggestions]="filteredCities" (completeMethod)="searchCities($event)" field="name" [dropdown]="true" [forceSelection]="true" placeholder="Select a state first" styleClass="w-full" inputStyleClass="w-full"></p-autoComplete>
-                <span class="input-wrap" *ngIf="!['country', 'state', 'city'].includes(field)"><i [class]="field === 'pincode' ? 'pi pi-map' : 'pi pi-home'"></i><input pInputText [id]="field" [formControlName]="field" /></span>
-              </div>
-            </div>
-          </section>
-
-          <div class="profile-actions">
-            <button pButton type="button" label="Cancel" class="p-button-secondary p-button-outlined" (click)="cancel()"></button>
-            <button pButton type="submit" label="Save changes" icon="pi pi-check" [loading]="saving" [disabled]="saving"></button>
-          </div>
+          <div class="edit-form-actions"><button pButton type="button" label="Cancel" class="p-button-outlined" (click)="cancelProfileEdit()"></button></div>
         </form>
+      </section>
 
-        <section class="password-section">
-          <div class="password-heading"><div><h3>Password</h3><p>Use a strong password to protect your account.</p></div></div>
-          <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
-            <div class="field-grid">
-              <div class="field"><label for="oldPassword">Current password</label><input pInputText id="oldPassword" type="password" formControlName="oldPassword" /></div>
-              <div class="field"><label for="newPassword">New password</label><input pInputText id="newPassword" type="password" formControlName="newPassword" /><small class="p-error" *ngIf="passwordForm.get('newPassword')?.touched && passwordForm.get('newPassword')?.invalid">Use 8+ characters with uppercase, lowercase, number and a special character.</small></div>
-              <div class="field"><label for="confirmPassword">Confirm new password</label><input pInputText id="confirmPassword" type="password" formControlName="confirmPassword" /><small class="p-error" *ngIf="passwordForm.get('confirmPassword')?.hasError('mismatch')">Passwords do not match.</small></div>
-            </div>
-            <div class="profile-actions"><button pButton type="submit" label="Change password" icon="pi pi-lock" [loading]="savingPassword" [disabled]="savingPassword"></button></div>
-          </form>
-        </section>
-      </ng-container>
+      <section class="profile-section security-section">
+        <div class="section-heading"><h3><i class="pi pi-shield"></i> Security Status</h3><button *ngIf="!editingPassword" type="button" class="section-action" (click)="startPasswordEdit()">Change Password</button><button *ngIf="editingPassword" pButton type="button" label="Save" [loading]="savingPassword" [disabled]="savingPassword" (click)="changePassword()"></button></div>
+        <div *ngIf="!editingPassword" class="security-list"><div class="security-row"><span>2FA Status</span><strong class="security-pill" [class.disabled]="twoFactorLabel() !== 'Enabled'">{{ twoFactorLabel() }}</strong></div><div class="security-row"><span>Last Password Change</span><strong>{{ passwordChangedLabel() }}</strong></div><div class="security-row"><span>Security Score</span><strong class="score-pill">{{ securityScore() }}</strong></div></div>
+        <form *ngIf="editingPassword" [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="password-edit-form">
+          <div class="edit-field"><label for="oldPassword">Current Password</label><input pInputText id="oldPassword" type="password" formControlName="oldPassword"></div>
+          <div class="edit-field"><label for="newPassword">New Password</label><input pInputText id="newPassword" type="password" formControlName="newPassword"><small class="p-error" *ngIf="passwordForm.get('newPassword')?.touched && passwordForm.get('newPassword')?.invalid">Use 8+ characters with uppercase, lowercase, number and a special character.</small></div>
+          <div class="edit-field"><label for="confirmPassword">Confirm New Password</label><input pInputText id="confirmPassword" type="password" formControlName="confirmPassword"><small class="p-error" *ngIf="passwordForm.get('confirmPassword')?.hasError('mismatch')">Passwords do not match.</small></div>
+          <div class="edit-form-actions"><button pButton type="button" label="Cancel" class="p-button-outlined" (click)="cancelPasswordEdit()"></button><button pButton type="submit" label="Change Password" icon="pi pi-lock" [loading]="savingPassword" [disabled]="savingPassword"></button></div>
+        </form>
+      </section>
+    </section>
+    <aside class="profile-side-card">
+      <h2>Clinic Logo</h2>
+      <p>Upload or update the logo displayed for your clinic.</p>
+      <section class="clinic-logo-section" aria-label="Clinic logo">
+        <div class="clinic-logo-preview"><img *ngIf="clinicLogo" [src]="clinicLogo" alt="Clinic logo preview" (error)="removeClinicLogo()"><i *ngIf="!clinicLogo" class="pi pi-building"></i></div>
+        <div class="clinic-logo-controls">
+          <strong>{{ clinicLogo ? 'Current clinic logo' : 'No clinic logo uploaded' }}</strong>
+          <div class="clinic-logo-buttons">
+            <label class="logo-upload-button"><i class="pi pi-cloud-upload"></i> Upload Image<input type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,.svg" (change)="onClinicLogoSelected($event)"></label>
+            <button pButton type="button" label="Remove" class="p-button-outlined p-button-secondary" (click)="removeClinicLogo()" [disabled]="!clinicLogo"></button>
+          </div>
+          <small>SVG, PNG, JPEG, GIF, or WebP under 10 MB</small>
+          <small class="p-error" *ngIf="logoError">{{ logoError }}</small>
+        </div>
+      </section>
+      <p class="logo-save-hint">Save your profile changes to apply the updated logo.</p>
+    </aside>
     </div>
-  </div>
-</div>
+
+    <section class="quick-actions-card">
+      <h2>Quick Actions</h2>
+      <div class="quick-actions">
+        <button type="button" (click)="editingProfile ? cancelProfileEdit() : startProfileEdit()"><i class="pi" [ngClass]="editingProfile ? 'pi-cog' : 'pi-cog'"></i>{{ editingProfile ? 'Cancel Edit' : 'Edit Profile' }}</button>
+        <button type="button" (click)="editingPassword ? cancelPasswordEdit() : startPasswordEdit()"><i class="pi pi-lock"></i>{{ editingPassword ? 'Cancel Change' : 'Change Password' }}</button>
+        <button type="button" (click)="downloadData()"><i class="pi pi-file"></i>Download Data</button>
+      </div>
+    </section>
+  </ng-container>
+</main>

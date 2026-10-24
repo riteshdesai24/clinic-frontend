@@ -129,7 +129,6 @@ export class PatientComponent implements OnInit, OnDestroy {
 
   routeItems: MenuItem[] = [];
   activeTab: number = 0;
-  clinicData: any;
 
   private readonly requiredControlsByTab = [
     ['firstName', 'lastName', 'gender'],
@@ -164,8 +163,6 @@ export class PatientComponent implements OnInit, OnDestroy {
       this.isView = true;
     }
 
-    this.clinicData = JSON.parse(localStorage.getItem('clinic') || sessionStorage.getItem('clinic') || '{}');
-
 
     this.patientForm = this.fb.group({
       // Personal Info
@@ -182,13 +179,17 @@ export class PatientComponent implements OnInit, OnDestroy {
       // Contact
       phone:              ['', Validators.required],
       email:              [''],
+      alternatePhone:     [''],
+      preferredContactMethod: ['PHONE'],
       whatsappNumber:     [''],
       otherMobile:        [''],
       workEmail:          [''],
       landlineNumber:     [''],
       areaCode:           [''],
       emergencyContactName:   [''],
+      emergencyRelationship:  [''],
       emergencyContactNumber: [''],
+      emergencyContactEmail:  [''],
       spouseName:             [''],
       spouseContactNumber:    [''],
       generalPractitioner:    [''],
@@ -208,6 +209,16 @@ export class PatientComponent implements OnInit, OnDestroy {
       medicalConditions:  [[]],
       dentalConditions:   [[]],
       currentMedications: [''],
+      chronicConditions:  [''],
+      height:             [''],
+      weight:             [''],
+      pastSurgeries:      [''],
+      previousHospitalizations: [''],
+      familyHistory:      [''],
+      smokingStatus:      [''],
+      alcoholConsumption: [''],
+      exerciseFrequency:  [''],
+      dietaryHabits:      [''],
       allergicTo:         [''],
       habits:             [''],
 
@@ -216,6 +227,22 @@ export class PatientComponent implements OnInit, OnDestroy {
       insuranceSubCompany: [''],
       insurancePolicy:     [''],
       insuranceIdNumber:   [''],
+      insuranceGroupNumber: [''],
+      policyHolderName:    [''],
+      insuranceRelationship: ['SELF'],
+      insurancePhone:      [''],
+      secondaryInsuranceProvider: [''],
+      secondaryInsurancePolicy: [''],
+      billingMethod:       [''],
+      paymentCreditCard:   [false],
+      paymentDebitCard:    [false],
+      paymentCash:         [false],
+      paymentCheck:        [false],
+      paymentOnline:       [false],
+      communicationReminders: [false],
+      communicationLabResults: [false],
+      communicationPrescriptions: [false],
+      communicationNewsletter: [false],
 
       // Demographics
       language:    ['ENGLISH'],

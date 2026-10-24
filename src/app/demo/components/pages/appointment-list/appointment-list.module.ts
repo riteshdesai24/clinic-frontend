@@ -13,6 +13,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
 
 import { ConfirmationService, MessageService } from 'primeng/api';
 
@@ -29,7 +30,8 @@ import { ConfirmationService, MessageService } from 'primeng/api';
     ConfirmDialogModule,
     ToastModule,
     DialogModule,
-    InputTextareaModule
+    InputTextareaModule,
+    OverlayPanelModule
   ],
   providers: [ConfirmationService, MessageService]
 })

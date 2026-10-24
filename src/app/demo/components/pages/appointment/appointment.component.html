@@ -1,160 +1,101 @@
-<div class="grid">
-  <div class="col-12">
-    <div class="pf-card">
+<main class="appointment-page">
+  <header class="appointment-page-heading" *ngIf="!dialogMode">
+    <button type="button" class="appointment-back-button" (click)="onCancel()" aria-label="Back to appointments"><i class="pi pi-arrow-left"></i></button>
+    <div>
+      <h1>{{ isView ? 'Appointment Details' : (isEdit ? 'Edit Appointment' : 'Add Appointment') }}</h1>
+      <p>{{ isView ? 'Review the appointment details.' : 'Schedule a new appointment for a patient.' }}</p>
+    </div>
+  </header>
 
-      <div class="pf-header">
-        <div class="pf-icon">
-          <i class="pi pi-calendar-plus"></i>
+  <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()" class="appointment-form-layout">
+    <section class="appointment-form-card appointment-details-card">
+      <header class="appointment-card-heading">
+        <h2>Appointment Details</h2>
+        <p>Enter the details for the new appointment.</p>
+      </header>
+
+      <div class="appointment-main-fields">
+        <div class="pf-field">
+          <label>Appointment Type</label>
+          <p-dropdown [options]="appointmentTypes" optionLabel="label" optionValue="value" formControlName="appointmentType" placeholder="Select appointment type" styleClass="w-full"></p-dropdown>
         </div>
-        <div>
-          <h5 class="pf-title">{{ isView ? 'Appointment Details' : (isEdit ? 'Edit Appointment' : (dialogMode ? 'Book Appointment' : 'Create Appointment')) }}</h5>
-          <p class="pf-sub">{{ isView ? 'Review appointment details' : 'Enter appointment details below' }}</p>
+
+        <div class="pf-field">
+          <label>Date <span class="req">*</span></label>
+          <p-calendar formControlName="date" [showIcon]="true" dateFormat="dd/mm/yy" placeholder="Select date" [monthNavigator]="true" [yearNavigator]="true" yearRange="2020:2030" [minDate]="appointmentId ? null : minAppointmentDate" [readonlyInput]="true" styleClass="w-full" inputStyleClass="w-full"></p-calendar>
+          <small class="p-error" *ngIf="appointmentForm.get('date')?.touched && appointmentForm.get('date')?.hasError('pastDate')">Choose today or a future date.</small>
+        </div>
+
+        <div class="pf-field">
+          <label>Time <span class="req">*</span></label>
+          <p-calendar formControlName="time" [timeOnly]="true" [hourFormat]="'12'" [stepMinute]="30" [showIcon]="true" icon="pi pi-clock" placeholder="Select time slot" styleClass="w-full" inputStyleClass="w-full"></p-calendar>
+          <small class="p-error" *ngIf="appointmentForm.get('time')?.touched && appointmentForm.get('time')?.hasError('outsideClinicHours')">Choose a time between 9:00 AM and 8:30 PM.</small>
+          <small class="p-error" *ngIf="appointmentForm.get('time')?.touched && appointmentForm.get('time')?.hasError('required')">Appointment time is required.</small>
+        </div>
+
+        <div class="pf-field">
+          <label>Duration (minutes)</label>
+          <p-dropdown [options]="appointmentDurations" optionLabel="label" optionValue="value" formControlName="durationMinutes" styleClass="w-full"></p-dropdown>
+        </div>
+
+        <div class="pf-field">
+          <label>Reason for Visit</label>
+          <textarea pInputTextarea rows="3" formControlName="reason" class="w-full" placeholder="Enter the reason for the appointment"></textarea>
         </div>
       </div>
 
-      <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()">
+      <div class="appointment-section-divider"></div>
+      <section class="appointment-status-section">
+        <h3>Appointment Status</h3>
+        <label><input type="radio" formControlName="status" value="CONFIRMED" /> Scheduled</label>
+        <label><input type="radio" formControlName="status" value="PENDING" /> Tentative (Pending Confirmation)</label>
+        <label><input type="radio" formControlName="status" value="WAITLIST" /> Add to Waitlist</label>
+      </section>
 
-        <!-- Clinic -->
-        <p class="section-label">Clinic</p>
-        <div class="field-grid g1 mb-section">
-          <div class="pf-field">
-            <label>Clinic Name</label>
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-building"></i>
-              <input pInputText class="w-full" [value]="clinicData.clinicName" disabled />
-            </span>
-          </div>
+      <div class="appointment-section-divider"></div>
+      <section class="appointment-notes-section">
+        <h3>Additional Information</h3>
+        <div class="pf-field">
+          <label>Notes for Staff</label>
+          <textarea pInputTextarea rows="3" formControlName="notes" class="w-full" placeholder="Enter any additional notes for staff"></textarea>
         </div>
+      </section>
 
-        <div class="field-grid g3 mb-section">
+      <small class="p-error appointment-message" *ngIf="error">{{ error }}</small>
+      <small class="p-success appointment-message" *ngIf="success">{{ success }}</small>
 
-          <div class="pf-field">
-            <label>Patient Name <span class="req">*</span></label>
-            <p-autoComplete
-              formControlName="patientName"
-              [suggestions]="filteredPatients"
-              (completeMethod)="searchPatients($event)"
-              field="label"
-              [dropdown]="true"
-              placeholder="Search patient or phone..."
-              styleClass="w-full"
-              inputStyleClass="w-full">
-            </p-autoComplete>
-          </div>
+      <footer class="appointment-form-actions">
+        <button type="button" class="appointment-cancel-button" (click)="onCancel()">Cancel</button>
+        <button *ngIf="!isView" type="submit" class="appointment-submit-button" [disabled]="appointmentForm.invalid || loading">
+          <i *ngIf="loading" class="pi pi-spin pi-spinner"></i>
+          {{ loading ? 'Saving…' : (isEdit ? 'Update Appointment' : 'Schedule Appointment') }}
+        </button>
+      </footer>
+    </section>
 
-          <div class="pf-field">
-            <label>Doctor <span class="req">*</span></label>
-            <p-autoComplete
-              formControlName="doctorId"
-              [suggestions]="filteredDoctors"
-              (completeMethod)="searchDoctors($event)"
-              field="label"
-              [dropdown]="true"
-              placeholder="Search doctor..."
-              styleClass="w-full"
-              inputStyleClass="w-full">
-            </p-autoComplete>
-          </div>
-
-          <div class="pf-field">
-            <label>Date <span class="req">*</span></label>
-            <p-calendar
-              formControlName="date"
-              [showIcon]="true"
-              dateFormat="dd/mm/yy"
-              placeholder="DD/MM/YYYY"
-              [monthNavigator]="true"
-              [yearNavigator]="true"
-              yearRange="2020:2030"
-              [minDate]="appointmentId ? null : minAppointmentDate"
-              [readonlyInput]="true"
-              styleClass="w-full"
-              inputStyleClass="w-full">
-            </p-calendar>
-            <small class="p-error" *ngIf="appointmentForm.get('date')?.touched && appointmentForm.get('date')?.hasError('pastDate')">
-              Choose today or a future date.
-            </small>
-          </div>
-
-          <div class="pf-field">
-            <label>Time <span class="req">*</span> <small>(9:00 AM–8:30 PM)</small></label>
-            <p-calendar
-              formControlName="time"
-              [timeOnly]="true"
-              [hourFormat]="'12'"
-              [stepMinute]="30"
-              [showIcon]="true"
-              icon="pi pi-clock"
-              styleClass="w-full"
-              inputStyleClass="w-full">
-            </p-calendar>
-            <small class="p-error" *ngIf="appointmentForm.get('time')?.touched && appointmentForm.get('time')?.hasError('outsideClinicHours')">
-              Choose an appointment time between 9:00 AM and 8:30 PM.
-            </small>
-            <small class="p-error" *ngIf="appointmentForm.get('time')?.touched && appointmentForm.get('time')?.hasError('required')">
-              Appointment time is required.
-            </small>
-          </div>
-
-          <div class="pf-field">
-            <label>Status</label>
-            <p-dropdown
-              [options]="statuses"
-              optionLabel="label"
-              optionValue="value"
-              formControlName="status"
-              placeholder="Select Status"
-              styleClass="w-full">
-            </p-dropdown>
-          </div>
-
+    <aside class="appointment-selection-column">
+      <section class="appointment-form-card appointment-select-card">
+        <header class="appointment-card-heading">
+          <h2>Select Patient</h2>
+          <p>Search and select a patient for this appointment.</p>
+        </header>
+        <div class="pf-field">
+          <label class="visually-hidden">Patient</label>
+          <p-autoComplete formControlName="patientName" [suggestions]="filteredPatients" (completeMethod)="searchPatients($event)" field="label" [dropdown]="true" placeholder="Search patients..." styleClass="w-full" inputStyleClass="w-full"></p-autoComplete>
         </div>
+        <button *ngIf="!isView" type="button" class="appointment-register-patient" (click)="registerNewPatient()">Register New Patient</button>
+      </section>
 
-        <div class="field-grid g1 mb-section">
-          <div class="pf-field">
-            <label>Notes</label>
-            <textarea pInputTextarea rows="4" formControlName="notes" class="w-full"></textarea>
-          </div>
+      <section class="appointment-form-card appointment-select-card">
+        <header class="appointment-card-heading">
+          <h2>Select Doctor</h2>
+          <p>Choose a doctor for this appointment.</p>
+        </header>
+        <div class="pf-field">
+          <label class="visually-hidden">Doctor</label>
+          <p-autoComplete formControlName="doctorId" [suggestions]="filteredDoctors" (completeMethod)="searchDoctors($event)" field="label" [dropdown]="true" placeholder="Select a doctor" styleClass="w-full" inputStyleClass="w-full"></p-autoComplete>
         </div>
-
-        <small class="p-error" *ngIf="error">{{ error }}</small>
-        <small class="p-success" *ngIf="success">{{ success }}</small>
-
-        <div class="pf-divider"></div>
-        <div class="pf-btn-row">
-          <button
-            pButton
-            type="button"
-            icon="pi pi-times"
-            label="Cancel"
-            class="p-button-sm p-button-secondary"
-            (click)="onCancel()">
-          </button>
-          <button
-            *ngIf="!dialogMode && !isView"
-            pButton
-            type="submit"
-            icon="pi pi-check"
-            [label]="isEdit ? 'Update Appointment' : 'Create Appointment'"
-            class="p-button-sm pf-btn-primary"
-            [loading]="loading"
-            [disabled]="appointmentForm.invalid || loading">
-          </button>
-          <button
-            *ngIf="dialogMode && !isView"
-            pButton
-            type="button"
-            icon="pi pi-check"
-            [label]="isEdit ? 'Update Appointment' : 'Save Appointment'"
-            class="p-button-sm pf-btn-primary"
-            [loading]="loading"
-            (click)="onSubmit()"
-            [disabled]="appointmentForm.invalid || loading">
-          </button>
-        </div>
-
-      </form>
-
-    </div>
-  </div>
-</div>
+      </section>
+    </aside>
+  </form>
+</main>

@@ -97,6 +97,13 @@ import { RouterModule } from '@angular/router';
                     ),
             },
             {
+                path: 'invoice-create',
+                loadChildren: () =>
+                    import('./invoice-create/invoice-create.module').then(
+                        (m) => m.InvoiceCreateModule,
+                    ),
+            },
+            {
                 path: 'insurance',
                 loadChildren: () =>
                     import('./insurance/insurance.module').then(
