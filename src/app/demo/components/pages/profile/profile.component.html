@@ -19,7 +19,7 @@
 
         <form [formGroup]="profileForm" (ngSubmit)="save()">
           <section class="clinic-logo-section" aria-label="Clinic logo">
-            <div class="clinic-logo-preview"><img *ngIf="clinicLogo" [src]="clinicLogo" alt="Clinic logo preview" /><i *ngIf="!clinicLogo" class="pi pi-building" aria-hidden="true"></i></div>
+            <div class="clinic-logo-preview"><img *ngIf="clinicLogo" [src]="clinicLogo" alt="Clinic logo preview" (error)="removeClinicLogo()" /><i *ngIf="!clinicLogo" class="pi pi-building" aria-hidden="true"></i></div>
             <div class="clinic-logo-controls">
               <strong>Clinic Logo</strong>
               <div class="clinic-logo-buttons">
@@ -30,15 +30,31 @@
               <small class="p-error" *ngIf="logoError">{{ logoError }}</small>
             </div>
           </section>
-          <div class="field-grid">
-            <div class="field" *ngFor="let field of fields">
+          <section class="form-section" *ngIf="detailsFields.length">
+            <div class="section-heading"><span class="section-icon"><i class="pi pi-id-card"></i></span><div><h3>Profile details</h3><p>Your contact and account information</p></div></div>
+            <div class="field-grid">
+            <div class="field" *ngFor="let field of detailsFields">
               <label [for]="field">{{ label(field) }}</label>
-              <input pInputText [id]="field" [type]="field === 'email' ? 'email' : 'text'" [formControlName]="field" />
+              <span class="input-wrap"><i [class]="field === 'email' ? 'pi pi-envelope' : field === 'phone' ? 'pi pi-phone' : field === 'clinicName' ? 'pi pi-building' : 'pi pi-user'"></i><input pInputText [id]="field" [type]="field === 'email' ? 'email' : 'text'" [formControlName]="field" /></span>
               <small class="p-error" *ngIf="profileForm.get(field)?.touched && profileForm.get(field)?.invalid">
                 {{ field === 'email' && profileForm.get(field)?.hasError('email') ? 'Enter a valid email address.' : 'This field is required.' }}
               </small>
             </div>
           </div>
+          </section>
+
+          <section class="form-section address-section" *ngIf="addressFields.length">
+            <div class="section-heading"><span class="section-icon"><i class="pi pi-map-marker"></i></span><div><h3>Address</h3><p>Where your clinic or account is located</p></div></div>
+            <div class="field-grid">
+              <div class="field" *ngFor="let field of addressFields">
+                <label [for]="field">{{ label(field) }}</label>
+                <p-autoComplete *ngIf="field === 'country'" [inputId]="field" formControlName="country" [suggestions]="filteredCountries" (completeMethod)="searchCountries($event)" (onSelect)="onCountryChange($event.value)" field="name" [dropdown]="true" [forceSelection]="true" placeholder="Search Country Master" styleClass="w-full" inputStyleClass="w-full"></p-autoComplete>
+                <p-autoComplete *ngIf="field === 'state'" [inputId]="field" formControlName="state" [suggestions]="filteredStates" (completeMethod)="searchStates($event)" (onSelect)="onStateChange($event.value)" field="name" [dropdown]="true" [forceSelection]="true" placeholder="Select a country first" styleClass="w-full" inputStyleClass="w-full"></p-autoComplete>
+                <p-autoComplete *ngIf="field === 'city'" [inputId]="field" formControlName="city" [suggestions]="filteredCities" (completeMethod)="searchCities($event)" field="name" [dropdown]="true" [forceSelection]="true" placeholder="Select a state first" styleClass="w-full" inputStyleClass="w-full"></p-autoComplete>
+                <span class="input-wrap" *ngIf="!['country', 'state', 'city'].includes(field)"><i [class]="field === 'pincode' ? 'pi pi-map' : 'pi pi-home'"></i><input pInputText [id]="field" [formControlName]="field" /></span>
+              </div>
+            </div>
+          </section>
 
           <div class="profile-actions">
             <button pButton type="button" label="Cancel" class="p-button-secondary p-button-outlined" (click)="cancel()"></button>

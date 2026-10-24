@@ -3,6 +3,9 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AuthService } from 'src/app/demo/service/auth.service';
+import { SuperAdminApiService } from 'src/app/superadmin/superadmin-api.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-profile',
@@ -19,18 +22,27 @@ export class ProfileComponent implements OnInit {
   savingPassword = false;
   clinicLogo = '';
   logoError = '';
+  countries: any[] = [];
+  filteredCountries: any[] = [];
+  filteredStates: any[] = [];
+  filteredCities: any[] = [];
+  private stateRecords: any[] = [];
+  private cityRecords: any[] = [];
+  private availableStates: any[] = [];
+  private availableCities: any[] = [];
 
   private readonly editableFields: Record<string, string[]> = {
-    ADMIN: ['clinicName', 'phone', 'email'],
-    STAFF: ['staffname', 'phone', 'email'],
-    DOCTOR: ['staffname', 'phone', 'email', 'specialization']
+    ADMIN: ['clinicName', 'phone', 'email', 'address1', 'address2', 'address3', 'country', 'state', 'city', 'pincode'],
+    STAFF: ['staffname', 'phone', 'email', 'address1', 'address2', 'address3', 'country', 'state', 'city', 'pincode'],
+    DOCTOR: ['staffname', 'phone', 'email', 'specialization', 'address1', 'address2', 'address3', 'country', 'state', 'city', 'pincode']
   };
 
   constructor(
     private fb: FormBuilder,
     private api: AuthService,
     private msg: MessageService,
-    private router: Router
+    private router: Router,
+    private masterApi: SuperAdminApiService
   ) {}
 
   ngOnInit(): void {
@@ -40,6 +52,7 @@ export class ProfileComponent implements OnInit {
       newPassword: ['', [Validators.required, strongPassword]],
       confirmPassword: ['', Validators.required]
     });
+    this.loadLocationMasters();
     this.loadProfile();
   }
 
@@ -59,6 +72,8 @@ export class ProfileComponent implements OnInit {
           controls[field] = [this.profile[field] || '', validators];
         });
         this.profileForm = this.fb.group(controls);
+        this.normalizeLocationValues();
+        this.updateLocationOptions(this.profileForm.get('country')?.value || '');
         this.loading = false;
       },
       error: (error: any) => {
@@ -74,7 +89,14 @@ export class ProfileComponent implements OnInit {
       return;
     }
     this.saving = true;
-    const changes = { ...this.profileForm.getRawValue(), clinicLogo: this.clinicLogo };
+    const formValue = this.profileForm.getRawValue();
+    const changes = {
+      ...formValue,
+      country: this.masterId(formValue.country, this.countries),
+      state: this.masterId(formValue.state, this.stateRecords),
+      city: this.masterId(formValue.city, this.cityRecords),
+      clinicLogo: this.clinicLogo
+    };
     this.api.updateCurrentProfile(changes).subscribe({
       next: (response: any) => {
         this.profile = { ...this.profile, ...changes, ...(response?.data || {}) };
@@ -157,7 +179,112 @@ export class ProfileComponent implements OnInit {
   }
 
   label(field: string): string {
-    return field === 'staffname' ? 'Name' : field.replace(/([A-Z])/g, ' $1').replace(/^./, value => value.toUpperCase());
+    const addressLine = /^address([123])$/.exec(field);
+    if (addressLine) return `Address Line ${addressLine[1]}`;
+    if (field === 'staffname') return 'Name';
+    if (field === 'pincode') return 'Pincode';
+    return field.replace(/([A-Z])/g, ' $1').replace(/^./, value => value.toUpperCase());
+  }
+
+  get addressFields(): string[] {
+    return ['address1', 'address2', 'address3', 'country', 'state', 'city', 'pincode']
+      .filter(field => !!this.profileForm?.get(field));
+  }
+
+  get detailsFields(): string[] {
+    return this.fields.filter(field => !this.addressFields.includes(field));
+  }
+
+  searchCountries(event: { query: string }): void {
+    const query = (event.query || '').toLowerCase();
+    this.filteredCountries = this.countries.filter(country => country.name.toLowerCase().includes(query));
+  }
+
+  onCountryChange(country: any): void {
+    this.updateLocationOptions(country);
+    this.profileForm.get('state')?.setValue('');
+    this.profileForm.get('city')?.setValue('');
+    this.availableCities = [];
+    this.filteredCities = [];
+  }
+
+  onStateChange(state: any): void {
+    const stateRecord = this.findRecord(this.stateRecords, state);
+    this.availableCities = this.cityRecords
+      .filter(city => this.sameReference(city.state ?? city.stateId, stateRecord))
+      .filter(city => !!city.name);
+    this.filteredCities = [...this.availableCities];
+    this.profileForm.get('city')?.setValue('');
+  }
+
+  searchStates(event: { query: string }): void {
+    this.filteredStates = this.availableStates.filter(value => String(value.name || '').toLowerCase().includes((event.query || '').toLowerCase()));
+  }
+
+  searchCities(event: { query: string }): void {
+    this.filteredCities = this.availableCities.filter(value => String(value.name || '').toLowerCase().includes((event.query || '').toLowerCase()));
+  }
+
+  private updateLocationOptions(country: any): void {
+    const countryRecord = this.findRecord(this.countries, country);
+    this.availableStates = this.stateRecords
+      .filter(state => this.sameReference(state.country ?? state.countryId, countryRecord))
+      .filter(state => !!state.name);
+    this.filteredStates = [...this.availableStates];
+    const currentState = this.profileForm?.get('state')?.value;
+    const stateRecord = currentState ? this.findRecord(this.stateRecords, currentState) : null;
+    this.availableCities = stateRecord
+      ? this.cityRecords.filter(city => this.sameReference(city.state ?? city.stateId, stateRecord) && !!city.name)
+      : [];
+    this.filteredCities = [...this.availableCities];
+  }
+
+  private loadLocationMasters(): void {
+    forkJoin({
+      countries: this.masterApi.list('countries').pipe(catchError(() => of([]))),
+      states: this.masterApi.list('states').pipe(catchError(() => of([]))),
+      cities: this.masterApi.list('cities').pipe(catchError(() => of([])))
+    }).subscribe(({ countries, states, cities }) => {
+      this.countries = this.unwrapMasterList(countries);
+      this.stateRecords = this.unwrapMasterList(states);
+      this.cityRecords = this.unwrapMasterList(cities);
+      this.filteredCountries = [...this.countries];
+      if (this.profileForm) {
+        this.normalizeLocationValues();
+        this.updateLocationOptions(this.profileForm.get('country')?.value || '');
+      }
+    });
+  }
+
+  private unwrapMasterList(response: any): any[] {
+    const data = response?.data ?? response?.items ?? response;
+    return Array.isArray(data) ? data.filter(record => record?.isActive !== false) : [];
+  }
+
+  private findRecord(records: any[], value: any): any {
+    const candidate = value && typeof value === 'object' ? value : null;
+    const key = String(candidate?._id ?? candidate?.id ?? candidate?.name ?? value ?? '').toLowerCase();
+    return records.find(record => [record?._id, record?.id, record?.name].some(item => String(item ?? '').toLowerCase() === key)) || candidate;
+  }
+
+  private sameReference(reference: any, target: any): boolean {
+    if (!reference || !target) return false;
+    const referenceKey = String(typeof reference === 'object' ? reference._id ?? reference.id ?? reference.name : reference).toLowerCase();
+    return [target._id, target.id, target.name].some(item => String(item ?? '').toLowerCase() === referenceKey);
+  }
+
+  private masterId(value: any, records: any[]): any {
+    if (!value) return value;
+    const record = this.findRecord(records, value);
+    return record ? (record._id ?? record.id ?? value) : value;
+  }
+
+  private normalizeLocationValues(): void {
+    for (const [field, records] of [['country', this.countries], ['state', this.stateRecords], ['city', this.cityRecords]] as [string, any[]][]) {
+      const control = this.profileForm.get(field);
+      const value = control?.value;
+      if (value) control?.setValue(this.findRecord(records, value) || value, { emitEvent: false });
+    }
   }
 
   private persistProfile(): void {

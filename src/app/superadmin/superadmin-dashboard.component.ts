@@ -13,8 +13,8 @@ export class SuperAdminDashboardComponent implements OnInit {
   readonly resources: Record<AdminResource, ResourceConfig> = {
     clinics: { title: 'Clinic management', singular: 'Clinic', description: 'Review clinic accounts and update their contact information.', columns: ['clinicName', 'email', 'phone', 'plan', 'isActive'], fields: [{ key: 'clinicName', label: 'Clinic name', required: true }, { key: 'email', label: 'Email', type: 'email', required: true }, { key: 'password', label: 'Initial password (required when creating)', type: 'password' }, { key: 'phone', label: 'Phone' }, { key: 'plan', label: 'Membership plan', type: 'select', required: true }] },
     countries: { title: 'Country master', singular: 'Country', description: 'Maintain the countries available throughout the clinic platform.', columns: ['name', 'code', 'isActive'], fields: [{ key: 'name', label: 'Country name', required: true }, { key: 'code', label: 'Country code' }] },
-    states: { title: 'State master', singular: 'State', description: 'Organize states and link each one to its country. Import country IDs or country names.', columns: ['name', 'country', 'isActive'], fields: [{ key: 'name', label: 'State name', required: true }, { key: 'country', label: 'Country ID or name', required: true }] },
-    cities: { title: 'City master', singular: 'City', description: 'Maintain cities and associate them with their state. Import state IDs or state names.', columns: ['name', 'state', 'isActive'], fields: [{ key: 'name', label: 'City name', required: true }, { key: 'state', label: 'State ID or name', required: true }] },
+    states: { title: 'State master', singular: 'State', description: 'Organize states and link each one to its country. Import country IDs or country names.', columns: ['name', 'country', 'isActive'], fields: [{ key: 'name', label: 'State name', required: true }, { key: 'country', label: 'Country', required: true }] },
+    cities: { title: 'City master', singular: 'City', description: 'Maintain cities and associate them with their state. Import state IDs or state names.', columns: ['name', 'state', 'isActive'], fields: [{ key: 'name', label: 'City name', required: true }, { key: 'state', label: 'State', required: true }] },
     memberships: { title: 'Membership plans', singular: 'Membership', description: 'Set the plan name, description, included features, price, duration, and staff access.', columns: ['name', 'description', 'price', 'durationMonths', 'staffAllowed', 'features'], fields: [{ key: 'name', label: 'Membership name', required: true }, { key: 'description', label: 'Plan description', type: 'textarea' }, { key: 'features', label: 'Included points (one per line)', type: 'textarea' }, { key: 'price', label: 'Price', type: 'number', required: true }, { key: 'durationMonths', label: 'Duration (months)', type: 'number', required: true }, { key: 'staffAllowed', label: 'Allow staff accounts', type: 'checkbox' }] },
     treatmentmasters: { title: 'Treatment master', singular: 'Treatment', description: 'Manage the platform treatment catalogue used by clinics.', columns: ['name', 'description', 'duration', 'price', 'status'], fields: [{ key: 'name', label: 'Treatment name', required: true }, { key: 'description', label: 'Description' }, { key: 'duration', label: 'Duration (minutes)', type: 'number' }, { key: 'price', label: 'Price', type: 'number' }, { key: 'status', label: 'Status (ACTIVE or INACTIVE)' }] },
     labmasters: { title: 'Lab master', singular: 'Lab', description: 'Manage laboratories and their contact details.', columns: ['name', 'code', 'email', 'phone', 'isActive'], fields: [{ key: 'name', label: 'Lab name', required: true }, { key: 'code', label: 'Lab code' }, { key: 'description', label: 'Description' }, { key: 'email', label: 'Email', type: 'email' }, { key: 'phone', label: 'Phone' }, { key: 'address', label: 'Address' }] }
@@ -30,6 +30,11 @@ export class SuperAdminDashboardComponent implements OnInit {
   importProgress = '';
   membershipOptions: string[] = [];
   membershipOptionsLoading = false;
+  countryOptions: any[] = [];
+  filteredCountryOptions: any[] = [];
+  stateOptions: any[] = [];
+  filteredStateOptions: any[] = [];
+  referenceOptionsLoading = false;
   error = '';
   notice = '';
   constructor(private api: SuperAdminApiService, private fb: FormBuilder, private router: Router, private route: ActivatedRoute) { this.form = this.fb.group({}); }
@@ -40,9 +45,11 @@ export class SuperAdminDashboardComponent implements OnInit {
         this.selected = resource;
         this.closeForm();
         this.notice = '';
+        this.loadReferenceOptions();
         this.load();
       } else if (resource && !this.rows.length) {
         this.selected = resource;
+        this.loadReferenceOptions();
         this.load();
       }
     });
@@ -71,12 +78,14 @@ export class SuperAdminDashboardComponent implements OnInit {
       complete: () => { this.membershipOptionsLoading = false; }
     });
   }
-  add(): void { this.editingId = ''; this.form = this.makeForm({}); this.showForm = true; this.notice = ''; }
-  edit(row: any): void { this.editingId = String(row?._id || row?.id || ''); this.form = this.makeForm(row); this.showForm = true; this.notice = ''; }
+  add(): void { if (this.referenceOptionsLoading) return; this.editingId = ''; this.form = this.makeForm({}); this.showForm = true; this.notice = ''; }
+  edit(row: any): void { if (this.referenceOptionsLoading) return; this.editingId = String(row?._id || row?.id || ''); this.form = this.makeForm(row); this.showForm = true; this.notice = ''; }
   private makeForm(row: any): any {
     const controls: Record<string, any> = {};
     this.config.fields.forEach(field => {
-      const value = field.key === 'features' && Array.isArray(row?.[field.key]) ? row[field.key].join('\n') : (row?.[field.key] ?? '');
+      let value = field.key === 'features' && Array.isArray(row?.[field.key]) ? row[field.key].join('\n') : (row?.[field.key] ?? '');
+      if (this.selected === 'states' && field.key === 'country') value = this.findMasterOption(this.countryOptions, value) || value;
+      if (this.selected === 'cities' && field.key === 'state') value = this.findMasterOption(this.stateOptions, value) || value;
       const validators = field.required && (field.key !== 'password' || !this.editingId) ? [Validators.required] : [];
       controls[field.key] = [value, validators];
     });
@@ -85,6 +94,8 @@ export class SuperAdminDashboardComponent implements OnInit {
   save(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const payload = { ...this.form.value };
+    if (this.selected === 'states') payload.country = this.referenceId(payload.country);
+    if (this.selected === 'cities') payload.state = this.referenceId(payload.state);
     Object.keys(payload).forEach(key => { if (payload[key] === '' || payload[key] === null) delete payload[key]; });
     if (this.selected === 'memberships') {
       payload.staffAllowed = Boolean(payload.staffAllowed);
@@ -189,6 +200,43 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.api.delete(this.selected, id).subscribe({ next: () => { this.notice = `${this.config.singular} deleted.`; this.load(); }, error: (err) => { this.error = err?.error?.message || `Could not delete ${this.config.singular.toLowerCase()}.`; this.loading = false; } });
   }
   closeForm(): void { this.showForm = false; this.editingId = ''; }
-  value(row: any, column: string): string { const value = row?.[column]; return Array.isArray(value) ? value.join(', ') : (value && typeof value === 'object' ? JSON.stringify(value) : String(value ?? '—')); }
+  value(row: any, column: string): string { const value = row?.[column]; return Array.isArray(value) ? value.join(', ') : (value && typeof value === 'object' ? String(value.name ?? value.label ?? value._id ?? value.id ?? '—') : String(value ?? '—')); }
+
+  searchReferenceOptions(event: { query: string }, type: 'country' | 'state'): void {
+    const query = (event.query || '').toLowerCase();
+    if (type === 'country') this.filteredCountryOptions = this.countryOptions.filter(option => String(option.name || '').toLowerCase().includes(query));
+    else this.filteredStateOptions = this.stateOptions.filter(option => String(option.name || '').toLowerCase().includes(query));
+  }
+
+  private loadReferenceOptions(): void {
+    if (this.selected !== 'states' && this.selected !== 'cities') return;
+    this.referenceOptionsLoading = true;
+    const resource = this.selected === 'states' ? 'countries' : 'states';
+    this.api.list(resource).subscribe({
+      next: response => {
+        const options = this.unwrapList(response).filter(record => record?.isActive !== false);
+        if (resource === 'countries') { this.countryOptions = options; this.filteredCountryOptions = [...options]; }
+        else { this.stateOptions = options; this.filteredStateOptions = [...options]; }
+      },
+      error: () => {
+        if (resource === 'countries') { this.countryOptions = []; this.filteredCountryOptions = []; }
+        else { this.stateOptions = []; this.filteredStateOptions = []; }
+        this.referenceOptionsLoading = false;
+      },
+      complete: () => this.referenceOptionsLoading = false
+    });
+  }
+
+  private findMasterOption(options: any[], value: any): any {
+    const key = String(value && typeof value === 'object' ? value._id ?? value.id ?? value.name : value ?? '').toLowerCase();
+    return options.find(option => [option?._id, option?.id, option?.name].some(candidate => String(candidate ?? '').toLowerCase() === key));
+  }
+
+  private referenceId(value: any): string {
+    if (value && typeof value === 'object') return String(value._id ?? value.id ?? value.name ?? '');
+    const options = this.selected === 'states' ? this.countryOptions : this.stateOptions;
+    const match = this.findMasterOption(options, value);
+    return String(match?._id ?? match?.id ?? value ?? '');
+  }
   logout(): void { localStorage.removeItem('token'); sessionStorage.removeItem('token'); localStorage.removeItem('user'); sessionStorage.removeItem('user'); this.router.navigate(['/superadmin/login']); }
 }

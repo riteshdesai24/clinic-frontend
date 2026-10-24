@@ -5,6 +5,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { SuperAdminLoginComponent } from './superadmin-login.component';
 import { SuperAdminRegisterComponent } from './superadmin-register.component';
 import { SuperAdminDashboardComponent } from './superadmin-dashboard.component';
@@ -25,6 +26,6 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [SuperAdminLoginComponent, SuperAdminRegisterComponent, SuperAdminDashboardComponent],
-  imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule, InputTextareaModule, RouterModule.forChild(routes)]
+  imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule, InputTextareaModule, AutoCompleteModule, RouterModule.forChild(routes)]
 })
 export class SuperAdminModule {}
